@@ -179,7 +179,44 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Both requests go through .auth_for_url(): Dryad answers 401 to an
 # unauthenticated request on ANY byte-touching endpoint (verified live
 # 2026-08-16, see .dryad_headers()'s own comment).
+# The report section and summary sentence for files whose download failed
+# (#667). Until 0.4.4.12 a failure was said only in a message during the run,
+# not in the report or the results, so a fault that lost the same kind of file
+# in every repository (an address with a space: about 2,070 data and code
+# files in 45 papers of the PsyArXiv, medRxiv and BES runs) went unnoticed for
+# three months. `failed` is download_repo_files()'s attribute "failed"
+# (repo_url, file_name, error). Returns list(report, summary), NULL when none.
+.download_failed_text <- function(failed) {
+  if (!is.data.frame(failed) || !nrow(failed)) return(list(report = NULL, summary = NULL))
+  failed <- failed[!duplicated(paste(failed$repo_url, failed$file_name)), , drop = FALSE]
+  n <- nrow(failed)
+  # the first line that says why: httr2 starts with "Failed to perform HTTP
+  # request." and "Caused by error in ...:", and gives the reason after them
+  err <- vapply(strsplit(as.character(failed$error), "\n", fixed = TRUE), function(l) {
+    l <- trimws(sub("^! ", "", l))
+    keep <- l[nzchar(l) & !grepl("^Failed to perform HTTP request\\.?$|^Caused by error", l)]
+    sub(":$", "", if (length(keep)) keep[[1]] else l[[1]])
+  }, character(1))
+  kinds <- sort(table(err), decreasing = TRUE)
+  why <- paste(sprintf("%s (%d)", names(kinds), as.integer(kinds))[seq_len(min(3, length(kinds)))],
+               collapse = "; ")
+  shown <- utils::head(failed$file_name, 10)
+  report <- c(
+    "#### Files that could not be downloaded",
+    sprintf(paste("%d file%s could not be downloaded, so the checks did not see %s: %s%s.",
+                  "The reason%s given: %s. Re-running the check fetches only the missing files."),
+            n, plural(n), plural(n, "it", "them"), paste(sprintf("`%s`", shown), collapse = ", "),
+            if (n > 10) sprintf(", and %d more", n - 10) else "", plural(length(kinds), "", "s"), why))
+  summary <- sprintf("%d file%s could not be downloaded, so the checks did not see %s.",
+                     n, plural(n), plural(n, "it", "them"))
+  list(report = report, summary = summary)
+}
+
 .remote_size <- function(url) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   size <- .head_size(url)
   if (is.na(size)) size <- .range_size(url)
   size
@@ -807,6 +844,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # attributes over_cap = TRUE and bytes (how many had arrived).
 .download_capped <- function(url, dest, max_bytes = Inf, timeout_s = 120,
                              skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   final <- dest
   dest <- paste0(final, ".part")
@@ -863,6 +904,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 
 .download_one <- function(url, dest, skip_on_api_limit = FALSE,
                           expected_bytes = NA_real_) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   # Written to "<dest>.part" and renamed when complete: an interrupted
   # download left a partial file at `dest`, and an empty response a 0-byte
@@ -993,6 +1038,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # re-run after the host's quota resets is expected to succeed).
 .download_many_parallel <- function(urls, dests, expected_size = NA_real_,
                                     .retried = FALSE, skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(urls) & grepl("^https?://", urls)
+  urls[web] <- utils::URLencode(urls[web])
   if (length(urls) == 0) return(character(0))
   # Each file is written to "<dest>.part" and renamed when complete, as in
   # .download_one() (U75, U203).
@@ -1193,6 +1242,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                                    max_bytes = Inf,
                                    skip_on_api_limit = FALSE,
                                    expected_bytes = NA_real_) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(zip_url) & grepl("^https?://", zip_url)
+  zip_url[web] <- utils::URLencode(zip_url[web])
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
 

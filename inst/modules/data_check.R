@@ -1279,6 +1279,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   report <- c(
     "This module classifies repository files and, for tabular data files available locally, extracts each column's type and summary statistics."
   )
+  # files whose download failed: the checks below did not see them (#667)
+  failed_text <- .download_failed_text(failed_files)
+  report <- c(report, failed_text$report)
 
   # The data tree replaces the former "File Types" count table: it lists every
   # file with the same classification, so a separate per-type tally was a less
@@ -1487,6 +1490,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$key_n[is.na(summary_table$key_n)] <- 0L
   # one paper whose id is unknown (local files only) has all the keys found
   if (nrow(summary_table) == 1) summary_table$key_n <- length(unique(key_found$key))
+  # files whose download failed, per paper (#667)
+  ff <- if (is.data.frame(failed_files) && nrow(failed_files))
+    failed_files[!duplicated(paste(failed_files$repo_url, failed_files$file_name)), , drop = FALSE] else NULL
+  summary_table$files_failed <- if (is.null(ff)) 0L else if (nrow(summary_table) == 1) nrow(ff) else
+    vapply(summary_table$paper_id, \(id) sum(ff$paper_id %in% id), integer(1), USE.NAMES = FALSE)
 
   # A brief report (report_type() "brief" or "simple_brief", set while the
   # modules run) is about what to improve. How the files were grouped into
@@ -1497,7 +1505,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_studies <- NULL
     summary_ungrouped <- NULL
   }
-  summary_text <- c(summary_keys, summary_files, summary_data, summary_studies,
+  summary_text <- c(failed_text$summary, summary_keys, summary_files, summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
                      summary_workspace, summary_nontabular, summary_trial_level) |>
     paste("\n- ", x = _, collapse = "")

@@ -269,6 +269,10 @@
 # A README's text, from its plain download address (one request; at most
 # 300 kB read, 20,000 characters kept). NA when it cannot be read.
 .repo_readme_text <- function(url, n = 20000) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   if (length(url) != 1 || is.na(url) || !nzchar(url)) return(NA_character_)
   r <- tryCatch(.mc_request(url) |> httr2::req_error(is_error = \(e) FALSE) |>
                   httr2::req_timeout(30) |> httr2::req_perform(), error = \(e) NULL)
