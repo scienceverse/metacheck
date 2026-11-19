@@ -568,6 +568,9 @@ test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
   expect_true(.repro_ref_checkable(data.frame(ref = "x.csv", basename = "x.csv")))
   # a name the script builds, in any case
   expect_false(.repro_ref_checkable(data.frame(ref = "/X.csv", basename = "x.csv"), "x.csv"))
+  # a file read from a web address (#695)
+  expect_false(.repro_ref_checkable(data.frame(ref = "http://journal.sjdm.org/16/1234/study1.sav",
+                                               basename = "study1.sav")))
 })
 
 test_that(".repro_built_names finds names joined to a variable (#568)", {

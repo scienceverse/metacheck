@@ -4779,7 +4779,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # default, which this worker was not given.
         err <- tryCatch(paste(.utf8_lines(readLines(err_files[[pid]], warn = FALSE)), collapse = "\n"),
                         error = function(e) "")
-        res <- list(traffic_light = "error",
+        # named as the module, or module_run()'s output names it by its
+        # position ("module_1", R/module.R) and the error lost its check (#695)
+        res <- list(module = "reproducibility_check",
+                    traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",
                                           if (nzchar(err)) err else "unknown error"),
                     table = data.frame(),

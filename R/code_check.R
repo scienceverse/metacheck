@@ -2855,7 +2855,11 @@ code_packages <- function(packages) {
   for (i in seq_len(nrow(code_files))) {
     refs <- code_files$loaded_refs[[i]]
     if (is.na(refs)) next
-    refs <- base(strsplit(refs, "\u001f", fixed = TRUE)[[1]])
+    refs <- strsplit(refs, "\u001f", fixed = TRUE)[[1]]
+    # a file read from a web address is not one the repository should hold:
+    # read.spss("http://journal.sjdm.org/.../study1.sav") was reported as the
+    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out
+    refs <- base(refs[!grepl("://", refs, fixed = TRUE)])
     # a piece, and a name with a placeholder ("Ax1_s{seed}.jsonl"), are no
     # file names, as reproducibility_check also leaves them out (.repro_ref_checkable())
     refs <- refs[nzchar(refs) & !grepl("^[._-]", refs) & !grepl(.code_placeholder_re, refs, perl = TRUE)]
