@@ -933,11 +933,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       creator_orcids = .col_chr(own, "contributor_orcids")[k],
       published = substr(dplyr::coalesce(.col_chr(own, "date_registered")[k],
                                           .col_chr(own, "date_created")[k]), 1, 10),
-      updated = substr(.col_chr(own, "date_modified")[k], 1, 10)
+      updated = substr(.col_chr(own, "date_modified")[k], 1, 10),
+      # the contributors' own family names, and how many there are: the OSF
+      # names only the first 10 (#682). For the ownership step only, not
+      # for repo_metadata (below).
+      creator_families = .col_chr(own, "contributor_families")[k],
+      n_creators = .col_chr(own, "n_contributors")[k]
     )
   }
   if (length(osf_repo_urls) > 0 && !is.null(osf_desc_all)) {
-    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url), , drop = FALSE]
+    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url),
+                             setdiff(names(osf_desc_all), c("creator_families", "n_creators")), drop = FALSE]
     osf_desc$repo_url <- osf_repo_urls
     osf_meta_df <- if (nrow(osf_meta_df) > 0) {
       dplyr::left_join(osf_meta_df, osf_desc, by = "repo_url")
