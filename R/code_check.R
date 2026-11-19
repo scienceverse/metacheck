@@ -825,7 +825,7 @@ code_lang <- function(file_name) {
     dest <- .repo_cache_path(all_files$repo_url[i],
                              paste0(all_files$file_path[i] %||% all_files$file_name[i],
                                     ".contents"),
-                             cache = cache)
+                             cache = cache, storage = all_files$provider[i] %||% NA_character_)
     # An archive within the download budget may be fetched whole, once,
     # instead of by byte range, whenever that is cheaper (see
     # .zip_fetch_members()) -- this used to be done for Dryad only. Dryad

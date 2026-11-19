@@ -557,6 +557,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # OSF projects part of whose listing the OSF refused, also when asked
   # again (`listing_short`, see osf_info(); #681)
   osf_short_urls <- character(0)
+  # The links whose listing holds whole storages: the linked item is a
+  # project, component or registration (not a single file or folder), listed
+  # with its contents and in full. Only their files count towards a storage's
+  # size and number of files, which decide whether its archive is fetched
+  # (.osf_storage_totals(), #679).
+  osf_full_listings <- function(info, cut) {
+    if (records_only || !all(c("osf_url", "osf_type", "repo_name") %in% names(info))) return(character(0))
+    top <- !is.na(info$osf_url) & info$osf_url == info$repo_name &
+      info$osf_type %in% c("nodes", "registrations")
+    setdiff(unique(info$repo_name[top]), cut)
+  }
   # private projects read through a view-only link in the paper (see below)
   osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
                               project = character(0))
@@ -574,6 +585,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         osf_cut_urls <- unique(osf_info$repo_name[osf_info$listing_cut %in% TRUE])
       if ("listing_short" %in% names(osf_info))
         osf_short_urls <- unique(osf_info$repo_name[osf_info$listing_short %in% TRUE])
+      osf_full_urls <- osf_full_listings(osf_info, c(osf_cut_urls, osf_short_urls))
 
       # A registration is never itself the place files "live": either it
       # mirrors files into its own storage (in which case those files really
@@ -646,7 +658,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           provider = .col_chr(osf_file_list, "provider"),
           # the component the file is stored in: its storage is downloaded as
           # one zip per component (#675)
-          osf_node = .col_chr(osf_file_list, "project")
+          osf_node = .col_chr(osf_file_list, "project"),
+          # whether the file comes from a listing of whole storages (#679);
+          # dropped after .osf_storage_totals()
+          storage_listed = osf_file_list$repo_name %in% osf_full_urls
         )
       }
 
@@ -774,6 +789,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         if ("listing_short" %in% names(parent_info))
           osf_short_urls <- unique(c(osf_short_urls,
                                      parent_info$repo_name[parent_info$listing_short %in% TRUE]))
+        parent_full_urls <- osf_full_listings(parent_info, c(osf_cut_urls, osf_short_urls))
 
         # public parent: its files belong under the PARENT's real URL (the
         # place a reader would actually need to look). Any file also reached
@@ -794,7 +810,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                 file_size = parent_file_list$size,
                 file_type = parent_file_list$filetype,
                 provider = .col_chr(parent_file_list, "provider"),
-                osf_node = .col_chr(parent_file_list, "project")
+                osf_node = .col_chr(parent_file_list, "project"),
+                storage_listed = parent_file_list$repo_name %in% parent_full_urls
               )
             )
           }
@@ -2336,7 +2353,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # each OSF storage's listed size and number of files, which decide whether
   # it is downloaded as one archive: the checks pass download_repo_files()
   # only the files they want, so it cannot count the storage itself (#675)
-  osf_files_df <- .osf_storage_totals(osf_files_df)
+  # (only from listings of whole storages, #679)
+  osf_files_df <- .osf_storage_totals(osf_files_df, complete = osf_files_df$storage_listed %in% TRUE)
+  osf_files_df$storage_listed <- NULL
   all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
