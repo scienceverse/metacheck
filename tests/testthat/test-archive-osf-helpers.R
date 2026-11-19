@@ -449,6 +449,37 @@ test_that(".osf_parse_response keeps the reason a lookup failed (#501)", {
   expect_equal(parse(403)$osf_type, "private")
 })
 
+test_that("a refused OSF request is not reported as not found, and a file is asked for without contributors (#672)", {
+  json <- function(status, body) httr2::response(
+    status_code = status, body = charToRaw(body),
+    headers = list(`Content-Type` = "application/vnd.api+json"))
+  embed <- json(400, '{"errors":[{"source":{"parameter":"embed"},"detail":"The following fields are not embeddable: bibliographic_contributors","status":"400"}]}')
+  other <- json(400, '{"errors":[{"detail":"Bad filter"}]}')
+  expect_true(metacheck:::.osf_embed_refused(embed))
+  expect_false(metacheck:::.osf_embed_refused(other))
+  expect_false(metacheck:::.osf_embed_refused(httr2::response(status_code = 404)))
+  expect_false(metacheck:::.osf_embed_refused(simpleError("no answer")))
+
+  expect_warning(r <- metacheck:::.osf_parse_response(other, osf_id = "abcde"),
+                 "refused the request")
+  expect_equal(r$osf_type, "error")
+  expect_equal(r$error, "the OSF refused the request (HTTP 400): Bad filter")
+  expect_false(metacheck:::.repo_info_ok(r))
+
+  # osf_info() asks for a file again without the contributors
+  asked <- character(0)
+  file_json <- '{"data":{"id":"64db83e25e739d047b39b61e","type":"files","attributes":{"kind":"file","name":"a.docx","size":10},"links":{"download":"https://osf.io/download/abcde/"},"relationships":{}}}'
+  testthat::local_mocked_bindings(.batch_query = function(urls, ...) {
+    asked <<- c(asked, urls)
+    lapply(urls, function(u) if (grepl("embed=", u, fixed = TRUE)) embed else json(200, file_json))
+  })
+  info <- osf_info("abcde")
+  expect_equal(asked, c("https://api.osf.io/v2/guids/abcde?embed=bibliographic_contributors",
+                        "https://api.osf.io/v2/guids/abcde"))
+  expect_equal(info$osf_type, "files")
+  expect_equal(info$name, "a.docx")
+})
+
 test_that("an OSF refusal (private) is not kept in the lasting cache, and an old one is asked again", local({
   withr::local_options(metacheck.repo_info_cache.dir = withr::local_tempdir())
   n_calls <- 0
@@ -505,4 +536,61 @@ test_that("OSF helpers: a versioned GUID goes to /guids/, and only folders take 
                                        provider = c("osfstorage", "osfstorage")))
   obj <- metacheck:::.osf_file_data(data)
   expect_equal(obj$name, c("osfstorage", NA))
+})
+
+test_that("a record with more contributors than the OSF named gets the full list (#682)", {
+  people <- function(full, family) data.frame(id = seq_along(full)) |>
+    transform(embeds = I(data.frame(users = I(data.frame(data = I(data.frame(
+      attributes = I(data.frame(full_name = full, family_name = family,
+                                social = I(data.frame(orcid = rep(NA_character_, length(full)))))))))))))
+  asked <- character(0)
+  local_mocked_bindings(.osf_get_pages_parallel = function(urls) {
+    asked <<- c(asked, urls)
+    lapply(urls, \(u) {
+      if (grepl("fail", u)) return(.osf_error_result("request_failed"))
+      list(data = people(c(paste("Person", 1:10), "Anna van 't Veer"), c(paste0("P", 1:10), "van 't Veer")),
+           links = list(meta = list(total = 11L)))
+    })
+  })
+  ten <- paste(paste("Person", 1:10), collapse = "; ")
+  rows <- list(
+    data.frame(osf_id = "xv5rp", osf_type = "nodes", contributors = ten, n_contributors = 11L),
+    data.frame(osf_id = "small", osf_type = "nodes", contributors = "A B; C D", n_contributors = 2L),
+    data.frame(osf_id = "old10", osf_type = "registrations", contributors = ten),    # cached before the count
+    data.frame(osf_id = "fail1", osf_type = "nodes", contributors = ten, n_contributors = 12L),
+    data.frame(osf_id = "f1", osf_type = "files"))
+  out <- .osf_complete_contributors(rows)
+  expect_equal(sort(basename(dirname(dirname(asked)))), c("fail1", "old10", "xv5rp"))
+  expect_true(any(grepl("/registrations/old10/bibliographic_contributors/", asked, fixed = TRUE)))
+  expect_match(out[[1]]$contributors, "Anna van 't Veer", fixed = TRUE)
+  expect_match(out[[1]]$contributor_families, "van 't Veer", fixed = TRUE)
+  expect_equal(out[[1]]$n_contributors, 11L)
+  expect_equal(out[[3]]$n_contributors, 11L)
+  expect_identical(out[[2]], rows[[2]])
+  expect_identical(out[[4]], rows[[4]])   # a failed request leaves the record as it was
+  expect_identical(out[[5]], rows[[5]])
+  # nothing to complete: no request at all
+  asked <- character(0)
+  expect_identical(.osf_complete_contributors(rows[c(2, 5)]), rows[c(2, 5)])
+  expect_length(asked, 0)
+})
+
+test_that("a whole listing gets the full list of contributors for its projects only (#682)", {
+  local_mocked_bindings(.osf_get_pages_parallel = function(urls) lapply(urls, \(u) list(
+    data = data.frame(id = 1:11) |>
+      transform(embeds = I(data.frame(users = I(data.frame(data = I(data.frame(
+        attributes = I(data.frame(full_name = paste("Person", 1:11), family_name = paste0("P", 1:11),
+                                  social = I(data.frame(orcid = rep(NA_character_, 11)))))))))))),
+    links = list(meta = list(total = 11L)))))
+  ten <- paste(paste("Person", 1:10), collapse = "; ")
+  # a listing stored before the count and the family names were kept
+  tbl <- data.frame(osf_id = c("xv5rp", "comp1", "f1"), osf_type = c("nodes", "nodes", "files"),
+                    contributors = c(ten, "A B", NA))
+  out <- .osf_complete_table(tbl)
+  expect_equal(out$n_contributors, c(11L, NA, NA))
+  expect_match(out$contributors[1], "Person 11", fixed = TRUE)
+  expect_match(out$contributor_families[1], "P11", fixed = TRUE)
+  expect_equal(out$contributors[2:3], tbl$contributors[2:3])
+  expect_identical(.osf_complete_table(tbl[2:3, ]), tbl[2:3, ])
+  expect_identical(.osf_complete_table(data.frame()), data.frame())
 })

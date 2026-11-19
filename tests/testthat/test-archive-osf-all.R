@@ -120,6 +120,26 @@ test_that("mode = 'all' retrieves as much as mode = 'select'", {
 })
 
 
+test_that("mode = 'all' unpacks a name the OSF stores in the old DOS characters (#680)", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+  skip_if_quick()
+
+  # The OSF's zip of 9gju4 (about 10 MB) stores the dissertation PDF's name,
+  # with an "o" with two dots, in CP437; a whole-zip utils::unzip() stopped on
+  # it on Windows before it wrote any file, and the node was reported as
+  # downloaded with 0 of its 20 files.
+  download_to <- withr::local_tempdir()
+  dl <- suppressWarnings(
+    osf_file_download("9gju4", download_to, mode = "all", metadata = FALSE))
+  expect_true(dl$downloaded[[1]])
+  expect_equal(dl$files[[1]], 20)
+  on_disk <- list.files(dl$download_path[[1]], recursive = TRUE)
+  expect_true(all(validUTF8(on_disk)))
+  expect_true(paste0("R", intToUtf8(246), "seler_Dissertation.pdf") %in% basename(on_disk))
+})
+
+
 test_that("mode = 'all' names folders after component titles", {
   skip_if_not(online("api.osf.io"))
   skip_on_cran()

@@ -862,6 +862,7 @@ test_that("parse errors", {
     code_parse_errors = 4,
     # distinct packages across all 8 files: dplyr + tidyr (from ok.R)
     code_packages_n = 2L,
+    code_files_failed = 0L,
     # none of these fixtures pin an R/package environment (no renv.lock,
     # sessionInfo.txt, or groundhog/checkpoint date-pin call)
     code_version_pinned = FALSE

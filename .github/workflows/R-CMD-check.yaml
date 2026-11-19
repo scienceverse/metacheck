@@ -9,9 +9,20 @@
 # - with the PDF manual built, which finds problems in the help pages that the
 #   web pages do not show.
 # A last job checks every web address in the documentation.
-# Runs on a push to dev or cran_fixes (from that branch's own copy of this
-# file, so it does not need to be on main), on a pull request into dev, and by
-# hand. The tests are not part of the build (.Rbuildignore), so this checks
+# Which systems: a pull request into dev is checked once, on Linux with the
+# released R, without CRAN's settings (since 19 November 2026; metacheck does
+# not go to CRAN): the package must build, install, load and run its examples,
+# and only an error fails the check, not a warning or a note. That is what
+# keeps the SURF server, which runs Linux and installs dev, working, in about
+# half the time of the two systems checked before. Every other run checks all
+# seven with CRAN's settings: a pull request into main, the weekly run on
+# Monday, a run by hand, and a push to cran_fixes or linux_docker_fixes (from
+# that branch's own copy of this file, so it does not need to be on main). A
+# push to dev is not checked again: its pull request was. A pull request into
+# dev merges by itself when its required checks pass (auto-merge); the checks
+# dev requires are this Linux one and the job that decides whether the
+# package changed.
+# The tests are not part of the build (.Rbuildignore), so this checks
 # the package and runs its examples, including the \donttest ones; the tests
 # run in full-tests.yaml.
 # A change to only the website or text files (.github/scripts/code-changed.sh)
@@ -19,9 +30,11 @@
 # the same pull request or branch stops the runs for the previous one.
 on:
   push:
-    branches: [dev, cran_fixes, linux_docker_fixes]
+    branches: [cran_fixes, linux_docker_fixes]
   pull_request:
-    branches: [dev]
+    branches: [dev, main]
+  schedule:
+    - cron: '0 3 * * 1'    # every Monday at 3:00 UTC, on all seven systems
   workflow_dispatch:
 
 name: R-CMD-check
@@ -48,8 +61,32 @@ jobs:
         env:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
+  systems:
+    name: Systems to check on
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - id: pick
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          # light: without --as-cran, failing on errors only (see above)
+          one='[{"os":"ubuntu-latest","r":"release","light":true}]'
+          seven='[{"os":"windows-latest","r":"release"},
+                  {"os":"windows-latest","r":"devel"},
+                  {"os":"macos-latest","r":"release"},
+                  {"os":"ubuntu-latest","r":"devel","http-user-agent":"release"},
+                  {"os":"ubuntu-latest","r":"release","manual":true,"name":" with the PDF manual"},
+                  {"os":"ubuntu-latest","r":"oldrel-1"},
+                  {"os":"ubuntu-latest","r":"release","depends-only":true,"name":" with only the required packages"}]'
+          if [ "$EVENT" = "pull_request" ] && [ "$BASE" = "dev" ]; then m="$one"; else m="$seven"; fi
+          echo "matrix={\"config\":$(jq -c . <<< "$m")}" >> "$GITHUB_OUTPUT"
+
   R-CMD-check:
-    needs: changes
+    needs: [changes, systems]
     if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.config.os }}
 
@@ -57,15 +94,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        config:
-          - {os: windows-latest, r: 'release'}
-          - {os: windows-latest, r: 'devel'}
-          - {os: macos-latest,   r: 'release'}
-          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,  r: 'release', manual: true, name: ' with the PDF manual'}
-          - {os: ubuntu-latest,  r: 'oldrel-1'}
-          - {os: ubuntu-latest,  r: 'release', depends-only: true, name: ' with only the required packages'}
+      matrix: ${{ fromJSON(needs.systems.outputs.matrix) }}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -103,8 +132,9 @@ jobs:
         with:
           upload-snapshots: true
           build_args: ${{ matrix.config.manual && '"--compact-vignettes=gs+qpdf"' || 'c("--no-manual", "--compact-vignettes=gs+qpdf")' }}
-          args: ${{ matrix.config.manual && '"--as-cran"' || 'c("--no-manual", "--as-cran")' }}
-          error-on: '"note"'
+          # without --as-cran, the examples in \donttest{} run only when asked
+          args: ${{ matrix.config.manual && '"--as-cran"' || (matrix.config.light && 'c("--no-manual", "--run-donttest")' || 'c("--no-manual", "--as-cran")') }}
+          error-on: ${{ matrix.config.light && '"error"' || '"note"' }}
 
   url-check:
     runs-on: ubuntu-latest

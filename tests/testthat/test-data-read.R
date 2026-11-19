@@ -253,6 +253,122 @@ test_that("data_read_head reads a column whose values need an R package that is 
                    c(span = "Span, from the R package notinstalledpkg"))
 })
 
+test_that("data_read_head gives a table from an .rds or .RData file as a plain data frame", {
+  # PsyArXiv runs: loo's model comparison (a column marked "matrix" that is a
+  # row of numbers) made unique() stop (nm3wd_v1); a data.table date stored as
+  # decimal numbers in a tibble made head() stop (v2x3b_v4); a marginaleffects
+  # table carrying its brms model needed rstan in the report (c3skb_v4)
+  skip_if_not_installed("tibble")
+  d <- data.frame(id = 1:2)
+  d$elpd_diff <- structure(c(0, -1.1), class = c("compare.loo", "matrix", "array"))
+  rds <- withr::local_tempfile(fileext = ".rds")
+  saveRDS(d, rds)
+  df <- data_read_head(rds, n_rows = Inf)
+  expect_identical(df$elpd_diff, c(0, -1.1))
+  expect_identical(.text_counts(df$elpd_diff)$values, c("0", "-1.1"))
+
+  d <- tibble::tibble(id = 1:3, day = structure(c(19000, 19001, 19002), class = c("IDate", "Date")))
+  saveRDS(d, rds)
+  df <- data_read_head(rds, n_rows = Inf)
+  expect_identical(class(df), "data.frame")
+  expect_identical(class(df$day), "Date")
+  expect_equal(as.numeric(df$day), c(19000, 19001, 19002))
+  expect_equal(nrow(utils::head(df, 100)), 3)
+
+  model <- asS4(structure(1, class = structure("Fit", package = "notinstalledpkg")))
+  d <- structure(list(x = 1:3, y = c(.1, .2, .3)), class = c("predictions", "data.frame"),
+                 row.names = 1:3, model = model)
+  rda <- withr::local_tempfile(fileext = ".RData")
+  saveRDS(d, rds)
+  save(d, file = rda)
+  for (f in c(rds, rda)) {
+    df <- data_read_head(f, n_rows = Inf)
+    expect_identical(class(df), "data.frame")
+    expect_null(attr(df, "model"))
+    expect_identical(df$y, c(.1, .2, .3))
+    expect_no_error(deparse(df))
+  }
+
+  # factors, dates and times of another class become R's own; a column of
+  # any other class its plain values, with its label
+  d <- data.frame(id = 1:2)
+  d$f <- structure(1:2, levels = c("a", "b"), class = c("myfactor", "factor"))
+  d$t <- structure(c(0, 3600), class = c("mytime", "POSIXct", "POSIXt"), tzone = "UTC")
+  d$u <- structure(c(5, 6), class = "units", label = "Length")
+  saveRDS(d, rds)
+  df <- data_read_head(rds, n_rows = Inf)
+  expect_identical(df$f, factor(c("a", "b")))
+  expect_identical(class(df$t), c("POSIXct", "POSIXt"))
+  expect_identical(attr(df$t, "tzone"), "UTC")
+  expect_null(oldClass(df$u))
+  expect_identical(attr(df$u, "label"), "Length")
+})
+
+test_that(".utf8_repair_df repairs variable and value labels in another encoding", {
+  # an older Stata or SPSS file stores labels in its own encoding; the label
+  # extractor stopped on them ("input string 1 is invalid UTF-8")
+  latin1 <- function(...) rawToChar(c(...))
+  df <- data.frame(q = c(1, 2))
+  attr(df$q, "label") <- latin1(charToRaw("Gem"), as.raw(0xfc), charToRaw("se"))
+  attr(df$q, "labels") <- stats::setNames(c(1, 2), c(latin1(charToRaw("gr"), as.raw(0xfc), charToRaw("n")), "rot"))
+  class(df$q) <- c("haven_labelled", "vctrs_vctr", "double")
+  r <- .utf8_repair_df(df)
+  expect_identical(attr(r$q, "label"), "Gem\u00fcse")
+  expect_identical(names(attr(r$q, "labels")), c("gr\u00fcn", "rot"))
+  expect_identical(unname(attr(r$q, "labels")), c(1, 2))
+  expect_error(.extract_haven_labels(df, "x.dta"))
+  expect_no_error(.extract_haven_labels(r, "x.dta"))
+  # a value-label code that is text
+  df2 <- data.frame(s = c("a", "b"))
+  attr(df2$s, "labels") <- stats::setNames(c("a", latin1(as.raw(0xfc), charToRaw("b"))), c("A", "B"))
+  expect_identical(unname(attr(.utf8_repair_df(df2)$s, "labels")), c("a", "\u00fcb"))
+})
+
+test_that("data_read_head keeps SPSS's codes for missing values of a column in an .rds tibble", {
+  skip_if_not_installed("haven")
+  skip_if_not_installed("tibble")
+  d <- tibble::tibble(q = haven::labelled_spss(c(1, 2, 99), labels = c(yes = 1, no = 2, missing = 99),
+                                               na_values = 99, label = "Question"))
+  rds <- withr::local_tempfile(fileext = ".rds")
+  saveRDS(d, rds)
+  df <- data_read_head(rds, n_rows = 2)
+  expect_s3_class(df$q, "haven_labelled_spss")
+  expect_identical(attr(df$q, "na_values"), 99)
+  expect_identical(attr(df$q, "label"), "Question")
+  expect_length(attr(df$q, "labels"), 3)
+})
+
+test_that("an .xlsx with text cells without a value is read from a repaired copy (PsyArXiv mqyu2_v3)", {
+  # readxl crashes R on a cell marked as an entry of the table of texts that
+  # holds no value (only a formula, or nothing), as LIONESS writes them
+  skip_if_not_installed("readxl")
+  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("zip")
+  tmp <- withr::local_tempdir()
+  x <- file.path(tmp, "ok.xlsx")
+  openxlsx::write.xlsx(data.frame(a = 1:3, b = c("p", "q", "r")), x)
+  expect_identical(.xlsx_safe_path(x), x)
+
+  dir <- file.path(tmp, "unz")
+  utils::unzip(x, exdir = dir)
+  sh <- file.path(dir, "xl/worksheets/sheet1.xml")
+  s <- readChar(sh, file.size(sh), useBytes = TRUE)
+  s <- sub('(<c r="B3"[^>]*t="s"[^>]*>)<v>[0-9]+</v>(</c>)', "\\1<f>A3</f>\\2", s, perl = TRUE)
+  s <- sub('(<c r="B4"[^>]*t="s"[^>]*)><v>[0-9]+</v></c>', "\\1/>", s, perl = TRUE)
+  expect_match(s, '<c r="B3"[^>]*t="s"[^>]*><f>A3</f></c>', perl = TRUE)
+  expect_match(s, '<c r="B4"[^>]*t="s"[^>]*/>', perl = TRUE)
+  writeChar(s, sh, eos = NULL, useBytes = TRUE)
+  bad <- file.path(tmp, "bad.xlsx")
+  zip::zipr(bad, list.files(dir, full.names = TRUE, all.files = TRUE, no.. = TRUE))
+
+  fixed <- .xlsx_safe_path(bad)
+  expect_false(identical(fixed, bad))
+  expect_identical(.xlsx_safe_path(bad), fixed)
+  df <- data_read_head(bad, n_rows = Inf)
+  expect_equal(df$a, c(1, 2, 3))
+  expect_identical(df$b, c("p", NA, NA))
+})
+
 test_that("data_read_head reads an .rds file made with save() (Lakens/tue_datamanager_check#5, item 3)", {
   d <- data.frame(x = 1:3, y = c("p", "q", "r"))
   ws <- withr::local_tempfile(fileext = ".rds")

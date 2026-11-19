@@ -724,11 +724,14 @@ zenodo_file_download <- function(zenodo_id,
     }, error = \(e) FALSE)
 
     if (isTRUE(dl_ok)) {
-      entries <- tryCatch(utils::unzip(zip_path, list = TRUE), error = \(e) NULL)
-      if (!is.null(entries) && nrow(entries) > 0) {
-        extract_dir <- file.path(temppath, "extracted")
-        dir.create(extract_dir)
-        tryCatch(utils::unzip(zip_path, exdir = extract_dir), error = \(e) NULL)
+      # a name in the old DOS characters (CP437) stopped a whole-zip
+      # utils::unzip() on Windows after writing no file, so every file was
+      # downloaded again one by one (#680); .unzip_all() takes such a member
+      # out by its position. A file it cannot unpack is still downloaded on
+      # its own below.
+      extract_dir <- file.path(temppath, "extracted")
+      unpacked <- .unzip_all(zip_path, extract_dir)
+      if (!is.null(unpacked) && nrow(unpacked) > 0) {
         for (i in seq_len(n)) {
           src <- file.path(extract_dir, files$key[[i]])
           if (file.exists(src) && file.size(src) > 0) {

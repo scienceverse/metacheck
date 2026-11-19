@@ -80,6 +80,27 @@ test_that(".key_remove() replaces each key in a result, in tables and names too"
   expect_identical(.key_remove(plain), plain)
 })
 
+test_that(".key_remove() takes time in step with the size of a result (#685)", {
+  k <- fake_keys(1)
+  # 100,000 small texts, as in a parsed statistics output, one keyword without
+  # a key and one key. It took about 6 minutes before (time in the square of
+  # the number of texts) and takes a few seconds now; the limit is generous
+  # for a slow machine.
+  res <- lapply(seq_len(50000), function(i) list(stat = paste0("t(", i, ") = ", i / 7), p = paste0("p = ", i)))
+  res[[1]]$note <- "the token and api_key"
+  res[[7]]$note <- c(paste("key", k[["github-pat"]]), "p = 1")
+  t <- system.time(out <- .key_remove(res))[["elapsed"]]
+  expect_lt(t, 60)
+  expect_equal(attr(out, "keys_removed"), 1L)
+  expect_equal(out[[7]]$note, c("key [key removed]", "p = 1"))
+  expect_identical(out[-7], res[-7])
+  # two factor levels that differ only in their key become one level
+  f <- factor(c(paste("token", k[["github-pat"]]), paste("token", sub(".$", "Q", k[["github-pat"]])), "x"))
+  out <- .key_remove(list(f = f))
+  expect_equal(levels(out$f), c("token [key removed]", "x"))
+  expect_equal(as.character(out$f), c("token [key removed]", "token [key removed]", "x"))
+})
+
 test_that("module_run() removes a key from any module's result", {
   k <- fake_keys(4)[["openrouter-api-key"]]
   d <- withr::local_tempdir()

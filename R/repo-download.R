@@ -179,7 +179,105 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Both requests go through .auth_for_url(): Dryad answers 401 to an
 # unauthenticated request on ANY byte-touching endpoint (verified live
 # 2026-08-16, see .dryad_headers()'s own comment).
+# The report section and summary sentence for files whose download failed
+# (#667). Until 0.4.4.12 a failure was said only in a message during the run,
+# not in the report or the results, so a fault that lost the same kind of file
+# in every repository (an address with a space: about 2,070 data and code
+# files in 45 papers of the PsyArXiv, medRxiv and BES runs) went unnoticed for
+# three months. `failed` is download_repo_files()'s attribute "failed"
+# (repo_url, file_name, error). Returns list(report, summary), NULL when none.
+.download_failed_text <- function(failed) {
+  if (!is.data.frame(failed) || !nrow(failed)) return(list(report = NULL, summary = NULL))
+  failed <- failed[!duplicated(paste(failed$repo_url, failed$file_name)), , drop = FALSE]
+  n <- nrow(failed)
+  # the first line that says why: httr2 starts with "Failed to perform HTTP
+  # request." and "Caused by error in ...:", and gives the reason after them
+  err <- vapply(strsplit(as.character(failed$error), "\n", fixed = TRUE), function(l) {
+    l <- trimws(sub("^! ", "", l))
+    keep <- l[nzchar(l) & !grepl("^Failed to perform HTTP request\\.?$|^Caused by error", l)]
+    sub(":$", "", if (length(keep)) keep[[1]] else l[[1]])
+  }, character(1))
+  kinds <- sort(table(err), decreasing = TRUE)
+  why <- paste(sprintf("%s (%d)", names(kinds), as.integer(kinds))[seq_len(min(3, length(kinds)))],
+               collapse = "; ")
+  shown <- utils::head(failed$file_name, 10)
+  report <- c(
+    "#### Files that could not be downloaded",
+    sprintf(paste("%d file%s could not be downloaded, so the checks did not see %s: %s%s.",
+                  "The reason%s given: %s. Re-running the check fetches only the missing files."),
+            n, plural(n), plural(n, "it", "them"), paste(sprintf("`%s`", shown), collapse = ", "),
+            if (n > 10) sprintf(", and %d more", n - 10) else "", plural(length(kinds), "", "s"), why))
+  summary <- sprintf("%d file%s could not be downloaded, so the checks did not see %s.",
+                     n, plural(n), plural(n, "it", "them"))
+  list(report = report, summary = summary)
+}
+
+# The report section and summary sentence for repositories repo_check could
+# not list in full (#681), for code_check and data_check: OSF projects listed
+# only in part (repo_check's `partial_repos`, with `reason` "request limit"
+# or "refused by the OSF"), and repositories that could not be listed at all
+# (its `gated_repos`, with `repo_error`) and have no files in `repo_urls`,
+# the repositories of the files the check has; repo_check's own report names
+# the same ones as "could not be checked". Until 0.4.4.22 these checks said
+# nothing of either, so a check on part of the files read as a check on all
+# of them: code_check reported 13 files as missing from a repository whose
+# folders holding them the OSF had refused to list. Returns list(report,
+# summary), NULL when there is none.
+.repos_not_listed_text <- function(partial, gated, repo_urls) {
+  none <- list(report = NULL, summary = NULL)
+  if (!is.data.frame(partial) || !"repo_url" %in% names(partial)) partial <- NULL
+  if (!is.data.frame(gated) || !"repo_url" %in% names(gated)) gated <- NULL
+  if (!is.null(partial)) partial <- partial[!duplicated(partial$repo_url), , drop = FALSE]
+  if (!is.null(gated)) {
+    gated <- gated[!is.na(gated$repo_url) & !gated$repo_url %in% repo_urls &
+                     !gated$repo_url %in% partial$repo_url, , drop = FALSE]
+    gated <- gated[!duplicated(gated$repo_url), , drop = FALSE]
+  }
+  n_part <- if (is.null(partial)) 0L else nrow(partial)
+  n_gated <- if (is.null(gated)) 0L else nrow(gated)
+  if (n_part + n_gated == 0) return(none)
+
+  part_line <- part_why <- character(0)
+  if (n_part > 0) {
+    refused <- (partial$reason %||% rep(NA_character_, n_part)) %in% "refused by the OSF"
+    n <- partial$files_listed %||% rep(NA_integer_, n_part)
+    listed <- ifelse(is.na(n), "", sprintf(" (%d file%s listed)", n, ifelse(n == 1, "", "s")))
+    part_line <- ifelse(refused,
+      sprintf("- %s: the OSF refused part of the listing, also when asked again%s. Run the check again later.",
+              partial$repo_url, listed),
+      sprintf("- %s: the listing stopped at the request limit%s. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
+              partial$repo_url, listed))
+    part_why <- sprintf("%s (%s)", partial$repo_url,
+                        ifelse(refused, "the OSF refused part of the listing",
+                               "listed in part: the request limit was reached"))
+  }
+  gated_line <- gated_why <- character(0)
+  if (n_gated > 0) {
+    err <- as.character(gated$repo_error %||% rep(NA_character_, n_gated))
+    err[is.na(err) | !nzchar(err)] <- "no reason given"
+    gated_line <- sprintf("- %s: could not be listed (%s), so none of its files were checked.",
+                          gated$repo_url, err)
+    gated_why <- sprintf("%s (could not be listed: %s)", gated$repo_url, err)
+  }
+  n_all <- n_part + n_gated
+  report <- c(
+    "#### Repositories not listed in full",
+    paste("The checks below did not see every file of",
+          if (n_all == 1) "this repository, because it" else "these repositories, because they",
+          "could not be listed in full:"),
+    part_line, gated_line)
+  summary <- sprintf(
+    "We could not list every file of %d %s, so the checks did not see all %s files: %s.",
+    n_all, plural(n_all, "repository", "repositories"), if (n_all == 1) "its" else "their",
+    paste(c(part_why, gated_why), collapse = "; "))
+  list(report = report, summary = summary)
+}
+
 .remote_size <- function(url) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   size <- .head_size(url)
   if (is.na(size)) size <- .range_size(url)
   size
@@ -261,6 +359,96 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   if (length(total) > 0) return(max(total))
   est <- sum(as.numeric(files$file_size[files$repo_url == repo]), na.rm = TRUE)
   if (est > 0) est else NA_real_
+}
+
+# Estimated size (bytes) of the archive of the storage that rows `idx` belong
+# to: the storage's own listed total (repo_check's `storage_size`, which does
+# not depend on `files` holding every row), else the sum of these rows' sizes,
+# or NA when neither is known (#675).
+.storage_size_estimate <- function(files, idx) {
+  total <- suppressWarnings(as.numeric(files$storage_size[idx]))
+  total <- total[is.finite(total) & total > 0]
+  if (length(total) > 0) return(max(total))
+  est <- sum(as.numeric(files$file_size[idx]), na.rm = TRUE)
+  if (est > 0) est else NA_real_
+}
+
+# Whether the archive of a storage is worth downloading for the files wanted
+# from it (#675): it must save requests (more than 50 files wanted, or at least
+# half of the storage's files) without bringing much data nobody asked for (at
+# most twice the bytes of the wanted files): counting files alone would take
+# a storage's whole archive for 51 small files beside one large file nobody
+# wants. Wanted files of unknown size, or an archive of unknown size, are
+# fetched one by one.
+.archive_worth_it <- function(n_wanted, record_n, wanted_bytes, archive_bytes) {
+  (n_wanted > 50L || record_n <= 2L * n_wanted) &&
+    isTRUE(is.finite(archive_bytes)) && isTRUE(wanted_bytes > 0) &&
+    archive_bytes <= 2 * wanted_bytes
+}
+
+# Why the archive of the storage that rows `idx` belong to is not downloaded
+# for them, or NA when it is (#675): refused on size (.archive_size_refusal())
+# or not worth it (.archive_worth_it()). Used for the storages of an OSF
+# project, whose size and number of files repo_check records
+# (`storage_size`, `storage_n`; else those of the rows passed).
+.storage_archive_skip <- function(files, idx, max_download_size, mb) {
+  archive_bytes <- .storage_size_estimate(files, idx)
+  size_why <- .archive_size_refusal(archive_bytes, max_download_size, mb)
+  if (!is.na(size_why)) return(size_why)
+  n_wanted <- length(idx)
+  record_n <- suppressWarnings(max(as.numeric(files$storage_n[idx]), na.rm = TRUE))
+  if (!is.finite(record_n)) record_n <- n_wanted
+  wanted_bytes <- sum(as.numeric(files$file_size[idx]), na.rm = TRUE)
+  if (.archive_worth_it(n_wanted, record_n, wanted_bytes, archive_bytes))
+    return(NA_character_)
+  sprintf("the archive holds %s files (%s MB) for %d wanted (%s MB)",
+          format(record_n, big.mark = ","), format(round(archive_bytes / mb, 1)),
+          n_wanted, format(round(wanted_bytes / mb, 1)))
+}
+
+# Each OSF file's storage (its component and provider, such as osfstorage or
+# a linked GitHub repository): its listed total size (`storage_size`, NA when
+# no size is listed) and number of files (`storage_n`). download_repo_files()
+# decides from these whether to fetch the storage as one archive (#675); it
+# is passed only the files a check wants, so it cannot count the storage
+# itself. A file listed twice (through a registration and its project) counts
+# once. A table without `osf_node` and `provider` is returned as it is.
+.osf_storage_totals <- function(files) {
+  if (!is.data.frame(files) || !nrow(files) ||
+      !all(c("osf_node", "provider", "file_size") %in% names(files))) return(files)
+  key <- ifelse(is.na(files$osf_node) | is.na(files$provider), NA_character_,
+                paste(files$osf_node, files$provider))
+  use <- !is.na(key) & !duplicated(paste(key, files$file_path))
+  size <- suppressWarnings(as.numeric(files$file_size))
+  total <- tapply(size[use], key[use], function(s) if (any(!is.na(s))) sum(s, na.rm = TRUE) else NA_real_)
+  n <- tapply(key[use], key[use], length)
+  files$storage_size <- unname(as.numeric(total[key]))
+  files$storage_n <- unname(as.integer(n[key]))
+  files
+}
+
+# The GitHub repository ("owner/repo"), branch and path in the repository of
+# each file address on raw.githubusercontent.com, as GitHub's listing gives
+# them (.osf_github_files(), github_tree_files()); NA for any other address.
+# The path is decoded, as the address encodes it (#667). A branch with a "/"
+# in its name cannot be told from the path here; its archive then matches no
+# file, and the files are fetched one by one.
+.github_raw_parts <- function(urls) {
+  urls <- as.character(urls %||% character(0))
+  pat <- "^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
+  hit <- !is.na(urls) & grepl(pat, urls, ignore.case = TRUE)
+  # every column as long as `urls`: a single NA for ref and path gave one
+  # row when there were no urls, and data.frame() stopped with "differing
+  # number of rows: 0, 1"
+  none <- rep(NA_character_, length(urls))
+  out <- data.frame(repo = none, ref = none, path = none)
+  if (any(hit)) {
+    m <- regmatches(urls[hit], regexec(pat, urls[hit], ignore.case = TRUE))
+    out$repo[hit] <- vapply(m, \(x) paste(x[2], x[3], sep = "/"), "")
+    out$ref[hit]  <- vapply(m, \(x) utils::URLdecode(x[4]), "")
+    out$path[hit] <- vapply(m, \(x) utils::URLdecode(x[5]), "")
+  }
+  out
 }
 
 # Why a whole-archive download is refused on size, or NA when it is allowed:
@@ -807,6 +995,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # attributes over_cap = TRUE and bytes (how many had arrived).
 .download_capped <- function(url, dest, max_bytes = Inf, timeout_s = 120,
                              skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   final <- dest
   dest <- paste0(final, ".part")
@@ -863,6 +1055,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 
 .download_one <- function(url, dest, skip_on_api_limit = FALSE,
                           expected_bytes = NA_real_) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   # Written to "<dest>.part" and renamed when complete: an interrupted
   # download left a partial file at `dest`, and an empty response a 0-byte
@@ -993,6 +1189,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # re-run after the host's quota resets is expected to succeed).
 .download_many_parallel <- function(urls, dests, expected_size = NA_real_,
                                     .retried = FALSE, skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(urls) & grepl("^https?://", urls)
+  urls[web] <- utils::URLencode(urls[web])
   if (length(urls) == 0) return(character(0))
   # Each file is written to "<dest>.part" and renamed when complete, as in
   # .download_one() (U75, U203).
@@ -1192,7 +1392,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                                    timeout_s = 120,
                                    max_bytes = Inf,
                                    skip_on_api_limit = FALSE,
-                                   expected_bytes = NA_real_) {
+                                   expected_bytes = NA_real_,
+                                   rel_paths = NULL) {
+  # rel_paths: each row's path inside the archive, one per row_idx, when it is
+  # not the row's file_path (a GitHub repository behind an OSF project, whose
+  # path is read from the file's address, #675)
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(zip_url) & grepl("^https?://", zip_url)
+  zip_url[web] <- utils::URLencode(zip_url[web])
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
 
@@ -1311,7 +1519,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     return(files)
   }
 
-  entries <- tryCatch(utils::unzip(zip_tmp, list = TRUE), error = \(e) NULL)
+  # names in valid UTF-8: a name stored in the old DOS characters stopped
+  # gsub() below, and could not match the listed path (see .unzip_list())
+  entries <- .unzip_list(zip_tmp)
   if (is.null(entries) || nrow(entries) == 0) return(files)
 
   zip_entries  <- entries$Name
@@ -1323,7 +1533,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 
   # without a file_path column the paths were empty, nothing matched, and
   # the archive was downloaded for nothing (U73)
-  rel <- (files$file_path %||% files$file_name)[row_idx]
+  rel <- if (length(rel_paths) == length(row_idx)) rel_paths
+         else (files$file_path %||% files$file_name)[row_idx]
   empty_rel <- is.na(rel) | !nzchar(rel %||% "")
   rel[empty_rel] <- files$file_name[row_idx][empty_rel]
   rel <- gsub("\\\\", "/", rel)
@@ -1341,13 +1552,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   extract_dir <- tempfile(pattern = "repo-zip-")
   dir.create(extract_dir)
   on.exit(unlink(extract_dir, recursive = TRUE), add = TRUE)
-  tryCatch(
-    utils::unzip(zip_tmp, files = to_extract, exdir = extract_dir),
-    error = \(e) NULL)
+  # a member stored under the old DOS characters is taken out by its position
+  # (.unzip_all()); one that cannot be unpacked at all is named here, and its
+  # row is left for the file-by-file download
+  unpacked <- .unzip_all(zip_tmp, extract_dir, files = unique(to_extract))
+  if (is.null(unpacked)) return(files)
+  note <- .unzip_failed_note(unpacked, zip_url)
+  if (!is.null(note)) message(note, " (downloaded file by file instead)")
 
   for (j in seq_along(row_idx)) {
     if (is.na(matched_entry[j])) next
-    src  <- file.path(extract_dir, matched_entry[j])
+    src  <- unpacked$path[match(matched_entry[j], unpacked$name)]
+    if (is.na(src)) next
     dest <- files$.cache_path[row_idx[j]]
     # an empty member is an empty file, as the archive itself states (#575, item 5)
     empty_member <- isTRUE(entries$Length[match(matched_entry[j], entries$Name)] == 0)
@@ -1394,8 +1610,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                         "wav|mp3|flac|ogg|m4a|aac|mp4|avi|mov|mkv|wmv|webm|",
                         "pdf|docx?|pptx?|odt|odp|key|pages)$"),
                  files$file_name %||% "", ignore.case = TRUE)
+  # a GitHub repository linked to an OSF project is fetched as one archive too,
+  # known by its files' addresses (#675)
   whole_archive <- grepl("github\\.com|gitlab\\.com|datadryad\\.org",
-                         files$repo_url %||% "", ignore.case = TRUE)
+                         files$repo_url %||% "", ignore.case = TRUE) |
+    grepl("^https?://raw\\.githubusercontent\\.com/", files$file_url %||% "",
+          ignore.case = TRUE)
   (!media | whole_archive) & !.in_renv_folder(files)
 }
 
@@ -1406,7 +1626,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #' persistent on-disk cache, and fills in `file_location` for every file it
 #' successfully retrieves. For Dryad (`stash:download` endpoint), GitHub
 #' (zipball) and GitLab (`archive.zip`), a whole-repo archive download is used
-#' instead of one HTTP request per file. None of these archives reports its
+#' instead of one HTTP request per file. A GitHub repository linked to an OSF
+#' project, and each OSF component's OSF Storage (`?zip=`), are downloaded as
+#' one archive when more than 50 of their files, or at least half of them, are
+#' wanted and the archive is at most twice the size of the wanted files (the
+#' component and the storage's size come from `repo_check()`'s `osf_node`,
+#' `storage_size` and `storage_n`). None of these archives reports its
 #' size in advance, so the size is estimated from the listed file sizes: an
 #' archive with no listed sizes, or an estimate above twice
 #' `max_download_size`, is not used, and a download that grows past twice
@@ -2189,6 +2414,96 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = TRUE,
                                       req_func = .gitlab_config,
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = archive_cap,
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
+    # ── GitHub storage behind an OSF project: API zipball (#675) ────────────
+    # A GitHub repository linked to an OSF component is listed through GitHub
+    # (.osf_github_files()), so each file's address names the repository and
+    # branch (raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>), but
+    # its repo_url is the OSF project the paper links, which the GitHub loop
+    # above does not take. Such files were fetched one request each: 10,313
+    # for osf.io/9526a, at about 80 a minute. They are fetched as the
+    # repository's archive, matched by the path in each address, when the
+    # archive is worth it (.storage_archive_skip(): enough files wanted, and
+    # not much more data than they hold), else one by one.
+    gh_raw <- .github_raw_parts(files$file_url[remaining])
+    behind <- !is.na(gh_raw$repo) &
+      !grepl("github\\.com", files$repo_url[remaining] %||% "", ignore.case = TRUE)
+    gh_key <- paste(gh_raw$repo, gh_raw$ref, sep = "@")
+    for (key in unique(gh_key[behind])) {
+      sel <- which(behind & gh_key == key)
+      ridx <- remaining[sel]
+      repo_name <- gh_raw$repo[sel[1]]
+      zip_url <- sprintf("https://api.github.com/repos/%s/zipball/%s", repo_name,
+                         utils::URLencode(gh_raw$ref[sel[1]], reserved = TRUE))
+      label <- sprintf("github.com/%s (linked to %s)", repo_name, files$repo_url[ridx[1]])
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      skip_why <- .storage_archive_skip(files, ridx, max_download_size, mb)
+      if (!is.na(skip_why)) {
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          label, skip_why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+      # see the GitHub loop above for why the locations are cleared
+      files$file_location[ridx] <- NA_character_
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      label, length(ridx), plural(length(ridx))))
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = TRUE,
+                                      req_func = .github_config,
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = archive_cap,
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes,
+                                      rel_paths = gh_raw$path[sel])
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
+    # ── OSF Storage: one zip per component (#675) ──────────────────────────
+    # The OSF builds a zip of one component's OSF Storage on request
+    # (files.osf.io/v1/resources/<component>/providers/osfstorage/?zip=), with
+    # the files under their paths in that storage and no folder above them
+    # (checked on osf.io/9526a, 2026-11-18). It was removed (#424) because it
+    # gives no size in advance; it now follows the rule above, with the size
+    # repo_check listed for the storage (`storage_size`, which includes any zip
+    # file in it, though its members are fetched by byte range). The zip holds
+    # only that component's storage, not its components or other storages, so
+    # each component is asked for on its own, when the archive is worth it
+    # (.storage_archive_skip(): more than 50 of the storage's files wanted or
+    # at least half of them, and an archive at most twice the size of the
+    # wanted files): data_check wanting 3 data files of a storage of 500
+    # fetches the 3. Rows of a listing made before repo_check recorded the
+    # component (`osf_node`) are fetched one by one.
+    osf_node <- files$osf_node %||% rep(NA_character_, nrow(files))
+    osf_zip_rows <- remaining[!is.na(osf_node[remaining]) &
+                                vapply(remaining, is_osfstorage, logical(1))]
+    for (node in unique(osf_node[osf_zip_rows])) {
+      ridx <- osf_zip_rows[osf_node[osf_zip_rows] == node]
+      n_wanted <- length(ridx)
+      label <- sprintf("OSF Storage of osf.io/%s", node)
+      skip_why <- .storage_archive_skip(files, ridx, max_download_size, mb)
+      if (!is.na(skip_why)) {
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          label, skip_why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+      zip_url <- sprintf("https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=",
+                         node)
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      # see the GitHub loop above for why the locations are cleared
+      files$file_location[ridx] <- NA_character_
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      label, n_wanted, plural(n_wanted)))
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = FALSE,
+                                      req_func = .osf_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = archive_cap,
                                       skip_on_api_limit = skip_on_api_limit,

@@ -790,10 +790,13 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
 #' repository that happens to bundle a vendored copy of someone else's
 #' package alongside the study's own files (here the vendored package's
 #' DESCRIPTION/NAMESPACE sits alongside the study's own real data/code, so
-#' only the vendored package's own files are excluded). A package detected in
-#' a NESTED subfolder is always excluded regardless of this check, since by
-#' construction there is always an "outside" for a nested package (at
-#' minimum, the parent folder itself).
+#' only the vendored package's own files are excluded). The same check holds
+#' for a package in a subfolder: a paper's own package can sit one folder
+#' down with nothing beside it ("good 2/" in github.com/afernandez1303/good,
+#' 10.1111/2041-210X.14387, #505), and leaving it out left the paper with no
+#' files at all. The check is made once for the repository: files of any
+#' package do not count as content outside the packages, so a repository of
+#' nothing but packages keeps all of them.
 #'
 #' @param file_path a character vector of repo-relative file paths (as found
 #'   in `all_files$file_path`, all belonging to the same `repo_url`)
@@ -801,8 +804,8 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
 #' @returns a logical vector, same length as `file_path`: `TRUE` for every
 #'   file that is part of a detected R package (the `DESCRIPTION`/`NAMESPACE`
 #'   themselves, plus their standard package subdirectories) AND that package
-#'   is being excluded (root-level packages are only excluded when real
-#'   content survives outside them; nested packages are always excluded).
+#'   is being excluded (packages are only excluded when real data or code is
+#'   in the repository outside every package, wherever the package sits).
 #' @keywords internal
 .is_r_package_file <- function(file_path) {
   n <- length(file_path)
@@ -847,30 +850,30 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
   owner <- vapply(seq_len(n), member_of, character(1))
   is_pkg_member <- known & !is.na(owner)
 
-  for (pd in pkg_dirs) {
-    if (!identical(pd, ".")) next  # nested packages are always excluded
-    outside_idx <- which(!is_pkg_member & known)
-    # an RStudio project marker (e.g. "BaBA.Rproj") classifies as "code" by
-    # extension alone under data_classify_files(), but it is packaging
-    # config, not a real analysis script -- exclude it here rather than loosen
-    # the general-purpose classifier just for this one packaging artifact.
-    outside_idx <- outside_idx[!grepl("\\.rproj$", basename(path[outside_idx]), ignore.case = TRUE)]
-    # The same holds for the configuration files of a package's build, test
-    # and website services (Travis, AppVeyor, GitHub Actions, codecov,
-    # pkgdown, ...): .yml files classify as "code" by extension, so a
-    # .travis.yml or codecov.yml next to a root-level package made the
-    # package look vendored and discarded all of its real files (#469).
-    # Matched by exact name or folder, not every .yml: a paper's own
-    # config.yml can be real analysis settings. These files are only left
-    # out of this decision; they stay in the file list.
-    outside_idx <- outside_idx[!.is_r_package_service_file(path[outside_idx])]
-    outside_types <- data_classify_files(basename(path[outside_idx]), path[outside_idx])
-    has_real_content <- any(outside_types %in% c("data", "code"))
-    if (!has_real_content) {
-      # nothing data/code-shaped survives outside this root-level package:
-      # the package IS the deposit, so do not exclude any of its files.
-      is_pkg_member[owner == pd & !is.na(owner)] <- FALSE
-    }
+  outside_idx <- which(!is_pkg_member & known)
+  # an RStudio project marker (e.g. "BaBA.Rproj") classifies as "code" by
+  # extension alone under data_classify_files(), but it is packaging
+  # config, not a real analysis script -- exclude it here rather than loosen
+  # the general-purpose classifier just for this one packaging artifact.
+  outside_idx <- outside_idx[!grepl("\\.rproj$", basename(path[outside_idx]), ignore.case = TRUE)]
+  # The same holds for the configuration files of a package's build, test
+  # and website services (Travis, AppVeyor, GitHub Actions, codecov,
+  # pkgdown, ...): .yml files classify as "code" by extension, so a
+  # .travis.yml or codecov.yml next to a root-level package made the
+  # package look vendored and discarded all of its real files (#469).
+  # Matched by exact name or folder, not every .yml: a paper's own
+  # config.yml can be real analysis settings. These files are only left
+  # out of this decision; they stay in the file list.
+  outside_idx <- outside_idx[!.is_r_package_service_file(path[outside_idx])]
+  # A README is not data or code, also when written as R Markdown (the
+  # README.Rmd from which a package's README.md is made classifies as code
+  # by its extension); repo_check counts it as a README (.is_readme_name()).
+  outside_idx <- outside_idx[!.is_readme_name(basename(path[outside_idx]))]
+  outside_types <- data_classify_files(basename(path[outside_idx]), path[outside_idx])
+  if (!any(outside_types %in% c("data", "code"))) {
+    # nothing data/code-shaped outside the packages, wherever they sit: the
+    # packages ARE the deposit, so none of their files is excluded (#505)
+    is_pkg_member[] <- FALSE
   }
 
   is_pkg_member
@@ -1439,26 +1442,71 @@ manifest_merge <- function(path, patch) {
 
   batches <- split(seq_len(n), ceiling(seq_len(n) / batch_size))
   model_used <- NA_character_
-  for (rows in batches) {
+  unanswered <- integer(0)   # items no request (or retry) gave a usable value
+
+  # The answer's length limit: the caller's own, else the session's, else
+  # llm()'s default. A cut-off answer is asked again with four times it (#673):
+  # a reasoning model (gpt-oss) can spend the whole limit reasoning before it
+  # answers, while the answer for 50 items needs about a fifth of 4,096.
+  limit <- params$max_tokens %||% llm_max_tokens() %||% 4096
+  raised <- utils::modifyList(params, list(max_tokens = limit * 4))
+
+  # Ask about one batch of items; returns the items left without a usable
+  # value, and whether the answer was cut off at the length limit. llm()'s own
+  # note on a failed answer is not shown: the item is asked again, and what is
+  # still unanswered at the end is counted (attribute "llm_unanswered") and
+  # reported once below.
+  ask <- function(rows, prm) {
     listing <- paste(seq_along(rows), item_texts[rows], sep = ". ",
                      collapse = "\n")
     resp <- tryCatch(
-      llm(text = data.frame(text = listing), text_col = "text",
-          system_prompt = system_prompt, type = type_spec, model = model,
-          params = params, phase = phase),
+      withCallingHandlers(
+        llm(text = data.frame(text = listing), text_col = "text",
+            system_prompt = system_prompt, type = type_spec, model = model,
+            params = prm, phase = phase),
+        warning = function(w) {
+          if (startsWith(conditionMessage(w), "Note (not fatal)"))
+            invokeRestart("muffleWarning")
+        }),
       error = function(e) NULL
     )
+    cut <- is.data.frame(resp) && ".error_msg" %in% names(resp) &&
+      any(grepl("max_tokens", resp$.error_msg, fixed = TRUE))
     resp <- .strip_llm_wrapper(resp, "results")
     if (is.null(resp) || nrow(resp) == 0 ||
-        !all(c("index", "value") %in% names(resp))) next
-    if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+        !all(c("index", "value") %in% names(resp)))
+      return(list(left = rows, cut = cut))
+    if (is.na(model_used)) model_used <<- attr(resp, "llm")$model %||% NA_character_
     idx <- suppressWarnings(as.integer(resp$index))
     val <- tolower(trimws(as.character(resp$value)))
     good <- !is.na(idx) & idx >= 1 & idx <= length(rows) & nzchar(val)
     if (!is.null(valid)) good <- good & val %in% valid
-    if (any(good)) out[rows[idx[good]]] <- val[good]
+    if (any(good)) out[rows[idx[good]]] <<- val[good]
+    list(left = rows[setdiff(seq_along(rows), idx[good])], cut = cut)
   }
+
+  for (rows in batches) {
+    a <- ask(rows, params)
+    # cut off at the length limit: once more with the higher limit, unless the
+    # caller set the limit itself
+    if (a$cut && length(a$left) && is.null(params$max_tokens))
+      a <- ask(a$left, raised)
+    left <- a$left
+    # ONE retry at half the batch size, as .llm_assign_groups() does: a
+    # shorter list is less to reason about and a shorter answer
+    if (length(left) > 1L) {
+      halves <- split(left, ceiling(seq_along(left) / ceiling(length(left) / 2)))
+      left <- unlist(lapply(halves, function(h) ask(h, params)$left), use.names = FALSE)
+    }
+    unanswered <- c(unanswered, left)
+  }
+  if (length(unanswered))
+    warning(sprintf("%s: %d of %d item%s got no usable answer from the model, also when asked again in smaller batches, and %s left to the rules.",
+                    phase %||% "LLM classification", length(unanswered), n, plural(n),
+                    if (length(unanswered) == 1) "was" else "were"),
+            call. = FALSE)
   attr(out, "llm_model") <- model_used
+  attr(out, "llm_unanswered") <- sort(unique(as.integer(unanswered)))
   out
 }
 
@@ -1617,7 +1665,7 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
   # something that doesn't survive a size check even though it "exists").
   sz <- file.size(path)
   if (is.na(sz) || sz > max_bytes) return(character(0))   # not a script
-  txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
+  txt <- tryCatch(paste(.utf8_lines(readLines(path, warn = FALSE)), collapse = "\n"),
                   error = function(e) NULL)
   if (is.null(txt) || !nzchar(txt)) return(character(0))
   # A script saved in another encoding (an older Stata .do file is often
@@ -2490,6 +2538,25 @@ txt_classify_content <- function(path) {
           repaired[names(df)[j]] <- sum(bad)
         }
       }
+      # The column's variable label and value labels (haven's "label" and
+      # "labels"): an older Stata file (version 13 and earlier) or SPSS file
+      # stores them in its own encoding, haven gives them as stored, and
+      # codebook_check searches them with text patterns, which stop on text
+      # that is not valid UTF-8 ("input string 1 is invalid")
+      lab <- attr(df[[j]], "label", exact = TRUE)
+      if (is.character(lab) && any(!validUTF8(lab)))
+        attr(df[[j]], "label") <- .utf8_lines(lab)
+      vl <- attr(df[[j]], "labels", exact = TRUE)
+      if (!is.null(vl)) {
+        nms <- names(vl)
+        bad_names <- !is.null(nms) && any(!validUTF8(nms))
+        bad_codes <- is.character(vl) && any(!validUTF8(vl))
+        if (bad_names || bad_codes) {
+          if (bad_codes) vl[] <- .utf8_lines(unname(vl))
+          if (bad_names) names(vl) <- .utf8_lines(nms)
+          attr(df[[j]], "labels") <- vl
+        }
+      }
     }
     if (length(repaired) > 0) attr(df, "utf8_repaired") <- repaired
   }
@@ -2532,6 +2599,64 @@ txt_classify_content <- function(path) {
   }, args = list(p = path), timeout = 120)), error = function(e) FALSE)
   assign(key, ok, envir = .xls_readable_cache)
   ok
+}
+
+# The path from which readxl can read an .xlsx file without crashing R.
+# readxl (1.5.0) crashes the whole R process (a memory error, which tryCatch()
+# cannot catch) on a cell marked as an entry of the file's table of texts
+# (t="s") that holds no value, only a formula or nothing: the LIONESS
+# experiment software writes such a cell for each formula of its
+# "paymentsMTurk" sheet, and PsyArXiv preprint mqyu2_v3 got no report. When a
+# sheet has such cells, the file is read from a copy in the session's
+# temporary folder in which they lose the mark, so they read as empty cells
+# and every other cell as written. Any other file, a file that cannot be
+# opened as a zip, or a session without the zip package gives the path as it
+# is. Remembered per file for the session.
+.xlsx_safe_cache <- new.env(parent = emptyenv())
+.xlsx_safe_path <- function(path) {
+  if (length(path) != 1 || is.na(path) || !grepl("\\.xlsx$", path, ignore.case = TRUE) ||
+      !file.exists(path)) return(path)
+  key <- paste(normalizePath(path, winslash = "/", mustWork = FALSE), file.mtime(path))
+  if (exists(key, envir = .xlsx_safe_cache, inherits = FALSE))
+    return(get(key, envir = .xlsx_safe_cache, inherits = FALSE))
+  out <- tryCatch(.xlsx_without_empty_text_cells(path), error = function(e) path)
+  assign(key, out, envir = .xlsx_safe_cache)
+  out
+}
+
+# A cell marked as an entry of the table of texts with no value: closed at
+# once, or holding at most a formula (see .xlsx_safe_path()). The mark is the
+# part between the two groups.
+.xlsx_empty_text_cell <- paste0(
+  '(<c\\b[^>]*?)\\st="s"',
+  '([^>]*?(?:/>|>(?:<f\\b[^>]*/>|<f\\b[^>]*>[^<]*</f>)?</c>))')
+
+# A copy of an .xlsx file without the cells of .xlsx_empty_text_cell's
+# pattern, or the path itself when no sheet has one.
+.xlsx_without_empty_text_cells <- function(path) {
+  members <- utils::unzip(path, list = TRUE)
+  sheets <- members$Name[grepl("^xl/worksheets/[^/]+\\.xml$", members$Name)]
+  read_member <- function(m) {
+    con <- unz(path, m, "rb")
+    on.exit(close(con))
+    rawToChar(readBin(con, "raw", members$Length[members$Name == m]))
+  }
+  bad <- sheets[vapply(sheets, function(m)
+    grepl(.xlsx_empty_text_cell, read_member(m), perl = TRUE, useBytes = TRUE),
+    logical(1))]
+  if (!length(bad) || !requireNamespace("zip", quietly = TRUE)) return(path)
+  dir <- tempfile("xlsx_repair_")
+  utils::unzip(path, exdir = dir)
+  for (m in bad) {
+    f <- file.path(dir, m)
+    x <- gsub(.xlsx_empty_text_cell, "\\1\\2", read_member(m), perl = TRUE,
+              useBytes = TRUE)
+    writeBin(charToRaw(x), f)
+  }
+  out <- tempfile("xlsx_repair_", fileext = ".xlsx")
+  zip::zipr(out, list.files(dir, full.names = TRUE, all.files = TRUE, no.. = TRUE))
+  unlink(dir, recursive = TRUE)
+  out
 }
 
 # haven::read_sav() reads text in the encoding the file declares. A file made
@@ -2620,6 +2745,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         if (!requireNamespace("readxl", quietly = TRUE))
           stop("The 'readxl' package is required to read Excel files.")
         if (!.xls_readable(path)) return(NULL)   # crashes the reader (see .xls_readable())
+        xpath <- .xlsx_safe_path(path)           # cells that crash readxl (see .xlsx_safe_path())
         nmax <- if (is.finite(n_rows)) n_rows else Inf
         # Suppress readxl's per-cell type-guess warnings ("Expecting numeric ...
         # got a date"): a mixed column can emit one per row (hundreds on a wide
@@ -2629,7 +2755,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # headers (...1, K...3, ...) -- we handle names ourselves -- but without printing
         # the "New names:" message on every such sheet.
         df <- suppressWarnings(as.data.frame(
-          readxl::read_excel(path, sheet = sheet %||% 1L, n_max = nmax,
+          readxl::read_excel(xpath, sheet = sheet %||% 1L, n_max = nmax,
                               .name_repair = "unique_quiet")))
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
@@ -2641,7 +2767,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # to in-memory promotion if the re-read fails.
         if (!is.null(df) && ncol(df) > 1) {
           raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
-                   readxl::read_excel(path, sheet = sheet %||% 1L,
+                   readxl::read_excel(xpath, sheet = sheet %||% 1L,
                      col_names = FALSE, n_max = 6L,
                      col_types = "text", .name_repair = "minimal")))),
                  error = function(e) NULL)
@@ -2653,7 +2779,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
               k <- prom$promoted
               nmax2 <- if (is.finite(nmax)) nmax + k else Inf
               reread <- tryCatch(suppressWarnings(as.data.frame(
-                readxl::read_excel(path, sheet = sheet %||% 1L, skip = k,
+                readxl::read_excel(xpath, sheet = sheet %||% 1L, skip = k,
                                    n_max = nmax2, .name_repair = "unique_quiet"))),
                 error = function(e) NULL)
               df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
@@ -2741,7 +2867,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
       } else {
         obj <- readRDS(path)
         if (is.data.frame(obj)) {
-          obj <- .plain_s4_columns(obj)
+          obj <- .plain_s4_columns(.plain_table(obj))
           out <- .head_keep_attrs(obj, n_rows)
           attr(out, "s4_converted") <- attr(obj, "s4_converted")
           out
@@ -2787,6 +2913,77 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
   length(magic) == 4 && grepl("^RD[XAB][23]$", rawToChar(magic))
 }
 
+# A table from an .rds or .RData file as a plain data frame. These files can
+# hold a table made by any R package, with that package's classes and objects
+# still attached, and R functions that data_check uses later act on those
+# classes: a column marked "matrix" that is a plain row of numbers made
+# unique() stop in data_is_manifest() (loo's model comparison, PsyArXiv
+# nm3wd_v1); a data.table date column ("IDate") stored as decimal numbers made
+# the report's preview stop (v2x3b_v4); a marginaleffects table carrying its
+# fitted brms model made the preview need the rstan package (c3skb_v4). The
+# table keeps its columns, their names and its row names, and nothing else
+# but metacheck's own note "s4_converted". Each column goes through
+# .plain_column().
+.plain_table <- function(df) {
+  if (!is.data.frame(df)) return(df)
+  # .subset2() and attr() run no method of the table's own class
+  cols <- lapply(seq_along(names(df)), function(j) .plain_column(.subset2(df, j)))
+  out <- structure(cols, names = names(df), row.names = attr(df, "row.names"),
+                   class = "data.frame")
+  attr(out, "s4_converted") <- attr(df, "s4_converted", exact = TRUE)
+  out
+}
+
+# The classes of a column that data_check reads as they are: base R's
+# factors, dates and times, and haven's labelled values (with the classes
+# these build on).
+.plain_column_classes <- c(
+  "factor", "ordered", "Date", "POSIXct", "POSIXt", "difftime", "hms",
+  "haven_labelled", "haven_labelled_spss", "labelled", "vctrs_vctr",
+  "double", "integer", "character", "logical", "numeric")
+
+# A column of a table from an .rds or .RData file, as values data_check can
+# read (see .plain_table()). A column without a class, or with only classes of
+# .plain_column_classes, is kept as it is, and so is a column of a formal (S4)
+# class, which .plain_s4_columns() handles. A date or time of another
+# package's class becomes R's own (data.table's IDate a Date), a table inside
+# a column becomes a plain table, bit64's large whole numbers become numbers
+# when bit64 is installed, and any other column becomes its plain values: a
+# number, text or list, a matrix only when it has a matrix's dimensions. A
+# column's label is kept.
+.plain_column <- function(x) {
+  cl <- oldClass(x)
+  if (is.null(cl) || isS4(x) || all(cl %in% .plain_column_classes)) return(x)
+  label <- attr(x, "label", exact = TRUE)
+  v <- if (is.data.frame(x)) {
+    .plain_table(x)
+  } else if (inherits(x, "integer64")) {
+    # its values are stored as the bits of a whole number, which read as
+    # other numbers without bit64; left as it is when bit64 is not installed
+    if (!requireNamespace("bit64", quietly = TRUE)) return(x)
+    as.double(x)
+  } else if (inherits(x, "POSIXlt")) {
+    as.POSIXct(x)
+  } else if (inherits(x, "POSIXct")) {
+    structure(as.double(unclass(x)), class = c("POSIXct", "POSIXt"),
+              tzone = attr(x, "tzone", exact = TRUE))
+  } else if (inherits(x, "Date")) {
+    structure(as.double(unclass(x)), class = "Date")
+  } else if (is.factor(x)) {
+    structure(as.integer(unclass(x)), levels = attr(x, "levels", exact = TRUE),
+              class = if (inherits(x, "ordered")) c("ordered", "factor") else "factor")
+  } else {
+    p <- unclass(x)
+    d <- attr(p, "dim", exact = TRUE)
+    dn <- attr(p, "dimnames", exact = TRUE)
+    attributes(p) <- NULL
+    if (length(d) == 2) { dim(p) <- d; dimnames(p) <- dn }
+    p
+  }
+  if (!is.null(label)) attr(v, "label") <- label
+  v
+}
+
 # A column of values of a formal (S4) class, such as lubridate's periods and
 # durations, cannot be used without the package that defines the class: R
 # loads the file, but head() and every later step stop with "unable to load
@@ -2812,15 +3009,23 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
   df
 }
 
-# The first n rows of a data frame with each column's label, value labels
-# and class kept: head() drops the label of unclassed and factor columns, and
-# a haven_labelled column keeps its labels only when vctrs is loaded, so
-# variable labels from .rds/.RData files depended on the session (U61).
+# The first n rows of a data frame with each column's attributes kept (all but
+# its names and dimensions): head() drops the label of unclassed and factor
+# columns, and a haven_labelled column keeps its labels only when vctrs is
+# loaded, so variable labels from .rds/.RData files depended on the session
+# (U61). A tibble kept them all, but a table from an .rds file is now a plain
+# data frame (.plain_table()), and SPSS's codes for missing values
+# ("na_values", "na_range") are read from these attributes.
 .head_keep_attrs <- function(df, n) {
   out <- utils::head(df, n)
-  for (j in seq_along(df)) for (a in c("label", "labels", "class")) {
-    v <- attr(df[[j]], a, exact = TRUE)
-    if (!is.null(v) && is.null(attr(out[[j]], a, exact = TRUE))) attr(out[[j]], a) <- v
+  for (j in seq_along(df)) {
+    for (a in setdiff(names(attributes(df[[j]])), c("names", "dim", "dimnames"))) {
+      v <- attr(df[[j]], a, exact = TRUE)
+      # an attribute R checks against the values (a time series' "tsp") may
+      # not fit the first rows: it is left out
+      if (is.null(attr(out[[j]], a, exact = TRUE)))
+        try(attr(out[[j]], a) <- v, silent = TRUE)
+    }
   }
   out
 }
@@ -2876,9 +3081,10 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
     "      conv[names(d)[j]] <- paste0(cl[[1]], ', from the R package ', p) }",
     "    d <- as.data.frame(d); n <- %s",
     "    df <- if (is.finite(n)) utils::head(d, n) else d",
-    "    for (j in seq_along(d)) for (a in c('label', 'labels', 'class')) {",
+    # each column's attributes, as .head_keep_attrs() keeps them
+    "    for (j in seq_along(d)) for (a in setdiff(names(attributes(d[[j]])), c('names', 'dim', 'dimnames'))) {",
     "      v <- attr(d[[j]], a, exact = TRUE)",
-    "      if (!is.null(v) && is.null(attr(df[[j]], a, exact = TRUE))) attr(df[[j]], a) <- v }",
+    "      if (is.null(attr(df[[j]], a, exact = TRUE))) try(attr(df[[j]], a) <- v, silent = TRUE) }",
     "    if (length(conv)) attr(df, 's4_converted') <- conv } }",
     # not compressed: the file is read back at once and then removed, and
     # compressing a table of 160,000 rows took 3 to 4 of the 7 seconds
@@ -2892,7 +3098,9 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
     error = function(e) NULL)
 
   if (!file.exists(out_rds)) return(NULL)
-  tryCatch(readRDS(out_rds), error = function(e) NULL)
+  # The table as a plain data frame (see .plain_table()): as.data.frame() in
+  # the separate process keeps what another package attached to it
+  tryCatch(.plain_table(readRDS(out_rds)), error = function(e) NULL)
 }
 
 # Path to the Rscript executable of the current R installation.
@@ -3971,7 +4179,7 @@ normalize_label <- function(x) {
 # ("|---|---|") whose preceding row is a codebook header, then reads rows until
 # the table ends. Returns a codebook-vars data.frame or NULL.
 .extract_markdown_codebook <- function(path, src, observed = list()) {
-  ln <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  ln <- tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
   if (is.null(ln) || !length(ln)) return(NULL)
   ln <- iconv(ln, to = "UTF-8", sub = "")
   ln[is.na(ln)] <- ""
@@ -4405,7 +4613,7 @@ normalize_label <- function(x) {
         paste(pdftools::pdf_text(path), collapse = "\n")
       },
       rtf = {
-        .strip_rtf(paste(readLines(path, warn = FALSE), collapse = "\n"))
+        .strip_rtf(paste(.utf8_lines(readLines(path, warn = FALSE)), collapse = "\n"))
       },
       odt = {
         tmp <- tempfile()
@@ -4486,7 +4694,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
         # Sniff the first non-blank character and route rather than handing a
         # perfectly structured file to the LLM as raw text.
         first <- tryCatch({
-          h <- readLines(path, n = 5L, warn = FALSE)
+          h <- .utf8_lines(readLines(path, n = 5L, warn = FALSE))
           h <- trimws(h[nzchar(trimws(h))])
           if (length(h)) substr(h[1], 1, 1) else ""
         }, error = function(e) "")
@@ -4586,14 +4794,15 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
         if (!requireNamespace("readxl", quietly = TRUE) || !.xls_readable(path)) {
           NULL
         } else {
+          xpath <- .xlsx_safe_path(path)   # cells that crash readxl (see .xlsx_safe_path())
           .extract_spreadsheet_codebook(
-            sheets = function() readxl::excel_sheets(path),
+            sheets = function() readxl::excel_sheets(xpath),
             read = function(sh, header)
               as.data.frame(if (is.na(sh))
-                readxl::read_excel(path, col_names = header,
+                readxl::read_excel(xpath, col_names = header,
                                    .name_repair = "unique_quiet")
               else
-                readxl::read_excel(path, sheet = sh, col_names = header,
+                readxl::read_excel(xpath, sheet = sh, col_names = header,
                                    .name_repair = "unique_quiet")),
             src = src, observed = observed, header_lookahead = header_lookahead,
             only = sheets)
@@ -4607,7 +4816,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
             sav      = .read_sav_any(path),
             dta      = haven::read_dta(path),
             sas7bdat = haven::read_sas(path))
-          res <- .extract_haven_labels(as.data.frame(df), src)
+          # labels in another encoding repaired (.utf8_repair_df()), as when
+          # the file is read as data
+          res <- .extract_haven_labels(.utf8_repair_df(as.data.frame(df)), src)
           if (!is.null(res)) attr(res, ".is_haven") <- TRUE
           res
         }
@@ -4684,7 +4895,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   # "PK\003\004..." to the LLM, #651).
   if (ext %in% c("xlsx", "xls", "ods", "sav", "dta", "sas7bdat", "jasp", "omv", "zip"))
     return(NULL)
-  tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
 }
 
 # -- Qualtrics survey-definition (.qsf) parsing --------------------------------
@@ -7585,7 +7796,7 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
   fields <- tryCatch(suppressWarnings({
     con <- file(path, encoding = "UTF-8-BOM")
     on.exit(close(con), add = TRUE)
-    line <- readLines(con, n = 1L, warn = FALSE)
+    line <- .utf8_lines(readLines(con, n = 1L, warn = FALSE))
     if (!length(line)) character(0) else
       scan(text = line, what = "", sep = if (ext == "iqdat") "\t" else ",",
            quote = "\"", quiet = TRUE, na.strings = character(0))

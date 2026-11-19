@@ -214,10 +214,70 @@ test_that(".llm_classify_batched drops values outside the valid set", {
     df
   }
   testthat::local_mocked_bindings(llm = fake_llm)
-  res <- metacheck:::.llm_classify_batched(
+  # asked again in halves, then counted as unanswered (#673)
+  expect_warning(res <- metacheck:::.llm_classify_batched(
     c("a", "b"), system_prompt = "p", value_desc = "v",
-    valid = c("continuous", "text"), batch_size = 50)
+    valid = c("continuous", "text"), batch_size = 50),
+    "2 of 2 items got no usable answer")
   expect_true(all(is.na(res)))   # invalid values rejected -> NA
+  expect_identical(attr(res, "llm_unanswered"), 1:2)
+})
+
+test_that(".llm_classify_batched asks again for a batch whose answer was cut off (#673)", {
+  # A batch of more than 25 items is cut off at the default length limit
+  # (`limit`), or at any limit (`long`): the batch is asked again with four
+  # times the limit, then in halves; only what is still unanswered is counted.
+  calls <- list()
+  mode <- "limit"
+  fake_llm <- function(text, text_col = "text", params = list(), ...) {
+    listing <- text[[text_col]][1]
+    n <- length(strsplit(listing, "\n", fixed = TRUE)[[1]])
+    calls[[length(calls) + 1L]] <<- list(n = n, max_tokens = params$max_tokens %||% NA)
+    fail <- switch(mode,
+                   limit = (params$max_tokens %||% 4096) <= 4096 && n > 25,
+                   long = n > 25,
+                   always = TRUE)
+    df <- if (fail) {
+      warning("Note (not fatal): 1 of 1 LLM extraction failed and was left blank", call. = FALSE)
+      data.frame(text = listing, .error = TRUE,
+                 .error_msg = "Response was truncated because it hit the `max_tokens` limit.")
+    } else {
+      data.frame(results.index = seq_len(n), results.value = rep("text", n))
+    }
+    attr(df, "llm") <- list(model = "mock")
+    df
+  }
+  testthat::local_mocked_bindings(llm = fake_llm)
+  withr::local_options(metacheck.llm_max_tokens = NULL)
+  items <- rep("item", 120)   # batches of 50, 50 and 20
+  classify <- function(...) metacheck:::.llm_classify_batched(
+    items, system_prompt = "p", value_desc = "v", valid = "text", batch_size = 50, ...)
+
+  # cut off at the limit: once more with four times it, and llm()'s note is not shown
+  expect_no_warning(res <- classify())
+  expect_true(all(res == "text"))
+  expect_length(attr(res, "llm_unanswered"), 0)
+  expect_equal(vapply(calls, `[[`, 0, "n"), c(50, 50, 50, 50, 20))
+  expect_equal(vapply(calls, `[[`, 0, "max_tokens"), c(NA, 4 * 4096, NA, 4 * 4096, NA))
+
+  # a caller's own limit is not raised; the halves answer
+  calls <- list()
+  expect_no_warning(res <- classify(params = list(max_tokens = 2000)))
+  expect_true(all(res == "text"))
+  expect_true(all(vapply(calls, `[[`, 0, "max_tokens") == 2000))
+
+  # too long at any limit: the halves answer
+  mode <- "long"
+  calls <- list()
+  expect_no_warning(res <- classify())
+  expect_true(all(res == "text"))
+  expect_equal(vapply(calls, `[[`, 0, "n"), c(50, 50, 25, 25, 50, 50, 25, 25, 20))
+
+  # never answered: every item counted, with one warning
+  mode <- "always"
+  expect_warning(res <- classify(), "120 of 120 items got no usable answer")
+  expect_true(all(is.na(res)))
+  expect_identical(attr(res, "llm_unanswered"), 1:120)
 })
 
 test_that(".strip_llm_wrapper removes the object-wrapper prefix", {

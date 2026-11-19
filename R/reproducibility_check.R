@@ -2919,7 +2919,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   sz <- file.size(f)
   small <- f[!is.na(sz) & sz < 1024]
   is_ptr <- vapply(small, function(p) {
-    l <- tryCatch(readLines(p, n = 1, warn = FALSE), error = function(e) character(0))
+    l <- tryCatch(.utf8_lines(readLines(p, n = 1, warn = FALSE)), error = function(e) character(0))
     length(l) && startsWith(l[1], "version https://git-lfs.github.com/spec/")
   }, logical(1))
   ptr <- unique(basename(small[is_ptr]))
@@ -2956,7 +2956,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   small <- src[!is.na(size) & size < 1024]
   if (!length(small)) return(none)
   stated <- vapply(small, function(f) {
-    l <- tryCatch(readLines(f, n = 3, warn = FALSE), error = function(e) character(0))
+    l <- tryCatch(.utf8_lines(readLines(f, n = 3, warn = FALSE)), error = function(e) character(0))
     if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) return(NA_real_)
     s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
     if (is.na(s)) NA_real_ else s
@@ -3237,7 +3237,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
     out[[lang]] <- data.frame(
       file_name = wt$file_name, lang = lang, run_dir = rp$run_dirs,
       original = vapply(code[wt$file_name], paste, character(1), collapse = "\n"),
-      rewritten = vapply(wt$script_path, function(p) paste(readLines(p, warn = FALSE), collapse = "\n"),
+      rewritten = vapply(wt$script_path, function(p) paste(.utf8_lines(readLines(p, warn = FALSE)), collapse = "\n"),
                          character(1)),
       row.names = NULL)
   }
@@ -5043,7 +5043,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   paths <- list.files(root, pattern = "^\\.Rprofile$", recursive = TRUE, all.files = TRUE, full.names = TRUE)
   n <- 0L
   for (path in paths) {
-    txt <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+    txt <- tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
     if (is.null(txt)) next
     res <- .repro_neutralise_env_calls(txt)
     if (res$n > 0) tryCatch(writeLines(res$txt, path), error = function(e) NULL)
@@ -5636,7 +5636,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 .repro_upgrade_stan_files <- function(root) {
   files <- list.files(root, pattern = "\\.stan$", recursive = TRUE, full.names = TRUE, ignore.case = TRUE)
   rows <- lapply(files, function(f) {
-    txt <- tryCatch(readLines(f, warn = FALSE), error = function(e) NULL)
+    txt <- tryCatch(.utf8_lines(readLines(f, warn = FALSE)), error = function(e) NULL)
     if (is.null(txt)) return(NULL)
     up <- .repro_upgrade_stan(txt)
     if (!length(up$changes)) return(NULL)
@@ -7095,7 +7095,11 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #'   `elapsed` (seconds), and `script_lines` (list-column: the EXECUTED script's
 #'   own text, one element per source line — the exact text `stdout`'s echoed
 #'   statements were run from, so [read_r_output()] can match them back to a
-#'   line number; empty character(0) for a script that did not run).
+#'   line number; empty character(0) for a script that did not run),
+#'   `captures`, and `started_at`, `ended_at` (when the run started and ended,
+#'   ISO 8601 in UTC) and `exit_status` (the process's exit status, as callr
+#'   reports it; NA for a script that did not run or reached a time limit),
+#'   kept for a TRO (see `R/provenance.R`).
 #' @param deadline the time ([Sys.time()] plus the time for all scripts
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
@@ -7120,7 +7124,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                       error = character(0), error_type = character(0),
                       undefined_var = character(0), stdout = character(0),
                       stderr = character(0), elapsed = numeric(0)) |>
-             dplyr::mutate(script_lines = list(), captures = list()))
+             dplyr::mutate(script_lines = list(), captures = list()) |> .repro_add_run_clock())
   if (!requireNamespace("callr", quietly = TRUE))
     stop("the 'callr' package is required to execute code (execute = TRUE).",
          call. = FALSE)
@@ -7135,7 +7139,10 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
   on.exit(pb_run$terminate())
   run_started <- Sys.time()
 
-  rows <- lapply(ordered_names, function(fn) {
+  # each script's start, end and exit status, for run_results' started_at,
+  # ended_at and exit_status (see .repro_add_run_clock(), R/provenance.R)
+  clock <- new.env()
+  run_one <- function(fn) {
     pb_run$tick(1, list(what = sprintf("Running %s (%s so far)", fn, .repro_duration(
       as.numeric(difftime(Sys.time(), run_started, units = "secs"))))))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
@@ -7169,7 +7176,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     # matches echoed statements against to recover a line number, so it must be
     # read from script_path (not the pre-rewrite code_text_list) to stay aligned
     # with what the echo in stdout actually shows.
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
 
     # DEBUG (TEMPORARY — remove before release): announce each script as it starts
@@ -7192,6 +7199,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     # case the stdout path alone is used.
     cap_file <- tempfile(fileext = ".rds")
     t0 <- Sys.time()
+    clock$started <- t0
     out <- tryCatch(
       callr::r(
         # callr::r() has no working-directory argument, so set it INSIDE the
@@ -7206,13 +7214,15 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
         stdout = out_file, stderr = err_file),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    clock$ended <- Sys.time()
+    clock$status <- if (inherits(out, "condition")) .repro_exit_status(out) else 0L
     captures <- if (file.exists(cap_file))
       tryCatch(readRDS(cap_file), error = function(e) NULL) else NULL
     unlink(cap_file)
 
     # Read whatever the child wrote before it finished / errored / timed out.
     read_cap <- function(f) if (file.exists(f))
-      paste(readLines(f, warn = FALSE), collapse = "\n") else ""
+      paste(.utf8_lines(readLines(f, warn = FALSE)), collapse = "\n") else ""
     so <- read_cap(out_file); se <- read_cap(err_file)
     unlink(c(out_file, err_file))
 
@@ -7293,6 +7303,10 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
         dplyr::mutate(script_lines = list(exec_lines),
                       captures = list(captures))
     }
+  }
+  rows <- lapply(ordered_names, function(fn) {
+    rm(list = ls(clock), envir = clock)
+    .repro_add_run_clock(run_one(fn), clock)
   })
-  dplyr::bind_rows(rows)
+  .repro_add_run_clock(dplyr::bind_rows(rows))
 }

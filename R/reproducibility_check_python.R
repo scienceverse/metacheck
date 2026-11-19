@@ -599,7 +599,7 @@ repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
 #' @returns a data frame — same columns as [repro_run_scripts()]'s return:
 #'   `file_name`, `outcome`, `error`, `error_type`, `undefined_var`,
 #'   `stdout`, `stderr`, `elapsed`, `script_lines`, `captures` (always `NULL`
-#'   per row — see above)
+#'   per row — see above), `started_at`, `ended_at`, `exit_status`
 #' @param deadline the time ([Sys.time()] plus the time for all scripts
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
@@ -622,7 +622,7 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
     file_name = character(0), outcome = character(0), error = character(0),
     error_type = character(0), undefined_var = character(0),
     stdout = character(0), stderr = character(0), elapsed = numeric(0)) |>
-    dplyr::mutate(script_lines = list(), captures = list())
+    dplyr::mutate(script_lines = list(), captures = list()) |> .repro_add_run_clock()
   if (is.null(run_tbl) || nrow(run_tbl) == 0) return(empty_cols())
   if (!requireNamespace("processx", quietly = TRUE))
     stop("the 'processx' package is required to execute code (execute = TRUE).",
@@ -644,7 +644,10 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
   pb_run$tick(0, list(what = ""))
   on.exit(pb_run$terminate())
 
-  rows <- lapply(ordered_names, function(fn) {
+  # each script's start, end and exit status, for run_results' started_at,
+  # ended_at and exit_status (see .repro_add_run_clock(), R/provenance.R)
+  clock <- new.env()
+  run_one <- function(fn) {
     pb_run$tick(1, list(what = fn))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
@@ -672,7 +675,7 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
     cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
 
     message("[repro/py]   -> running '", fn, "' (timeout ", timeout, "s) ...")
@@ -681,6 +684,7 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
     own_modules <- if ("module_folders" %in% names(row) && !is.na(row$module_folders) && nzchar(row$module_folders))
       file.path(row$module_root, strsplit(row$module_folders, "\n", fixed = TRUE)[[1]]) else character(0)
     t0 <- Sys.time()
+    clock$started <- t0
     res <- tryCatch(
       processx::run(bin, row$script_path, wd = row$run_dir,
                    env = c("current", PYTHONPATH = paste(c(own_modules, if (nzchar(pythonpath)) pythonpath),
@@ -689,6 +693,8 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    clock$ended <- Sys.time()
+    clock$status <- .repro_exit_status(res)
 
     if (inherits(res, "condition")) {
       is_timeout <- grepl("timed? ?out", conditionMessage(res), ignore.case = TRUE)
@@ -757,8 +763,12 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
               error_type = NA_character_, undefined_var = NA_character_,
               stdout = so, stderr = se, elapsed = elapsed) |>
       dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL))
+  }
+  rows <- lapply(ordered_names, function(fn) {
+    rm(list = ls(clock), envir = clock)
+    .repro_add_run_clock(run_one(fn), clock)
   })
-  dplyr::bind_rows(rows)
+  .repro_add_run_clock(dplyr::bind_rows(rows))
 }
 
 #' Find the names each Python script defines at top level

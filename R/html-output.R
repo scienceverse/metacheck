@@ -69,7 +69,7 @@
   # check for the pre/div code-block classes, which can appear later, but cap
   # that scan too (a report with no chunk in its first many thousand lines is
   # not meaningfully "code + output" regardless).
-  head_lines <- tryCatch(readLines(path, n = 500, warn = FALSE, encoding = "UTF-8"),
+  head_lines <- tryCatch(.utf8_lines(readLines(path, n = 500, warn = FALSE, encoding = "UTF-8")),
                         error = function(e) character(0))
   if (length(head_lines) == 0) return(NA_character_)
   head_txt <- paste(head_lines, collapse = "\n")
@@ -95,7 +95,7 @@
   # contact-email text (in its fixed intro boilerplate, so not something a
   # researcher's own Rmd/Qmd would ever contain), checked over the SAME body
   # sample rather than a separate read.
-  body_lines <- tryCatch(readLines(path, n = 20000, warn = FALSE, encoding = "UTF-8"),
+  body_lines <- tryCatch(.utf8_lines(readLines(path, n = 20000, warn = FALSE, encoding = "UTF-8")),
                         error = function(e) character(0))
   body_txt <- paste(body_lines, collapse = "\n")
   # fixed = TRUE: the search string itself has no regex metacharacters to

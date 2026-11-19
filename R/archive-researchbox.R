@@ -1165,7 +1165,13 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
     if (!is_zip && !is.na(dl$single_name %||% NA)) {
       file.copy(zip_path, file.path(part_dir, basename(dl$single_name)))
     } else {
-      utils::unzip(zip_path, exdir = part_dir)
+      # A name in the old DOS characters (CP437) stopped a whole-zip
+      # utils::unzip() on Windows, and the error marked every box of the
+      # paper as failed (#680); .unzip_all() takes such a member out by its
+      # position, and names a member it cannot unpack. A file that is not a
+      # readable zip leaves no files, which is reported below.
+      note <- .unzip_failed_note(.unzip_all(zip_path, part_dir), basename(zip_path))
+      if (!is.null(note)) warning(rb_url, ": ", note, call. = FALSE)
     }
     # the checksums from the zip's table of contents, which is not one of the
     # box's files and is moved next to the zip

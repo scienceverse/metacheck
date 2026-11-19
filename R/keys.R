@@ -223,50 +223,62 @@
   collect(x)
   texts <- unique(unlist(texts, use.names = FALSE))
   if (!length(texts)) return(x)
-  present <- .key_present(tolower(texts))
+  low <- tolower(texts)
+  present <- .key_present(low)
   if (!length(present)) return(x)
   pats <- .key_rules()$patterns
   pats <- pats[vapply(pats$keywords, function(k) !length(k) || any(k %in% present), logical(1)), , drop = FALSE]
+  # Each distinct text is searched once, and the result is walked only to
+  # replace the texts that hold a key (#685). Before, every character vector
+  # was compared with all the texts looked at so far, a list that grew with
+  # each one: time in the square of the number of texts, 95 minutes for a
+  # reproducibility_check result of 253,664 vectors.
+  todo <- texts[nzchar(texts)]
+  lt <- low[nzchar(texts)]
+  # which texts hold a keyword, one keyword at a time: a table of texts by
+  # keywords would need a cell for each pair (1.6 GB for 400,000 texts and
+  # all 498 keywords)
+  marked <- logical(length(todo))
+  for (k in present) marked <- marked | grepl(k, lt, fixed = TRUE)
+  idx <- which(marked)
   n_removed <- 0L
-  # each text once (a table repeats its values), with only the rules whose
-  # keywords are in it
-  seen <- character(0)       # texts already looked at that hold a key ...
+  seen <- character(0)       # texts that hold a key ...
   cleaned <- character(0)    # ... and the same with the keys replaced
-  looked <- character(0)     # texts already looked at
-  clean <- function(s) {
-    if (!length(s)) return(s)
-    todo <- unique(s[!is.na(s) & nzchar(s)])
-    todo <- todo[is.na(match(todo, looked))]
-    if (length(todo)) {
-      looked <<- c(looked, todo)
-      lt <- tolower(todo)
-      hits <- vapply(present, function(k) grepl(k, lt, fixed = TRUE), logical(length(todo)))
-      if (!is.matrix(hits)) hits <- matrix(hits, nrow = length(todo))
-      for (j in which(rowSums(hits) > 0)) {
-        kws <- present[hits[j, ]]
-        rules <- pats[vapply(pats$keywords, function(k) any(k %in% kws), logical(1)), , drop = FALSE]
-        f <- .key_find(todo[[j]], rules, checked = TRUE)
-        if (nrow(f)) {
-          n_removed <<- n_removed + nrow(f)
-          seen <<- c(seen, todo[[j]])
-          cleaned <<- c(cleaned, .key_replace(todo[[j]], f))
-        }
+  if (length(idx)) {
+    hits <- vapply(present, function(k) grepl(k, lt[idx], fixed = TRUE), logical(length(idx)))
+    if (!is.matrix(hits)) hits <- matrix(hits, nrow = length(idx))
+    found <- vector("list", length(idx))
+    for (j in seq_along(idx)) {
+      kws <- present[hits[j, ]]
+      rules <- pats[vapply(pats$keywords, function(k) any(k %in% kws), logical(1)), , drop = FALSE]
+      f <- .key_find(todo[[idx[j]]], rules, checked = TRUE)
+      if (nrow(f)) {
+        n_removed <- n_removed + nrow(f)
+        found[[j]] <- .key_replace(todo[[idx[j]]], f)
       }
     }
-    i <- match(s, seen)
-    s[!is.na(i)] <- cleaned[i[!is.na(i)]]
-    s
+    keep <- !vapply(found, is.null, logical(1))
+    seen <- todo[idx[keep]]
+    cleaned <- unlist(found[keep], use.names = FALSE)
   }
-  walk <- function(v) {
-    if (is.character(v)) v[] <- clean(v)
-    else if (is.factor(v)) levels(v) <- clean(levels(v))
-    else if (is.list(v)) {
-      for (i in seq_along(v)) if (!is.null(v[[i]])) v[[i]] <- walk(v[[i]])
+  if (length(seen)) {
+    clean <- function(s) {
+      if (!length(s)) return(s)
+      i <- match(s, seen)
+      s[!is.na(i)] <- cleaned[i[!is.na(i)]]
+      s
     }
-    if (!is.null(names(v))) names(v) <- clean(names(v))
-    v
+    walk <- function(v) {
+      if (is.character(v)) v[] <- clean(v)
+      else if (is.factor(v)) levels(v) <- clean(levels(v))   # equal levels are merged
+      else if (is.list(v)) {
+        for (i in seq_along(v)) if (!is.null(v[[i]])) v[[i]] <- walk(v[[i]])
+      }
+      if (!is.null(names(v))) names(v) <- clean(names(v))
+      v
+    }
+    x <- walk(x)
   }
-  x <- walk(x)
   attr(x, "keys_removed") <- n_removed
   x
 }

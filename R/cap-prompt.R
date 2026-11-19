@@ -16,10 +16,12 @@
 
 # Warn, once per repository, that a repository whose files are about to be
 # downloaded was listed only in part: repo_check's listing of an OSF project
-# stopped at `osf_max_requests` (its `partial_repos`), so files in folders not
-# yet opened are not downloaded either. `partial` is that table, `repo_urls`
-# the repositories this download uses. Reported like a size cap
-# (.cap_report()), so a missing file is never missing without a word.
+# stopped at `osf_max_requests`, or the OSF refused part of it (its
+# `partial_repos`, with `reason` "request limit" or "refused by the OSF",
+# #681), so files in folders not listed are not downloaded either. `partial`
+# is that table, `repo_urls` the repositories this download uses. Reported
+# like a size cap (.cap_report()), so a missing file is never missing without
+# a word.
 .cap_report_partial <- function(partial, repo_urls) {
   if (!is.data.frame(partial) || !nrow(partial) || !"repo_url" %in% names(partial))
     return(invisible(NULL))
@@ -27,11 +29,17 @@
   partial <- partial[!duplicated(partial$repo_url), , drop = FALSE]
   for (i in seq_len(nrow(partial))) {
     n <- partial$files_listed[i] %||% NA
+    refused <- identical(partial$reason[i] %||% NA_character_, "refused by the OSF")
     .cap_report(sprintf(
-      paste0("Repository %s was listed only in part%s: the OSF listing stopped ",
-             "at the request limit, so files in folders not yet opened are not ",
-             "downloaded. Run again with `cache = TRUE` to list the next part, ",
-             "or raise `osf_max_requests`."),
+      if (refused)
+        paste0("Repository %s was listed only in part%s: the OSF refused part of ",
+               "the listing, also when asked again, so files in the folders it ",
+               "refused are not downloaded. Run the check again later.")
+      else
+        paste0("Repository %s was listed only in part%s: the OSF listing stopped ",
+               "at the request limit, so files in folders not yet opened are not ",
+               "downloaded. Run again with `cache = TRUE` to list the next part, ",
+               "or raise `osf_max_requests`."),
       partial$repo_url[i],
       if (is.na(n)) "" else sprintf(" (%d file%s listed)", n, plural(n))))
   }

@@ -267,6 +267,18 @@ osf_pat <- function(pat = NULL) {
     fetch_ids  <- all_ids[fetch_idx]
     resps <- .batch_query(fetch_urls, msg = "OSF Info", req_func = .osf_headers)
 
+    # An OSF item without contributors (a single file) cannot have them added:
+    # the OSF refuses the whole request (HTTP 400, "not embeddable"), and every
+    # link to a file was reported as not found (#672). Such an item is asked
+    # for again without them, one extra request for each.
+    refused <- which(vapply(resps, .osf_embed_refused, logical(1)))
+    if (length(refused)) {
+      again <- .batch_query(sub("[?&]embed=bibliographic_contributors$", "",
+                                fetch_urls[refused]),
+                            msg = "OSF Info", req_func = .osf_headers)
+      resps[refused] <- again
+    }
+
     for (k in seq_along(fetch_idx)) {
       i <- fetch_idx[k]
       resp <- resps[[k]]
@@ -288,13 +300,24 @@ osf_pat <- function(pat = NULL) {
                    error = paste("the OSF answer could not be read:", conditionMessage(e)))
       })
 
-      # A refusal (401/403, read as "private") is not kept: the OSF also
-      # refuses public projects for a while, as on 2026-11-13, when 147 were
-      # refused between 09:00 and 09:20, and 22 of 30 of them answered again
-      # later. Kept, the refusal made a paper's own project look empty in
-      # every later run.
-      if (isTRUE(cache) && .repo_info_ok(results[[i]]) && !any(results[[i]]$osf_type %in% "private"))
-        .repo_info_cache_put("osf", id, results[[i]])
+    }
+  }
+
+  # a record with more contributors than the OSF named in its answer gets
+  # the full list, also one kept in the cache (#682)
+  completed <- .osf_complete_contributors(results)
+  changed <- which(!vapply(seq_along(results), \(i) identical(completed[[i]], results[[i]]), NA))
+  results <- completed
+
+  # A refusal (401/403, read as "private") is not kept: the OSF also
+  # refuses public projects for a while, as on 2026-11-13, when 147 were
+  # refused between 09:00 and 09:20, and 22 of 30 of them answered again
+  # later. Kept, the refusal made a paper's own project look empty in
+  # every later run.
+  if (isTRUE(cache)) {
+    for (i in sort(union(fetch_idx, changed))) {
+      if (.repo_info_ok(results[[i]]) && !any(results[[i]]$osf_type %in% "private"))
+        .repo_info_cache_put("osf", all_ids[i], results[[i]])
     }
   }
 
@@ -477,6 +500,32 @@ osf_pat <- function(pat = NULL) {
   dplyr::bind_rows(folder_rows, file_rows)
 }
 
+# The errors in an OSF API answer that is not a success (the body's
+# "errors", each with a "detail" and a "source"), or NULL when the body has
+# none or cannot be read.
+.osf_errors <- function(resp) {
+  if (!inherits(resp, "httr2_response")) return(NULL)
+  body <- tryCatch(httr2::resp_body_json(resp, simplifyVector = FALSE),
+                   error = function(e) NULL)
+  if (is.list(body) && is.list(body$errors)) body$errors else NULL
+}
+
+# The OSF's own reason in an answer that is not a success, as one text, or ""
+.osf_error_detail <- function(resp) {
+  d <- vapply(.osf_errors(resp), function(e)
+    if (is.character(e$detail)) e$detail[1] else "", character(1))
+  paste(unique(d[nzchar(d)]), collapse = "; ")
+}
+
+# Whether the OSF refused a request because of its `embed` parameter (HTTP
+# 400 with an error whose source is "embed"): an item without contributors,
+# such as a single file, cannot have them added (#672).
+.osf_embed_refused <- function(resp) {
+  if (!inherits(resp, "httr2_response") || httr2::resp_status(resp) != 400) return(FALSE)
+  any(vapply(.osf_errors(resp), function(e)
+    identical(e$source$parameter, "embed"), logical(1)))
+}
+
 #' Parse an OSF API response into a data frame
 #'
 #' @param resp an httr2 response
@@ -501,6 +550,16 @@ osf_pat <- function(pat = NULL) {
       return(data.frame(osf_id = id,
                         osf_type = "private",
                         public = FALSE))
+    } else if (sc == 400) {
+      # The OSF refused the request itself, which says nothing about whether
+      # the item exists: it was reported as "not found" (#672)
+      detail <- .osf_error_detail(resp)
+      warning(if (is.na(id)) "An OSF resource" else id,
+              ": the OSF refused the request (HTTP 400)",
+              if (nzchar(detail)) paste0(": ", detail) else "", call. = FALSE)
+      return(data.frame(osf_id = id, osf_type = "error",
+                        error = paste0("the OSF refused the request (HTTP 400)",
+                                       if (nzchar(detail)) paste0(": ", detail) else "")))
     } else if (sc == 429) {
       # The OSF sends no time at which its limit ends (100 requests per hour
       # without a key, 10,000 per day with one), so an hour is assumed.
@@ -578,18 +637,99 @@ osf_pat <- function(pat = NULL) {
 # as "id; id". .osf_info() asks for them in the request it makes anyway
 # (?embed=bibliographic_contributors); they tell a paper's own project from
 # one it reuses (#634). NA when the answer holds none (a listing of child
-# nodes, or an answer from before they were asked for).
+# nodes, or an answer from before they were asked for). Also their family
+# names, as "Family; Family", which the OSF keeps apart from their given
+# names, and how many contributors there are in all: the OSF names only the
+# first 10 in this answer (#682).
 .osf_contributors <- function(data) {
+  none <- c(NA_character_, NA_character_, NA_character_, NA_character_)
   u <- tryCatch(data$embeds$bibliographic_contributors$data, error = \(e) NULL)
-  if (is.null(u) || !length(u)) return(c(NA_character_, NA_character_))
+  if (is.null(u) || !length(u)) return(none)
   att <- tryCatch(u$embeds$users$data$attributes, error = \(e) NULL)
-  if (is.null(att) && is.list(u) && !is.data.frame(u))
-    att <- list(full_name = vapply(u, \(x) x$embeds$users$data$attributes$full_name %||% NA_character_, character(1)),
+  if (is.null(att) && is.list(u) && !is.data.frame(u)) {
+    one <- \(f) vapply(u, \(x) as.character(x$embeds$users$data$attributes[[f]] %||% NA_character_)[1], character(1))
+    att <- list(full_name = one("full_name"), family_name = one("family_name"),
                 social = list(orcid = vapply(u, \(x) x$embeds$users$data$attributes$social$orcid %||% NA_character_, character(1))))
+  }
   nm <- as.character(unlist(att$full_name %||% character(0)))
-  nm <- nm[!is.na(nm) & nzchar(nm)]
+  fm <- as.character(unlist(att$family_name %||% rep(NA_character_, length(nm))))
+  if (length(fm) != length(nm)) fm <- rep(NA_character_, length(nm))
+  keep <- !is.na(nm) & nzchar(nm)
+  nm <- nm[keep]; fm <- fm[keep]
+  # a contributor without a family name of its own: the family part of the
+  # full name
+  no_fam <- is.na(fm) | !nzchar(trimws(fm))
+  fm[no_fam] <- vapply(nm[no_fam], \(q) paste(.own_person_family(q), collapse = " "), character(1),
+                       USE.NAMES = FALSE)
+  fm <- trimws(fm); fm <- fm[!is.na(fm) & nzchar(fm)]
   orc <- .meta_orcids(att$social$orcid %||% character(0))
-  c(if (length(nm)) paste(unique(nm), collapse = "; ") else NA_character_, orc)
+  total <- tryCatch(data$embeds$bibliographic_contributors$links$meta$total, error = \(e) NULL)
+  total <- suppressWarnings(as.integer(unlist(total)[1]))
+  c(if (length(nm)) paste(unique(nm), collapse = "; ") else NA_character_, orc,
+    if (length(fm)) paste(unique(fm), collapse = "; ") else NA_character_,
+    if (length(total) && !is.na(total)) as.character(total) else NA_character_)
+}
+
+# The OSF names only the first 10 contributors of a project, registration or
+# preprint in its answer (#682). A record with more gets the full list, one
+# request each (up to 100 names): cut short, the list could not show that a
+# project the paper reuses was made by others (osf.io/xv5rp: 10 of 11
+# named). A record stored before the count was kept, naming exactly 10, is
+# completed the same way. `rows` is a list of parsed records (data frames, as
+# osf_info()'s batch builds them); a failed request leaves a record as it was.
+.osf_complete_contributors <- function(rows) {
+  kinds <- c("nodes", "registrations", "preprints")
+  short <- vapply(rows, function(r) {
+    if (!is.data.frame(r) || nrow(r) != 1 || !isTRUE(r$osf_type %in% kinds) ||
+        !"contributors" %in% names(r) || is.na(r$contributors)) return(FALSE)
+    n_named <- length(strsplit(r$contributors, ";", fixed = TRUE)[[1]])
+    n_all <- if ("n_contributors" %in% names(r)) suppressWarnings(as.integer(r$n_contributors)) else NA_integer_
+    if (is.na(n_all)) n_named == 10 else n_named < n_all
+  }, logical(1))
+  idx <- which(short)
+  if (!length(idx)) return(rows)
+  osf_api <- getOption("metacheck.osf.api")
+  urls <- vapply(rows[idx], \(r) sprintf("%s/%s/%s/bibliographic_contributors/?page[size]=100",
+                                          osf_api, r$osf_type, r$osf_id), character(1))
+  pages <- .osf_get_pages_parallel(urls)
+  for (k in seq_along(idx)) {
+    p <- pages[[k]]
+    if (!length(p$data)) next
+    cb <- .osf_contributors(list(embeds = list(bibliographic_contributors =
+                                                 list(data = p$data, links = p$links))))
+    if (is.na(cb[[1]])) next
+    r <- rows[[idx[k]]]
+    r$contributors <- cb[[1]]
+    r$contributor_orcids <- cb[[2]]
+    r$contributor_families <- cb[[3]]
+    total <- suppressWarnings(as.integer(cb[[4]]))
+    if (!is.na(total)) r$n_contributors <- total
+    rows[[idx[k]]] <- r
+  }
+  rows
+}
+
+# .osf_complete_contributors() for a whole listing (osf_info()'s table, one
+# row per project, component and file), as osf_info() keeps it in the lasting
+# cache: the rows of projects, registrations and preprints whose list of
+# contributors was cut short get the full list.
+.osf_complete_table <- function(tbl) {
+  if (!is.data.frame(tbl) || !nrow(tbl) || !all(c("osf_type", "contributors") %in% names(tbl)))
+    return(tbl)
+  i <- which(tbl$osf_type %in% c("nodes", "registrations", "preprints"))
+  if (!length(i)) return(tbl)
+  rows <- lapply(i, \(k) tbl[k, , drop = FALSE])
+  done <- .osf_complete_contributors(rows)
+  changed <- which(!vapply(seq_along(rows), \(j) identical(rows[[j]], done[[j]]), NA))
+  if (!length(changed)) return(tbl)
+  if (!"contributor_orcids" %in% names(tbl)) tbl$contributor_orcids <- NA_character_
+  if (!"contributor_families" %in% names(tbl)) tbl$contributor_families <- NA_character_
+  if (!"n_contributors" %in% names(tbl)) tbl$n_contributors <- NA_integer_
+  for (j in changed) {
+    for (col in c("contributors", "contributor_orcids", "contributor_families", "n_contributors"))
+      if (!is.null(done[[j]][[col]])) tbl[[col]][i[j]] <- done[[j]][[col]]
+  }
+  tbl
 }
 
 #' Structure OSF Node Data
@@ -627,6 +767,8 @@ osf_pat <- function(pat = NULL) {
   cb <- .osf_contributors(data)
   obj$contributors <- cb[[1]]
   obj$contributor_orcids <- cb[[2]]
+  obj$contributor_families <- cb[[3]]
+  obj$n_contributors <- as.integer(cb[[4]])
 
   return(obj)
 }
@@ -727,6 +869,8 @@ osf_pat <- function(pat = NULL) {
   cb <- .osf_contributors(data)
   obj$contributors <- cb[[1]]
   obj$contributor_orcids <- cb[[2]]
+  obj$contributor_families <- cb[[3]]
+  obj$n_contributors <- as.integer(cb[[4]])
 
   return(obj)
 }
@@ -763,6 +907,8 @@ osf_pat <- function(pat = NULL) {
   cb <- .osf_contributors(data)
   obj$contributors <- cb[[1]]
   obj$contributor_orcids <- cb[[2]]
+  obj$contributor_families <- cb[[3]]
+  obj$n_contributors <- as.integer(cb[[4]])
 
   return(obj)
 }

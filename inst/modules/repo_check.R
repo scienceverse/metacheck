@@ -6,6 +6,28 @@
 #' @details
 #' The Repository Check module lists files on the OSF, GitHub, ResearchBox, DSpace (PsychArchives and other legacy- and DSpace 7-based installations), Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, DataONE (Arctic Data Center, KNB, and other member nodes), and LDbase based on links in the manuscript.
 #'
+#' A link to a file-sharing service (Google Drive, Dropbox, OneDrive, Box,
+#' WeTransfer, MEGA, iCloud Drive, Baidu Netdisk, SURFdrive; see
+#' [file_share_links()]) gets a warning and makes the light yellow: such
+#' services are not repositories, as files can be changed or deleted at any
+#' time, get no DOI, and the link stops working when the account is closed.
+#' The report advises a stable repository such as Zenodo instead. Their files are not
+#' read, and `summary_table$file_share_n` counts the links.
+#'
+#' Deposits in archives for sequence and expression data (GEO, the INSDC
+#' archives BioProject, SRA, ENA and DDBJ, and ArrayExpress; see
+#' [seq_archive_links()]), mostly named by accession number, are read for
+#' whose deposit they are. The authors' own are listed with what they hold
+#' ([seq_archive_size()]) and are not downloaded or checked as data and code;
+#' `summary_table$archive_own_n` counts them.
+#'
+#' R packages on CRAN ([cran_links()], [cran_info()]) are the paper's own when
+#' a paper author is a package author and the paper presents the package;
+#' the paper's own are listed with their version and not checked
+#' (`summary_table$cran_own_n`). A Handle link (`hdl.handle.net/...`) that
+#' leads to a repository read here is checked as a link to that repository
+#' ([handle_links()]).
+#'
 #' Listing a repository's files never requires an API key, but some hosts
 #' answer faster or more completely with one: OSF allows 100 requests/hour
 #' unauthenticated versus 10,000/day with a token (see [osf_pat()]), and
@@ -126,7 +148,10 @@
 #'   an hour to list in full. A project that reaches the limit is listed in
 #'   part: it is named in `partial_repos` and in the report, and its row in
 #'   `ownership` has `listing_cut` TRUE. With `cache = TRUE`, the next run
-#'   goes on where the listing stopped (see [osf_info()]).
+#'   goes on where the listing stopped (see [osf_info()]). A project part of
+#'   whose listing the OSF refused, also when asked again, is named there too
+#'   (`reason` "refused by the OSF" in `partial_repos`, `listing_short` TRUE
+#'   in `ownership`).
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -178,6 +203,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dataone_links_found <- empty_links
     ldbase_links_found <- empty_links
     ckan_links_found <- empty_links
+    seq_links_found <- empty_links
+    handle_links_found <- empty_links
+    cran_links_found <- empty_links
+    icpsr_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -216,7 +245,46 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     ldbase_links_found$repo_type <- "ldbase"
     ckan_links_found <- ckan_links(paper)  # CKAN data portals (#637)
     ckan_links_found$repo_type <- "ckan"
+    # GEO, the INSDC archives (BioProject, SRA, ENA, DDBJ) and ArrayExpress,
+    # mostly named by accession number (#660); each row names its archive
+    seq_links_found <- tryCatch(seq_archive_links(paper), error = \(e) empty_links)
+    # a deposit cited by its Handle (hdl.handle.net/...), as the address the
+    # Handle leads to, when that is a repository read here (#660, #466)
+    handle_links_found <- tryCatch(handle_links(paper), error = \(e) empty_links)
+    # R packages on CRAN, the paper's own or ones it uses (#478, #660)
+    cran_links_found <- tryCatch(cran_links(paper), error = \(e) empty_links)
+    # replication packages at ICPSR and openICPSR, with the AEA Data and Code
+    # Repository (economics journals)
+    icpsr_links_found <- tryCatch(icpsr_links(paper), error = \(e) empty_links)
   }
+
+  ## links to file-sharing services (#660) ----
+  # Google Drive, Dropbox, OneDrive and the like are not repositories: every
+  # such link gets a warning and makes the light yellow. Their files are not
+  # read (see file_share_links(), R/file-share.R).
+  file_share <- if (isTRUE(local_only)) NULL else tryCatch(file_share_links(paper), error = \(e) NULL)
+  if (!is.data.frame(file_share) || !nrow(file_share))
+    file_share <- data.frame(paper_id = character(0), href = character(0), service = character(0))
+  if (!"paper_id" %in% names(file_share)) file_share$paper_id <- rep(paper_id(paper)[1] %||% NA_character_, nrow(file_share))
+  n_file_share <- nrow(file_share)
+  report_file_share <- NULL
+  summary_file_share <- NULL
+  if (n_file_share > 0) {
+    fs_list <- paste(sprintf("%s: %s", file_share$service, file_share$href), collapse = "; ")
+    report_file_share <- c(
+      "#### File-sharing services",
+      sprintf(paste(
+        "The paper links to %s (%s). Such services are not repositories: files can be changed or",
+        "deleted at any time, they get no DOI, and the link stops working when the account is closed.",
+        "Share data and code in a stable repository such as Zenodo."),
+        plural(n_file_share, "a file-sharing service", "file-sharing services"), fs_list))
+    summary_file_share <- sprintf(
+      "The paper links to %s (%s), which %s; share data and code in a stable repository such as Zenodo.",
+      plural(n_file_share, "a file-sharing service", sprintf("%d file-sharing services", n_file_share)),
+      paste(unique(file_share$service), collapse = ", "),
+      plural(n_file_share, "is not a repository", "are not repositories"))
+  }
+  file_share_n_of <- function(ids) vapply(ids, \(id) sum(file_share$paper_id %in% id), integer(1), USE.NAMES = FALSE)
 
   ## organise repos in a table
   cols <- c("paper_id", "href", "repo_type")
@@ -236,7 +304,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     mendeley_links_found[, cols],
     dataone_links_found[, cols],
     ldbase_links_found[, cols],
-    ckan_links_found[, cols]
+    ckan_links_found[, cols],
+    seq_links_found[, cols],
+    handle_links_found[, cols],
+    cran_links_found[, cols],
+    icpsr_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   # The punctuation that ends a sentence is not part of an address: taken along
@@ -415,7 +487,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # names ("isSupplementTo:<the article's DOI>"), from the same answer
     resource_type = .meta_col(tbl, "resource_type", \(v) as.character(v)),
     resource_subtype = .meta_col(tbl, "resource_subtype", \(v) as.character(v)),
-    related = .meta_col(tbl, "related", \(v) as.character(v))
+    related = .meta_col(tbl, "related", \(v) as.character(v)),
+    # the institute that submitted it (sequence archives, #660)
+    organisation = .meta_col(tbl, c("organisation", "center_name"), \(v) .meta_text(v, 300))
   )
   # `repo_error` with each link's own reason from its *_info() table
   # ("unfound", "parse_error", ...) filled in, so a link that could not be
@@ -480,6 +554,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   osf_files_df <- data.frame(repo_name = character(0))
   # OSF projects whose listing stopped at `osf_max_requests` (see below)
   osf_cut_urls <- character(0)
+  # OSF projects part of whose listing the OSF refused, also when asked
+  # again (`listing_short`, see osf_info(); #681)
+  osf_short_urls <- character(0)
   # private projects read through a view-only link in the paper (see below)
   osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
                               project = character(0))
@@ -495,6 +572,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       })
       if ("listing_cut" %in% names(osf_info))
         osf_cut_urls <- unique(osf_info$repo_name[osf_info$listing_cut %in% TRUE])
+      if ("listing_short" %in% names(osf_info))
+        osf_short_urls <- unique(osf_info$repo_name[osf_info$listing_short %in% TRUE])
 
       # A registration is never itself the place files "live": either it
       # mirrors files into its own storage (in which case those files really
@@ -559,9 +638,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           file_type = osf_file_list$filetype,
           # provider (osfstorage / dropbox / github / ...) drives the
           # Waterbutler-zip decision in download_repo_files(): only osfstorage is
-          # coverable by the node's ?zip= endpoint. NULL when osf_info did not
+          # coverable by the node's ?zip= endpoint. NA when osf_info did not
           # return the column, which download_repo_files() falls back on gracefully.
-          provider = osf_file_list$provider %||% NA_character_
+          # (.col_chr(), not `%||% NA`: a listing without files and without
+          # the column gave one NA for no rows, and data.frame() stopped with
+          # "differing number of rows: 0, 1")
+          provider = .col_chr(osf_file_list, "provider"),
+          # the component the file is stored in: its storage is downloaded as
+          # one zip per component (#675)
+          osf_node = .col_chr(osf_file_list, "project")
         )
       }
 
@@ -686,6 +771,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         if ("listing_cut" %in% names(parent_info))
           osf_cut_urls <- unique(c(osf_cut_urls,
                                    parent_info$repo_name[parent_info$listing_cut %in% TRUE]))
+        if ("listing_short" %in% names(parent_info))
+          osf_short_urls <- unique(c(osf_short_urls,
+                                     parent_info$repo_name[parent_info$listing_short %in% TRUE]))
 
         # public parent: its files belong under the PARENT's real URL (the
         # place a reader would actually need to look). Any file also reached
@@ -705,7 +793,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                 file_location = rep(NA_character_, nrow(parent_file_list)),
                 file_size = parent_file_list$size,
                 file_type = parent_file_list$filetype,
-                provider = parent_file_list$provider %||% NA_character_
+                provider = .col_chr(parent_file_list, "provider"),
+                osf_node = .col_chr(parent_file_list, "project")
               )
             )
           }
@@ -855,11 +944,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       creator_orcids = .col_chr(own, "contributor_orcids")[k],
       published = substr(dplyr::coalesce(.col_chr(own, "date_registered")[k],
                                           .col_chr(own, "date_created")[k]), 1, 10),
-      updated = substr(.col_chr(own, "date_modified")[k], 1, 10)
+      updated = substr(.col_chr(own, "date_modified")[k], 1, 10),
+      # the contributors' own family names, and how many there are: the OSF
+      # names only the first 10 (#682). For the ownership step only, not
+      # for repo_metadata (below).
+      creator_families = .col_chr(own, "contributor_families")[k],
+      n_creators = .col_chr(own, "n_contributors")[k]
     )
   }
   if (length(osf_repo_urls) > 0 && !is.null(osf_desc_all)) {
-    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url), , drop = FALSE]
+    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url),
+                             setdiff(names(osf_desc_all), c("creator_families", "n_creators")), drop = FALSE]
     osf_desc$repo_url <- osf_repo_urls
     osf_meta_df <- if (nrow(osf_meta_df) > 0) {
       dplyr::left_join(osf_meta_df, osf_desc, by = "repo_url")
@@ -2060,6 +2155,67 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## Sequence and expression archives ----
+  # GEO, the INSDC archives and ArrayExpress (archive-seq.R, #660): one
+  # record each, read for whose deposit it is. Their files are not listed:
+  # see "sequence and expression archives" below.
+  seq_urls <- repos |>
+    dplyr::filter(repo_type %in% c("geo", "ena", "arrayexpress")) |>
+    _$repo_url |>
+    unique()
+  seq_files_df <- data.frame(repo_name = character(0))
+  seq_meta_df <- data.frame(repo_url = character(0), doi = character(0), license = character(0))
+  seq_info_all <- NULL
+  if (length(seq_urls) > 0) {
+    tryCatch({
+      .seq_info_tbl <- suppressMessages(seq_archive_info(seq_urls, pb = pb, cache = cache))
+      seq_info_all <- .seq_info_tbl
+      if (nrow(.seq_info_tbl) > 0) {
+        seq_meta_df <- meta_rows(.seq_info_tbl, "seq_url")
+        repos$repo_error <- link_errors(repos$repo_error, repos$repo_url, .seq_info_tbl, "seq_url")
+      }
+    }, error = \(e) {
+      repos$repo_error[repos$repo_url %in% seq_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## CRAN ----
+  # R packages (archive-cran.R, #478): the record of each, read for whose
+  # package it is; the paper's own are listed below, not downloaded
+  cran_urls <- unique(repos$repo_url[repos$repo_type %in% "cran"])
+  cran_meta_df <- data.frame(repo_url = character(0), doi = character(0), license = character(0))
+  cran_info_all <- NULL
+  if (length(cran_urls) > 0) {
+    tryCatch({
+      cran_info_all <- suppressMessages(cran_info(cran_urls, pb = pb, cache = cache))
+      if (nrow(cran_info_all) > 0) {
+        cran_meta_df <- meta_rows(cran_info_all, "cran_url")
+        repos$repo_error <- link_errors(repos$repo_error, repos$repo_url, cran_info_all, "cran_url")
+      }
+    }, error = \(e) {
+      repos$repo_error[repos$repo_url %in% cran_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## ICPSR and openICPSR ----
+  # (archive-icpsr.R): the record of each from DataCite, read for whose
+  # deposit it is; the paper's own are listed below. Their files cannot be
+  # read: ICPSR's site answers automatic requests with a browser check.
+  icpsr_urls <- unique(repos$repo_url[repos$repo_type %in% "icpsr"])
+  icpsr_meta_df <- data.frame(repo_url = character(0), doi = character(0), license = character(0))
+  icpsr_info_all <- NULL
+  if (length(icpsr_urls) > 0) {
+    tryCatch({
+      icpsr_info_all <- suppressMessages(icpsr_info(icpsr_urls, pb = pb, cache = cache))
+      if (nrow(icpsr_info_all) > 0) {
+        icpsr_meta_df <- meta_rows(icpsr_info_all, "icpsr_url")
+        repos$repo_error <- link_errors(repos$repo_error, repos$repo_url, icpsr_info_all, "icpsr_url")
+      }
+    }, error = \(e) {
+      repos$repo_error[repos$repo_url %in% icpsr_urls] <<- conditionMessage(e)
+    })
+  }
+
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
@@ -2154,25 +2310,34 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   ## no repos found ----
   if (nrow(repos) == 0) {
-    info <- list(
-      traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, or CKAN data portals.",
-      summary_table = .per_paper_table(paper,
+    no_repo_text <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, CRAN, or ICPSR (openICPSR, AEA Data and Code Repository)."
+    st <- .per_paper_table(paper,
                 repo_n = 0,
         files_n = NA,
         files_data = NA,
         files_code = NA,
         files_readme = NA,
         files_zip = NA
-      ),
+      )
+    st$file_share_n <- file_share_n_of(st$paper_id)
+    info <- list(
+      # a link to a file-sharing service is something to fix (#660)
+      traffic_light = if (n_file_share > 0) "yellow" else "na",
+      summary_text = if (n_file_share > 0) paste("\n- ", c(no_repo_text, summary_file_share), collapse = "") else no_repo_text,
+      summary_table = st,
       ownership = own_ownership(pub_meta, pub_files, if (exists("osf_desc_all", inherits = FALSE)) osf_desc_all else NULL)
     )
+    if (n_file_share > 0) info$report <- c(no_repo_text, report_file_share)
 
     return(info)
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, local_files_df)
+  # each OSF storage's listed size and number of files, which decide whether
+  # it is downloaded as one archive: the checks pass download_repo_files()
+  # only the files they want, so it cannot count the storage itself (#675)
+  osf_files_df <- .osf_storage_totals(osf_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
   # more than one repository (e.g. one for data, one for code) with
@@ -2184,7 +2349,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repo_metadata <- dplyr::bind_rows(
     osf_meta_df, github_meta_df, gitlab_meta_df, rb_meta_df, pa_meta_df, dspace7_meta_df,
     zenodo_meta_df, dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df,
-    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df, ckan_meta_df
+    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df, ckan_meta_df, seq_meta_df, cran_meta_df, icpsr_meta_df
   )
 
   # remove duplicate links
@@ -2411,16 +2576,23 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (is.data.frame(pub_files) && nrow(pub_files))
       dplyr::bind_rows(all_files, pub_files[, intersect(pub_cols, names(pub_files)), drop = FALSE]) else all_files,
     osf_desc_all)
-  # OSF projects listed only in part (`osf_max_requests`): what their row says
-  # about files describes only the folders that were opened. A registration's
-  # files are kept under the project it was registered from, so that project
-  # counts as listed in part as well.
+  # OSF projects listed only in part (`osf_max_requests`, `listing_cut`; or
+  # part of the listing refused by the OSF, `listing_short`): what their row
+  # says about files describes only the folders that were listed. A
+  # registration's files are kept under the project it was registered from,
+  # so that project counts as listed in part as well.
   if (length(osf_cut_urls)) {
     osf_cut_urls <- unique(c(osf_cut_urls,
       unname(reg_url_to_parent[intersect(osf_cut_urls, names(reg_url_to_parent))])))
   }
-  if (is.data.frame(ownership) && nrow(ownership))
+  if (length(osf_short_urls)) {
+    osf_short_urls <- unique(c(osf_short_urls,
+      unname(reg_url_to_parent[intersect(osf_short_urls, names(reg_url_to_parent))])))
+  }
+  if (is.data.frame(ownership) && nrow(ownership)) {
     ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
+    ownership$listing_short <- ownership$repo_url %in% osf_short_urls
+  }
   # the links that were checked: those in the text, and the authors' own
   # deposits cited in the reference list (see above)
   checked_ref <- ownership$source %in% "reference" &
@@ -2578,6 +2750,114 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   repos <- repos[!paste(repos$paper_id, repos$repo_url, sep = "\x01") %in% not_this_key, , drop = FALSE]
 
+  ## sequence and expression archives: listed, not checked (#660) ----
+  # GEO, the INSDC archives (SRA, ENA, DDBJ) and ArrayExpress keep raw data
+  # such as sequencing reads, often hundreds of GB, in their own formats and
+  # without READMEs. A paper's analysis starts from tables a processing
+  # pipeline made from them (in 13 BES papers with code, the missing files
+  # were such tables, never the archive's files), so downloading them would
+  # not help to rerun it. The authors' own deposits are listed with what they
+  # hold; they are not downloaded, and the README, naming and file checks do
+  # not apply to them. Others' deposits are in Whose Deposits.
+  arch_types <- c("geo", "ena", "arrayexpress")
+  arch_own <- if (is.data.frame(ownership) && nrow(ownership) && "repo_type" %in% names(ownership))
+    unique(ownership[ownership$repo_type %in% arch_types & ownership$ownership %in% "own_this",
+                     c("paper_id", "repo_url", "repo_type"), drop = FALSE]) else
+    data.frame(paper_id = character(0), repo_url = character(0), repo_type = character(0))
+  repos <- repos[!repos$repo_type %in% arch_types, , drop = FALSE]
+  # R packages on CRAN (#478): the paper's own are listed with their version;
+  # CRAN checks its packages, and a package is not the paper's analysis
+  cran_own <- if (is.data.frame(ownership) && nrow(ownership) && "repo_type" %in% names(ownership))
+    unique(ownership[ownership$repo_type %in% "cran" & ownership$ownership %in% "own_this",
+                     c("paper_id", "repo_url"), drop = FALSE]) else
+    data.frame(paper_id = character(0), repo_url = character(0))
+  repos <- repos[!repos$repo_type %in% "cran", , drop = FALSE]
+  # Replication packages at ICPSR and openICPSR (AEA Data and Code
+  # Repository): the paper's own are listed; their files cannot be read
+  icpsr_own <- if (is.data.frame(ownership) && nrow(ownership) && "repo_type" %in% names(ownership))
+    unique(ownership[ownership$repo_type %in% "icpsr" & ownership$ownership %in% "own_this",
+                     c("paper_id", "repo_url"), drop = FALSE]) else
+    data.frame(paper_id = character(0), repo_url = character(0))
+  repos <- repos[!repos$repo_type %in% "icpsr", , drop = FALSE]
+  report_icpsr <- NULL
+  summary_icpsr <- NULL
+  if (nrow(icpsr_own) > 0) {
+    k <- if (is.data.frame(icpsr_info_all)) match(icpsr_own$repo_url, icpsr_info_all$icpsr_url) else rep(NA_integer_, nrow(icpsr_own))
+    col <- function(nm) if (is.data.frame(icpsr_info_all)) icpsr_info_all[[nm]][k] else rep(NA_character_, nrow(icpsr_own))
+    doi <- .icpsr_doi_of(icpsr_own$repo_url)
+    icpsr_tbl <- data.frame(
+      Deposit = sprintf("<a href='%s' target='_blank'>%s</a>", icpsr_own$repo_url, doi),
+      Title = substr(col("title"), 1, 120), Published = col("publication_date"), check.names = FALSE)
+    n_i <- nrow(icpsr_own)
+    report_icpsr <- c(
+      "#### Replication packages at ICPSR",
+      paste(sprintf("The paper's replication %s at ICPSR (openICPSR, which holds the AEA Data and Code Repository).",
+                    plural(n_i, "package is", "packages are")),
+            sprintf("We list %s, but cannot check %s files: ICPSR's site does not allow automatic downloads.",
+                    plural(n_i, "it", "them"), plural(n_i, "its", "their"))),
+      scroll_table(icpsr_tbl, maxrows = 10))
+    summary_icpsr <- sprintf("The paper's replication %s at ICPSR (%s); we list %s but cannot check %s files.",
+                             plural(n_i, "package is", "packages are"), paste(doi, collapse = ", "),
+                             plural(n_i, "it", "them"), plural(n_i, "its", "their"))
+  }
+  report_cran <- NULL
+  summary_cran <- NULL
+  if (nrow(cran_own) > 0) {
+    k <- if (is.data.frame(cran_info_all)) match(cran_own$repo_url, cran_info_all$cran_url) else rep(NA_integer_, nrow(cran_own))
+    pk <- .cran_pkg_of(cran_own$repo_url)
+    col <- function(nm) if (is.data.frame(cran_info_all)) cran_info_all[[nm]][k] else rep(NA_character_, nrow(cran_own))
+    cran_tbl <- data.frame(
+      Package = sprintf("<a href='%s' target='_blank'>%s</a>", cran_own$repo_url, pk),
+      Title = substr(col("title"), 1, 120),
+      Version = col("version"), Published = col("publication_date"), check.names = FALSE)
+    n_c <- nrow(cran_own)
+    report_cran <- c(
+      "#### R packages on CRAN",
+      paste(sprintf("The paper's own R %s on CRAN.", plural(n_c, "package is", "packages are")),
+            sprintf("We list %s, but do not download or check %s: CRAN checks its packages, and a package is not the paper's analysis.",
+                    plural(n_c, "it", "them"), plural(n_c, "it", "them"))),
+      scroll_table(cran_tbl, maxrows = 10))
+    summary_cran <- sprintf("The paper's own R %s on CRAN (%s), which we list but do not check.",
+                            plural(n_c, "package is", "packages are"), paste(pk, collapse = ", "))
+  }
+  report_archives <- NULL
+  summary_archives <- NULL
+  arch_out <- data.frame(paper_id = character(0), accession = character(0), archive = character(0),
+                         repo_url = character(0))
+  if (nrow(arch_own) > 0) {
+    info_k <- if (is.data.frame(seq_info_all)) seq_info_all[seq_info_all$seq_url %in% arch_own$repo_url, , drop = FALSE] else NULL
+    size <- tryCatch(seq_archive_size(info_k), error = \(e) NULL)
+    k <- if (is.data.frame(info_k)) match(arch_own$repo_url, info_k$seq_url) else rep(NA_integer_, nrow(arch_own))
+    ks <- if (is.data.frame(size)) match(arch_own$repo_url, size$seq_url) else rep(NA_integer_, nrow(arch_own))
+    acc <- .seq_acc_of(arch_own$repo_url)
+    archive_name <- ifelse(arch_own$repo_type == "geo", "GEO",
+                    ifelse(arch_own$repo_type == "arrayexpress", "ArrayExpress",
+                    ifelse(grepl("^(PRJEB|ERP|ER|SAMEA)", acc), "ENA",
+                    ifelse(grepl("^(PRJDB|DRP|DR)", acc), "DDBJ", "SRA / BioProject"))))
+    fmt_size <- function(b) ifelse(is.na(b), "", paste0(", ", vapply(b, \(x)
+      if (is.na(x)) "" else utils:::format.object_size(x, units = "auto", standard = "SI", digits = 1), "")))
+    held <- if (is.data.frame(size)) ifelse(is.na(size$units[ks]), "",
+      paste0(size$units[ks], " ", size$unit[ks], fmt_size(size$bytes[ks]))) else rep("", nrow(arch_own))
+    arch_tbl <- data.frame(
+      Deposit = sprintf("<a href='%s' target='_blank'>%s</a>", arch_own$repo_url, acc),
+      Archive = archive_name,
+      Title = if (is.data.frame(info_k)) substr(info_k$title[k], 1, 120) else NA_character_,
+      Holds = held, check.names = FALSE)
+    n_a <- nrow(arch_own)
+    report_archives <- c(
+      "#### Sequence and expression archives",
+      paste(sprintf("The paper deposited %s in %s for sequence and expression data.",
+                    plural(n_a, "a data set", sprintf("%d data sets", n_a)), plural(n_a, "an archive", "archives")),
+            "We list them, but do not download them or check them as data and code: these archives keep",
+            "raw data, such as sequencing reads, in their own formats."),
+      scroll_table(arch_tbl, maxrows = 10))
+    arch_out <- data.frame(paper_id = arch_own$paper_id, accession = acc, archive = archive_name,
+                           repo_url = arch_own$repo_url)
+    summary_archives <- sprintf("The paper deposited %s in archives for sequence and expression data (%s), which we list but do not check.",
+                                plural(n_a, "a data set", sprintf("%d data sets", n_a)),
+                                paste(sprintf("%s: %s", archive_name, acc), collapse = "; "))
+  }
+
   repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
       files_n = sum(!is.na(file_name)),
@@ -2725,6 +3005,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     repo_no_readme,
     plural(repo_no_readme, "repository", "repositories")
   )
+  # no repository left to have one (all set aside, or in sequence archives)
+  if (nrow(repos) == 0) summary_readme <- NULL
 
   if (repo_no_readme > 0) {
     report_readme <- "#### README Files\n\nREADME files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or including 'README' in the name of your overview document."
@@ -2819,27 +3101,47 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## OSF projects listed only in part ----
-  # The listing of these stopped at `osf_max_requests` (see the OSF block
-  # above, and `listing_cut` in `ownership`).
-  cut_urls <- intersect(osf_cut_urls, c(repos$repo_url, all_files$repo_url))
+  # The listing of these stopped at `osf_max_requests` (reason "request
+  # limit"), or the OSF refused part of it, also when asked again (reason
+  # "refused by the OSF", #681); see the OSF block above, and `listing_cut`
+  # and `listing_short` in `ownership`. A project with both is named for the
+  # refusal: the part listed is then not kept for a next run to go on with,
+  # so running the check again is what helps.
+  part_urls <- intersect(unique(c(osf_short_urls, osf_cut_urls)),
+                         c(repos$repo_url, all_files$repo_url))
   partial_repos <- data.frame(
-    paper_id = repos$paper_id[match(cut_urls, repos$repo_url)],
-    repo_url = cut_urls,
-    files_listed = vapply(cut_urls, \(u) sum(all_files$repo_url %in% u), integer(1), USE.NAMES = FALSE))
+    paper_id = repos$paper_id[match(part_urls, repos$repo_url)],
+    repo_url = part_urls,
+    files_listed = vapply(part_urls, \(u) sum(all_files$repo_url %in% u), integer(1), USE.NAMES = FALSE),
+    reason = ifelse(part_urls %in% osf_short_urls, "refused by the OSF", "request limit"))
   if (nrow(partial_repos) > 0) {
-    report_partial <- sprintf(
-      "#### Partly Listed Repositories\n\n%s %s (%s) %s more folders than metacheck lists by default, so only part of %s files %s listed (%s), and what this report says about %s files describes only that part. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
-      nrow(partial_repos),
-      plural(nrow(partial_repos), "OSF project", "OSF projects"),
-      paste(partial_repos$repo_url, collapse = ", "),
-      if (nrow(partial_repos) == 1) "has" else "have",
-      if (nrow(partial_repos) == 1) "its" else "their",
-      if (sum(partial_repos$files_listed) == 1) "was" else "were",
-      paste(partial_repos$files_listed, plural(partial_repos$files_listed, "file", "files"), collapse = ", "),
-      if (nrow(partial_repos) == 1) "its" else "their")
-    summary_partial <- sprintf(
-      "We listed only part of %d OSF %s (the request limit was reached).",
-      nrow(partial_repos), plural(nrow(partial_repos), "project", "projects"))
+    cut_part <- partial_repos[partial_repos$reason == "request limit", , drop = FALSE]
+    short_part <- partial_repos[partial_repos$reason == "refused by the OSF", , drop = FALSE]
+    report_partial <- c(
+      "#### Partly Listed Repositories",
+      if (nrow(cut_part) > 0) sprintf(
+        "%s %s (%s) %s more folders than metacheck lists by default, so only part of %s files %s listed (%s), and what this report says about %s files describes only that part. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
+        nrow(cut_part),
+        plural(nrow(cut_part), "OSF project", "OSF projects"),
+        paste(cut_part$repo_url, collapse = ", "),
+        if (nrow(cut_part) == 1) "has" else "have",
+        if (nrow(cut_part) == 1) "its" else "their",
+        if (sum(cut_part$files_listed) == 1) "was" else "were",
+        paste(cut_part$files_listed, plural(cut_part$files_listed, "file", "files"), collapse = ", "),
+        if (nrow(cut_part) == 1) "its" else "their"),
+      if (nrow(short_part) > 0) sprintf(
+        "The OSF refused part of the listing of %s, also when asked again, so what this report says about %s files describes only the part that was listed. Run the check again later.",
+        paste(sprintf("%s (%d %s listed)", short_part$repo_url, short_part$files_listed,
+                      plural(short_part$files_listed, "file", "files")), collapse = ", "),
+        if (nrow(short_part) == 1) "its" else "their")
+    ) |> paste(collapse = "\n\n")
+    summary_partial <- c(
+      if (nrow(cut_part) > 0) sprintf(
+        "We listed only part of %d OSF %s (the request limit was reached).",
+        nrow(cut_part), plural(nrow(cut_part), "project", "projects")),
+      if (nrow(short_part) > 0) sprintf(
+        "We listed only part of %d OSF %s, because the OSF refused part of the listing; run the check again.",
+        nrow(short_part), plural(nrow(short_part), "project", "projects")))
   } else {
     report_partial <- NULL
     summary_partial <- NULL
@@ -3145,6 +3447,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_view_only,
     report_repo,
     report_ref_checked,
+    report_archives,
+    report_cran,
+    report_icpsr,
+    report_file_share,
     report_not_checked,
     report_ownership,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
@@ -3172,7 +3478,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # yellow for a "suggestion" kind.
   # Every linked deposit holds other people's or the authors' earlier work:
   # there is nothing of this paper's to judge, as when no repository is linked.
-  if (nrow(repos) == 0 && nrow(not_checked) > 0) {
+  if (nrow(repos) == 0 && (nrow(not_checked) > 0 || nrow(arch_own) > 0 || nrow(cran_own) > 0 || nrow(icpsr_own) > 0)) {
     tl <- "na"
   } else if (n_useless_problem > 0) {
     tl <- "red"
@@ -3184,6 +3490,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     tl <- "yellow"
   }
+  # a link to a file-sharing service is something to fix (#660)
+  if (n_file_share > 0 && tl %in% c("green", "na")) tl <- "yellow"
 
   # summary_table ----
   summary_table <- repos |>
@@ -3196,6 +3504,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       dplyr::across(files_n:files_zip, sum),
       .by = c(paper_id)
     )
+  # every paper has its row, also one whose deposits were all set aside
+  # (others', or in sequence archives): it was left out here and filled with
+  # zeros later, so its counts of whose deposits were lost
+  miss_ids <- setdiff(unique(paper_id(paper) %||% character(0)), summary_table$paper_id)
+  if (length(miss_ids)) {
+    summary_table <- dplyr::bind_rows(summary_table, data.frame(paper_id = miss_ids))
+    for (cc in setdiff(names(summary_table), "paper_id"))
+      summary_table[[cc]][summary_table$paper_id %in% miss_ids] <- 0L
+  }
   summary_table <- summary_table |>
     dplyr::left_join(n_unknown_by_paper, by = "paper_id") |>
     dplyr::left_join(n_naming_bad_by_paper, by = "paper_id")
@@ -3209,6 +3526,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$repo_others <- own_n("text", "others")
   summary_table$ref_others <- own_n("reference", "others")
   # cited only in the reference list, and checked as the paper's own
+  summary_table$file_share_n <- file_share_n_of(summary_table$paper_id)
+  summary_table$icpsr_own_n <- vapply(summary_table$paper_id, \(id) sum(icpsr_own$paper_id %in% id),
+                                      integer(1), USE.NAMES = FALSE)
+  summary_table$cran_own_n <- vapply(summary_table$paper_id, \(id) sum(cran_own$paper_id %in% id),
+                                     integer(1), USE.NAMES = FALSE)
+  summary_table$archive_own_n <- vapply(summary_table$paper_id, \(id) sum(arch_own$paper_id %in% id),
+                                        integer(1), USE.NAMES = FALSE)
   summary_table$ref_own <- vapply(summary_table$paper_id, \(id) sum(ref_checked$paper_id %in% id),
                                   integer(1), USE.NAMES = FALSE)
   summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
@@ -3229,7 +3553,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_not_public,
     summary_view_only,
     summary_repo,
-    summary_files,
+    if (nrow(repos) > 0 || !(nrow(arch_own) + nrow(cran_own) + nrow(icpsr_own))) summary_files,
+    summary_archives,
+    summary_cran,
+    summary_icpsr,
+    summary_file_share,
     summary_not_checked,
     summary_readme,
     summary_zip,
@@ -3246,18 +3574,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Repositories that were found but could not be listed (e.g. a GitHub repo
   # over the size gate, or a private OSF component). Carried out of the module
   # so downstream converters can explain *why* a paper produced no files,
-  # instead of reporting "no repository".
+  # instead of reporting "no repository". code_check and data_check name the
+  # ones with no files in their reports (#681); with `paper_id`, as a
+  # paper list's run holds the repositories of every paper.
   gated_repos <- repos[!is.na(repos$repo_error),
-                       c("repo_url", "repo_type", "repo_error"), drop = FALSE]
+                       intersect(c("paper_id", "repo_url", "repo_type", "repo_error"), names(repos)),
+                       drop = FALSE]
 
   # return a list ----
   list(
     table = all_files,
     summary_table = summary_table,
     gated_repos = gated_repos,
+    # the authors' own deposits in sequence and expression archives (GEO,
+    # SRA/ENA/DDBJ, ArrayExpress): paper_id, accession, archive, repo_url.
+    # Listed, not in `table`; code_check names them when files are missing.
+    archive_deposits = arch_out,
     # OSF projects listed only in part, because their listing stopped at
-    # `osf_max_requests`: paper_id, repo_url and files_listed. data_check and
-    # code_check warn that their files may be missing from what they download.
+    # `osf_max_requests` or the OSF refused part of it: paper_id, repo_url,
+    # files_listed and reason ("request limit", "refused by the OSF").
+    # data_check and code_check warn that their files may be missing from
+    # what they download, and name them in their reports (#681).
     partial_repos = partial_repos,
     # naming_issues_by_paper (paper_id attached), not the un-tagged
     # naming_issues used only for this call's own narrative report/summary

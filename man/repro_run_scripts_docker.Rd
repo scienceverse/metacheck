@@ -58,7 +58,8 @@ more than the total limit, or a file larger than the limit per file appears.}
 \value{
 a data frame — identical columns to \code{\link[=repro_run_scripts]{repro_run_scripts()}}'s
 return: \code{file_name}, \code{outcome}, \code{error}, \code{error_type}, \code{undefined_var},
-\code{stdout}, \code{stderr}, \code{elapsed}, \code{script_lines}, \code{captures}
+\code{stdout}, \code{stderr}, \code{elapsed}, \code{script_lines}, \code{captures}, \code{started_at},
+\code{ended_at}, \code{exit_status} (the container's exit status)
 }
 \description{
 The Docker-backed twin of \code{\link[=repro_run_scripts]{repro_run_scripts()}}: same return contract, same

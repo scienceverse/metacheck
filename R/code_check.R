@@ -68,7 +68,8 @@ code_read <- function(file_path) {
   raw <- if (file.exists(file_path)) {
     readBin(file_path, "raw", file.size(file_path))
   } else {
-    resp <- curl::curl_fetch_memory(file_path)
+    # a space in the address encoded (#667)
+    resp <- curl::curl_fetch_memory(utils::URLencode(file_path))
     if (resp$status_code >= 400)
       stop(sprintf("cannot open URL '%s': HTTP status was %d",
                    file_path, resp$status_code), call. = FALSE)

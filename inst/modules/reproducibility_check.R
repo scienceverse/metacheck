@@ -76,6 +76,49 @@
 #' result's `run_results` (the report shows it in per-script dropdowns, capped
 #' for readability).
 #'
+#' Provenance, kept so that a TRACE Research Object (TRO) declaration of the
+#' run can be written later from a stored result (metacheck #404; the helpers
+#' are in R/provenance.R). Only when code was run (`execute = TRUE`):
+#' * `run_results$started_at`, `run_results$ended_at`: when each run of a
+#'   script started and ended (ISO 8601, UTC, milliseconds); NA for a script
+#'   that was not started. A script run again in a later pass has the times of
+#'   its last run. A TRO uses them for each trov:TransparentResearchPerformance.
+#' * `run_results$exit_status`: the exit status of the process that ran the
+#'   script (0 = ended normally); NA when the process did not report one (a
+#'   time limit, or Docker failing to start the container).
+#' * `artifacts`: one row per file, with `stage` (`deposit`: as downloaded
+#'   from the repository, hashed from the downloaded file; `before_run`: the
+#'   run folder just before the first script ran, after metacheck's own
+#'   changes, such as rewritten paths and unpacked archives; `after_run`: only
+#'   the files the scripts made (`status` `new`), changed (`changed`) or
+#'   removed (`removed`), as an unchanged file is the one listed before the
+#'   run), `path` (relative to the run folder, as valid UTF-8, a byte of
+#'   another encoding written as `<xx>`), `size` (bytes), `sha256`,
+#'   `mime_type` (by extension, NA when unknown), `source` (the file's address
+#'   in the repository, for `deposit`). The package libraries metacheck
+#'   installs in the run folder are left out, as are metacheck's own files
+#'   there (a script's runner, and the statistical output it writes in
+#'   `statistical_output/`). Files metacheck itself copied
+#'   or made between passes (see `modifications`, `output_copied`,
+#'   `file_placed`) show in `after_run` too. A TRO uses the rows as
+#'   trov:ResearchArtifacts and each stage as a trov:ArtifactArrangement.
+#' * `modifications$sha256_before`, `modifications$sha256_after`: the hash
+#'   of the changed script as downloaded and as it ran; NA when the script is
+#'   not at the same path in both (a script made from an R Markdown file).
+#' * `environment`: the system that ran the code (trov:TransparentResearchSystem
+#'   in a TRO): `metacheck_version`, `started_at`, `ended_at`, `host` (R
+#'   version, platform, operating system), `sandbox`, `network_isolated` (TRUE
+#'   only when every Docker run had `--network none`; the process sandbox does
+#'   not stop the network), `internet`, `timeout_per_script`, `total_timeout`,
+#'   `python_local` (the Python run outside Docker and its version), and
+#'   `docker`: `runs` (for each kind of run, `r_run`, `r_install`,
+#'   `python_run`, `python_install`, the image and the `docker run` arguments,
+#'   such as `--network none`, `--read-only`, `--cap-drop ALL`,
+#'   `no-new-privileges`, the process limit and the memory and processor
+#'   limits) and `images` (for each image, its ID and digests from
+#'   `docker image inspect`, its creation time and the R and Python versions
+#'   its environment declares).
+#'
 #' `run_results$checked` says what the run of each script shows about the code,
 #' in five groups, so that a script that does not reproduce is kept apart from
 #' one the check could not test: `ran` (it ran to the end); `code_error` (it did
@@ -347,6 +390,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   results_dir = NULL) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
   sandbox <- match.arg(sandbox)
+  # Provenance, kept for a TRO (metacheck #404; R/provenance.R): when the check
+  # started, which deposit files were copied into the run folder, the run
+  # folder just before the first script ran, and where each script was written
+  .repro_prov_reset()
+  prov_started <- Sys.time()
+  prov_materialised <- NULL
+  prov_before <- NULL
+  prov_scripts <- NULL
   # set when the first script starts (see total_timeout)
   script_deadline <- NULL
   # the seconds that were left when the code check started with too little time
@@ -854,8 +905,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     sandbox_root <- tempfile("repro_sandbox_")
     if (!isTRUE(keep_sandbox))
       on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
-    repro_materialize_layout(plan, structure_df, sandbox_root,
-                             deadline = .repro_clock_deadline(total_timeout))
+    prov_materialised <- rbind(prov_materialised, attr(repro_materialize_layout(
+      plan, structure_df, sandbox_root, deadline = .repro_clock_deadline(total_timeout)), "materialised"))
     stat_output_write(stat_output, sandbox_root)
   }
 
@@ -1805,6 +1856,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("copying the repository (", nrow(plan %||% data.frame()), " files) ...")
     ml <- repro_materialize_layout(plan, structure_df, sandbox_root,
                                    deadline = if (no_time) Sys.time() else .repro_clock_deadline(total_timeout))
+    prov_materialised <- rbind(prov_materialised, attr(ml, "materialised"))
     .dbg("  materialised ", sum(attr(ml, "materialised")$ok %||% FALSE), "/",
          nrow(attr(ml, "materialised") %||% data.frame()), " files.",
          if (isTRUE(attr(ml, "not_copied_time") > 0))
@@ -1961,6 +2013,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     .dbg("running ", length(run_order_names), " script(s) in order: ",
          paste(run_order_names, collapse = " -> "))
+    # the run folder before the first script runs, hashed (R/provenance.R);
+    # before the scripts' time starts, so hashing does not take from it
+    if (is.null(prov_before)) prov_before <- .repro_artifacts(sandbox_root, "before_run")
+    prov_scripts <- rbind(prov_scripts, .repro_prov_scripts(run_tbl, sandbox_root))
     if (is.null(script_deadline)) script_deadline <- .repro_deadline(total_timeout)
     # the files there before the run, to see which a script wrote (see the end)
     r_names_before <- .repro_sandbox_names(sandbox_root)
@@ -3497,13 +3553,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       sandbox_root <- tempfile("repro_sandbox_")
       if (!isTRUE(keep_sandbox))
         on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
-      repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline)
+      prov_materialised <- rbind(prov_materialised, attr(
+        repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline), "materialised"))
     } else if (!has_r) {
       # has_r's own materialise call never ran (R section skipped entirely),
       # so a Python-only paper still needs the layout actually built into
       # whatever sandbox_root the JASP/jamovi stat_output step above created
       # (that step only writes statistical_output/, never the data/ tree).
-      repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline)
+      prov_materialised <- rbind(prov_materialised, attr(
+        repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline), "materialised"))
     }
     py_lib_dir <- file.path(sandbox_root, "_pylib")
     if (sandbox == "docker" && !isTRUE(keep_sandbox))
@@ -3607,6 +3665,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
            paste(names(py_imported), collapse = ", "))
     py_run_order_names <- setdiff(py_run_order_names, names(py_imported))
     if (is.null(py_exec_error)) {
+      # the run folder before the first script runs, unless R scripts ran
+      # first (R/provenance.R); before the scripts' time starts
+      if (is.null(prov_before)) prov_before <- .repro_artifacts(sandbox_root, "before_run")
+      prov_scripts <- rbind(prov_scripts, .repro_prov_scripts(py_run_tbl, sandbox_root))
       if (is.null(script_deadline)) script_deadline <- .repro_deadline(total_timeout)
       .dbg("[repro/py] running ", length(py_run_order_names), " script(s) in order: ",
            paste(py_run_order_names, collapse = " -> "))
@@ -4491,6 +4553,28 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   install_results <- dplyr::bind_rows(r_install_results, py_install_results)
   if (!nrow(install_results)) install_results <- r_install_results %||% py_install_results
   modifications <- dplyr::bind_rows(r_modifications, py_modifications)
+  # Provenance for a TRO (metacheck #404; R/provenance.R): every file as
+  # downloaded, just before the first script ran, and what the scripts made,
+  # changed or removed; the system that ran them; each modified script's hash
+  # before and after metacheck changed it. Only when code was run.
+  artifacts <- NULL
+  prov_environment <- NULL
+  if (isTRUE(execute) && !is.null(prov_before)) {
+    deposit <- if (!is.null(prov_materialised) && nrow(prov_materialised))
+      .repro_deposit_artifacts(prov_materialised[!duplicated(prov_materialised$target_path), , drop = FALSE],
+                               structure_df) else NULL
+    artifacts <- rbind(deposit %||% .repro_artifact_cols(), prov_before,
+                       if (!is.null(sandbox_root) && dir.exists(sandbox_root))
+                         .repro_artifacts_after(prov_before, sandbox_root) else .repro_artifact_cols())
+    rownames(artifacts) <- NULL
+    modifications <- .repro_modification_hashes(modifications, prov_scripts, artifacts)
+    prov_environment <- .repro_environment(
+      sandbox, started = prov_started, ended = Sys.time(), timeout = timeout,
+      total_timeout = total_timeout, internet = !is.null(net),
+      python_bin = if (sandbox == "process" && exists("py_run_tbl", inherits = FALSE) &&
+                         exists("py_parse_bin", inherits = FALSE) &&
+                         !is.null(py_run_tbl) && nrow(py_run_tbl)) py_parse_bin else NULL)
+  }
   # the scripts, the software not run, and why scripts did not run through (#568, item 24)
   run_counts <- .repro_run_counts(run_results)
   summary_table <- cbind(summary_table, run_counts)
@@ -4532,6 +4616,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # build above. Empty (0-row, same columns) when execute = FALSE (nothing
     # was actually written/run to modify) or nothing needed modifying.
     modifications = modifications,
+    # Provenance for a TRO (metacheck #404): artifacts, one row per file
+    # (stage deposit / before_run / after_run, path, size, sha256, mime_type,
+    # source, status), and environment, the system that ran the code; NULL
+    # when no code was run. See R/provenance.R.
+    artifacts = artifacts,
+    environment = prov_environment,
     # The checklist report's own section on this check: what happened to each
     # script, the problems in the files and the comparison with the paper
     # (see .repro_checklist_section()). NULL when no code was run.
@@ -4687,7 +4777,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # stderr was redirected to a file (see launch()), not read via
         # p$read_all_error() -- that reads from the pipe callr uses by
         # default, which this worker was not given.
-        err <- tryCatch(paste(readLines(err_files[[pid]], warn = FALSE), collapse = "\n"),
+        err <- tryCatch(paste(.utf8_lines(readLines(err_files[[pid]], warn = FALSE)), collapse = "\n"),
                         error = function(e) "")
         res <- list(traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",

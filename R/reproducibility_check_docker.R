@@ -920,6 +920,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
            "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
            image, "Rscript", "/sandbox/install.R")
+  # kept for the environment element of the output (R/provenance.R)
+  .repro_prov_note_docker("r_install", args, image)
 
   out_file <- tempfile(fileext = ".out")
   res <- tryCatch(
@@ -950,7 +952,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   tbl <- if (!is.null(res) && file.exists(results_path))
     tryCatch(readRDS(results_path), error = function(e) NULL) else NULL
 
-  txt <- if (!is.null(res)) tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
+  txt <- if (!is.null(res)) tryCatch(paste(.utf8_lines(readLines(out_file, warn = FALSE)), collapse = "\n"),
                                      error = function(e) "") else ""
   # A failed install whose message gives no reason, only "had non-zero exit
   # status", gets the reason from the install's own output (#568): 7 of 111
@@ -1080,7 +1082,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #'
 #' @returns a data frame — identical columns to [repro_run_scripts()]'s
 #'   return: `file_name`, `outcome`, `error`, `error_type`, `undefined_var`,
-#'   `stdout`, `stderr`, `elapsed`, `script_lines`, `captures`
+#'   `stdout`, `stderr`, `elapsed`, `script_lines`, `captures`, `started_at`,
+#'   `ended_at`, `exit_status` (the container's exit status)
 #' @param deadline the time ([Sys.time()] plus the time for all scripts
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
@@ -1109,7 +1112,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
                       error = character(0), error_type = character(0),
                       undefined_var = character(0), stdout = character(0),
                       stderr = character(0), elapsed = numeric(0)) |>
-             dplyr::mutate(script_lines = list(), captures = list()))
+             dplyr::mutate(script_lines = list(), captures = list()) |> .repro_add_run_clock())
   if (!requireNamespace("processx", quietly = TRUE))
     stop("the 'processx' package is required for sandbox = \"docker\".", call. = FALSE)
 
@@ -1127,7 +1130,10 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
 
   capture_preamble <- .repro_docker_capture_preamble()
 
-  rows <- lapply(ordered_names, function(fn) {
+  # each script's start, end and exit status, for run_results' started_at,
+  # ended_at and exit_status (see .repro_add_run_clock(), R/provenance.R)
+  clock <- new.env()
+  run_one <- function(fn) {
     pb_run$tick(1, list(what = sprintf("Running %s (%s so far)", fn, .repro_duration(
       as.numeric(difftime(Sys.time(), run_started, units = "secs"))))))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
@@ -1156,7 +1162,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
 
     message("[repro/docker]   -> running '", fn, "' (timeout ", timeout, "s) ...")
@@ -1318,14 +1324,19 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", image = image))
     args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
+    # kept for the environment element of the output (R/provenance.R)
+    .repro_prov_note_docker("r_run", args, image)
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
+    clock$started <- t0
     watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
                                          sandbox_root, net)
     res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    clock$ended <- Sys.time()
+    clock$status <- .repro_exit_status(res)
 
     # is_timeout also drives error_type/outcome further below (moved up from
     # there, unchanged) -- computed once and reused here as well, for the
@@ -1350,7 +1361,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     unlink(cap_file_host)
 
     read_cap <- function(f) if (file.exists(f))
-      paste(readLines(f, warn = FALSE), collapse = "\n") else ""
+      paste(.utf8_lines(readLines(f, warn = FALSE)), collapse = "\n") else ""
     so <- read_cap(out_file); se <- read_cap(err_file)
     unlink(c(out_file, err_file))
 
@@ -1428,6 +1439,10 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
               error_type = NA_character_, undefined_var = NA_character_,
               stdout = so, stderr = se, elapsed = elapsed) |>
       dplyr::mutate(script_lines = list(exec_lines), captures = list(captures))
+  }
+  rows <- lapply(ordered_names, function(fn) {
+    rm(list = ls(clock), envir = clock)
+    .repro_add_run_clock(run_one(fn), clock)
   })
-  dplyr::bind_rows(rows)
+  .repro_add_run_clock(dplyr::bind_rows(rows))
 }
