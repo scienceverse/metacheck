@@ -43,7 +43,11 @@ a folder already started is listed in full, with its retries, so the count
 can end a little above the limit. Default \code{Inf} (no limit).}
 }
 \value{
-a data frame of information
+a data frame of information. With \code{recursive = TRUE}, a folder or
+component the OSF refused or sent back short (as it does under load) is
+asked for once more, after 30 seconds; when it still fails, the result
+has a column \code{listing_short} (\code{TRUE}), with a warning: files in that
+folder are missing from it. Such a listing is not kept in either cache.
 }
 \description{
 Repository listings are cached for the session (keyed by URL and

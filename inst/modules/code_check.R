@@ -79,6 +79,10 @@ code_check <- function(paper, local_path = NULL,
   # about below, before anything is downloaded
   listing_partial <- if (is.null(local_path))
     get_prev_outputs("repo_check", "partial_repos") else NULL
+  # repositories repo_check found but could not list (#501); named in the
+  # report with the ones above (#681)
+  listing_gated <- if (is.null(local_path))
+    get_prev_outputs("repo_check", "gated_repos") else NULL
   # the authors' own deposits in sequence and expression archives (#660)
   archive_deposits <- if (is.null(local_path))
     get_prev_outputs("repo_check", "archive_deposits") else NULL
@@ -103,10 +107,14 @@ code_check <- function(paper, local_path = NULL,
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
     listing_partial <- mo$partial_repos
+    listing_gated <- mo$gated_repos
     archive_deposits <- mo$archive_deposits
   }
   if (isTRUE(download) && nrow(all_files) > 0)
     .cap_report_partial(listing_partial, all_files$repo_url)
+  # repositories listed only in part or not at all: the checks below do not
+  # see all their files, which the report and summary say (#681)
+  not_listed <- .repos_not_listed_text(listing_partial, listing_gated, all_files$repo_url)
   all_files$language <- code_lang(all_files$file_name)
 
   # Download every file the steps below might need (spv/smcl/mplus/html
@@ -246,8 +254,12 @@ code_check <- function(paper, local_path = NULL,
       # every OTHER paper in that batch too -- confirmed on a real 2-paper
       # batch where neither paper had any code file.
       table = code_files,
-      traffic_light = "na",
-      summary_text = summary_code,
+      # yellow when a repository was not listed in full: its code may exist
+      # unseen (#681)
+      traffic_light = if (is.null(not_listed$summary)) "na" else "yellow",
+      summary_text = if (is.null(not_listed$summary)) summary_code else
+        paste("\n- ", c(summary_code, not_listed$summary), collapse = ""),
+      report = not_listed$report,
       # code_n (not code_file_n): must match the normal-path summary_table's
       # column name below, or a corpus batch mixing papers with and without
       # code files ends up with two disjoint, sparsely-populated columns
@@ -661,11 +673,14 @@ code_check <- function(paper, local_path = NULL,
     )
 
     report_missingfiles <- sprintf(
-      "The scripts load files, but %d script%s loaded %d file%s that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:",
+      "The scripts load files, but %d script%s loaded %d file%s that could not be automatically identified in the repository.%s Check if the following files are made available, so that others can reproduce your code, or that the files are missing:",
       length(missingfiles_issue),
       plural(length(missingfiles_issue)),
       n_missing,
-      plural(n_missing)
+      plural(n_missing),
+      # a file may be in a folder that was not listed (#681)
+      if (is.null(not_listed$report)) "" else
+        " This may be because a repository was listed only in part or not at all (see Repositories not listed in full above)."
     )
 
     rows <- which(code_files$loaded_files_missing > 0)
@@ -969,6 +984,7 @@ code_check <- function(paper, local_path = NULL,
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
     failed_text$report,
+    not_listed$report,
     scroll_table(report_table, maxrows = 5),
     "#### Code Comments",
     report_comments,
@@ -1017,6 +1033,10 @@ code_check <- function(paper, local_path = NULL,
   } else {
     tl <- "yellow"
   }
+  # at least yellow when a repository was listed only in part or not at all:
+  # files went unchecked, so neither "no issues" nor "nothing to check" holds
+  # (#681)
+  if (!is.null(not_listed$summary) && tl %in% c("na", "green")) tl <- "yellow"
 
   # Aggregate by paper
   # Every code_* column below except code_n/code_checked is only set inside
@@ -1119,6 +1139,7 @@ code_check <- function(paper, local_path = NULL,
   summary_text <- c(
     summary_code,
     failed_text$summary,
+    not_listed$summary,
     summary_comments,
     if (length(setwd_issues) > 0) summary_setwd,
     if (length(install_packages_issues) > 0) summary_install_packages,

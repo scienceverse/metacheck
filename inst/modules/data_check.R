@@ -194,13 +194,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # lets the framework handle tab switching and widget sizing, rather than
   # hand-rolled show/hide JS. Tab-heading level (##) becomes a tab label and is
   # not added to the report TOC.
+  # At most .report_file_tabs() files get a table (R/report-helpers.R), with a
+  # note when there are more, so the report stays small for large deposits.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
+    files <- .report_file_tabs(files)
+    note <- attr(files, "note")
     if (.report_is_static(report_type())) {
       secs <- vapply(files, function(f) {
         paste(c(paste0("##### ", f), table_fun(f)), collapse = "\n\n")
       }, character(1))
-      return(paste(secs, collapse = "\n\n"))
+      return(paste(c(note, secs), collapse = "\n\n"))
     }
     # Each tab heading and its body are separate blocks joined by a blank line:
     # Pandoc only parses a `## heading` when a blank line precedes it, so a
@@ -209,7 +213,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     tabs <- vapply(files, function(f) {
       paste(c(paste0("## ", f), table_fun(f)), collapse = "\n\n")
     }, character(1))
-    paste(c("::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
+    paste(c(note, "::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
   }
 
   # One descriptives table per source file. `desc` must include a `source_file`
@@ -309,6 +313,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   if (download != "none" && nrow(all_files) > 0)
     .cap_report_partial(listing_partial, all_files$repo_url)
+  # repositories listed only in part or not at all: the checks below do not
+  # see all their files, which the report and summary say (#681)
+  not_listed <- .repos_not_listed_text(listing_partial, listing_gated, all_files$repo_url)
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
   if (nrow(all_files) == 0) {
@@ -338,8 +345,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # code_check.R's and codebook_check.R's equivalent empty-result paths).
       table = all_files,
       structure = all_files,
-      traffic_light = "na",
-      summary_text = "We found no files to analyse.",
+      # yellow when a repository was not listed in full: its data may exist
+      # unseen (#681)
+      traffic_light = if (is.null(not_listed$summary)) "na" else "yellow",
+      summary_text = if (is.null(not_listed$summary)) "We found no files to analyse." else
+        paste("\n- ", c("We found no files to analyse.", not_listed$summary), collapse = ""),
+      report = not_listed$report,
       gated_repos = listing_gated,
       manifest_path = if (!is.null(manifest)) manifest_path else NULL,
       summary_table = data.frame(
@@ -1295,7 +1306,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
   # files whose download failed: the checks below did not see them (#667)
   failed_text <- .download_failed_text(failed_files)
-  report <- c(report, failed_text$report)
+  report <- c(report, failed_text$report, not_listed$report)
   unpack_text <- .unzip_failed_text(unpack_failed)
   report <- c(report, unpack_text$report)
 
@@ -1539,7 +1550,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_studies <- NULL
     summary_ungrouped <- NULL
   }
-  summary_text <- c(failed_text$summary, unpack_text$summary, summary_keys, summary_files, summary_data, summary_studies,
+  summary_text <- c(failed_text$summary, not_listed$summary, unpack_text$summary, summary_keys, summary_files,
+                     summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
                      summary_workspace, summary_nontabular, summary_trial_level) |>
     paste("\n- ", x = _, collapse = "")
@@ -1676,6 +1688,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     both <- both[both %in% names(rank)]
     empty_tl <- if (!length(both)) "na" else
       names(rank)[which(rank == max(rank[both]))[1]]
+    # at least yellow when a repository was listed only in part or not at all:
+    # files went unchecked, so neither "no issues" nor "nothing to check" holds
+    # (#681)
+    if (!is.null(not_listed$summary) && empty_tl %in% c("na", "green")) empty_tl <- "yellow"
     dv_summary_table <- summary_table["paper_id"] |>
       dplyr::left_join(n_spreadsheet_files_by_paper, by = "paper_id") |>
       dplyr::left_join(n_flagged_files_spreadsheet_by_paper, by = "paper_id")
@@ -2415,6 +2431,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # low (green+yellow -> "green", yellow+red -> "yellow").
     if (!length(both)) "na" else names(rank)[which(rank == max(rank[both]))[1]]
   }
+  # at least yellow when a repository was listed only in part or not at all:
+  # files went unchecked, so neither "no issues" nor "nothing to check" holds
+  # (#681)
+  if (!is.null(not_listed$summary) && tl %in% c("na", "green")) tl <- "yellow"
 
   list(
     # One row per COLUMN: what each column is (representation, level, concept,

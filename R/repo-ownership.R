@@ -42,7 +42,9 @@
   au <- .FAIR_repo_authors(paper)
   raw <- paper$author
   fam <- if (is.data.frame(raw) && "family" %in% names(raw)) as.character(raw$family) else character(0)
-  fam <- fam[!is.na(fam) & nzchar(trimws(fam))]
+  # without Grobid's noise ("Hecker -Orcid"; #682)
+  fam <- .own_fam_clean(fam[!is.na(fam)])
+  fam <- fam[nzchar(fam)]
   orc <- au$orcid %||% character(0)
   orc <- unlist(regmatches(orc, gregexpr("\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]", orc)))
   aff <- unlist(strsplit(au$affiliation[!is.na(au$affiliation)], "[;\n\t]+"))
@@ -174,8 +176,7 @@
       unique(x$xref_id[x$text_id %in% tx$text_id[hit] & x$xref_type %in% "bibr"]) else character(0)
     if (length(cited) && is.data.frame(b) && all(c("bib_id", "authors") %in% names(b))) {
       au <- b$authors[match(cited, b$bib_id)]
-      ov <- vapply(au, \(a) isTRUE(.own_names_author(
-        paste(sub(",.*", "", strsplit(as.character(a %||% ""), ";")[[1]]), collapse = " "), fam)), logical(1))
+      ov <- vapply(au, \(a) isTRUE(.own_people_author(as.character(a %||% NA), fam)), logical(1))
       out$cites_others[[i]] <- any(!ov); out$cites_own[[i]] <- any(ov)
     } else {
       out$cites_others[[i]] <- FALSE; out$cites_own[[i]] <- FALSE
@@ -330,6 +331,10 @@
   x$dep_description <- pick("description")
   x$dep_creators <- ifelse(code_host, NA_character_, pick("creators"))
   x$dep_orcids <- pick("creator_orcids")
+  # the OSF's own family names of its contributors, and how many it has: it
+  # names only the first 10 in its answer (#682)
+  x$dep_creator_families <- col(od, "creator_families", ko)
+  x$dep_n_creators <- col(od, "n_creators", ko)
   x$dep_type <- .own_dep_type(links$repo_type, col(meta, "resource_type", k), col(meta, "resource_subtype", k))
   # the institute that submitted it, where the record names no people (#660)
   x$dep_org <- col(meta, "organisation", k)
@@ -473,30 +478,98 @@
   unique(w[nchar(w) >= 3])
 }
 
-# TRUE when a family name of the paper's authors is a word of `x` (a list of
-# people, an account name, a README), or, at five letters or more, part of a
-# word ("carabrook"); NA when either side has no names.
-.own_names_author <- function(x, family) {
-  if (length(x) != 1 || is.na(x) || !length(family)) return(NA)
-  wx <- .own_fam_words(x)
-  wa <- .own_fam_words(paste(family, collapse = " "))
-  if (!length(wx) || !length(wa)) return(NA)
-  any(wa %in% wx) || any(vapply(wa[nchar(wa) >= 5], \(w) any(grepl(w, wx, fixed = TRUE)), logical(1)))
+# Name particles: words that begin a family name ("van", "von", "der",
+# "dos", "al") and that many unrelated people share. On its own such a word
+# says nothing about who a person is: "Van Lissa" matched every list of
+# people with a "van" in it, such as "Marcel A.L.M. van Assen" (#682). Words
+# of one or two letters ("de", "da", "le", "'t") are never matched, so only
+# longer ones are listed.
+.own_particles <- c("van", "von", "der", "den", "des", "dei", "del", "della", "delle", "dello", "degli",
+  "dalla", "das", "dos", "las", "les", "los", "ter", "ten", "het", "auf", "vom", "zum", "zur", "bin", "ibn",
+  "abu", "mac")
+
+# A family name as Grobid can write it, without its noise: a word broken at a
+# line end is joined ("Przybyl- Ski"), and what follows a hyphen with a space
+# before it is no part of the name ("Hecker -Orcid", "Ruge - Orcid").
+.own_fam_clean <- function(x) {
+  x <- gsub("([[:alpha:]])-\\s+([[:alpha:]])", "\\1\\2", x, perl = TRUE)
+  trimws(sub("\\s+-.*$", "", x, perl = TRUE))
 }
 
-# The paper's family names among the family names of a "Family, G; ..." list
-.own_overlap <- function(people, family, ref = FALSE) {
-  if (length(people) != 1 || is.na(people)) return(NA)
-  if (ref) people <- paste(sub(",.*", "", trimws(strsplit(people, ";")[[1]])), collapse = "; ")
-  fam <- function(x) {
-    x <- unlist(strsplit(.own_ascii(x), "[;,]"))
-    x <- trimws(gsub("[^a-z -]", "", x))
-    unique(x[nchar(x) >= 3])
-  }
-  words <- \(x) { w <- unlist(strsplit(fam(x), "[ -]+")); unique(w[nchar(w) >= 3]) }
-  wa <- words(people); wb <- words(paste(family, collapse = "; "))
-  if (!length(wa) || !length(wb)) return(NA)
-  any(wb %in% wa) || any(vapply(wb[nchar(wb) >= 5], \(w) any(grepl(w, wa, fixed = TRUE)), logical(1)))
+# The words by which the paper's family names are matched: each name's words
+# of three letters or more, without its particles ("Van Lissa" -> "lissa").
+# Grobid's family names can hold a given name as well ("Moritz Heene"), so
+# each word is a key, and the whole name is not required. A name of
+# particles only ("Van Der", a name Grobid cut short) keeps the whole name,
+# written together ("vander"), which matches no particle on its own. With
+# `joined`, each name written together ("vanaert") is added, as a name runs
+# together in an account name or a README ("rbmvanaert").
+.own_fam_keys <- function(family, joined = FALSE) {
+  family <- .own_fam_clean(as.character(family[!is.na(family)]))
+  unique(unlist(lapply(family, \(f) {
+    w <- unlist(strsplit(.own_ascii(f), "[^a-z]+"))
+    w <- w[nchar(w) >= 3]
+    k <- w[!w %in% .own_particles]
+    whole <- gsub("[^a-z]", "", .own_ascii(f))
+    if (!length(k) && nchar(whole) >= 3) k <- whole
+    if (joined && nchar(whole) >= 3) k <- c(k, whole)
+    k
+  })))
+}
+
+# TRUE when a family name of the paper's authors is written in `x`: an
+# account name, a README, or the name an account gives itself (a person's,
+# or a lab's such as "Bourne & Mura Computational Biosciences Lab"). A key of
+# .own_fam_keys() must be a whole word of `x`. With `inside`, for an account
+# name or a README, where names run together ("carabrook", "cjvanlissa"), a
+# key of five letters or more, or a name written together, may also be part
+# of a word. NA when either side has no names. Lists of people are compared
+# with .own_people_author().
+.own_names_author <- function(x, family, inside = FALSE) {
+  if (length(x) != 1 || is.na(x) || !length(family)) return(NA)
+  wx <- .own_fam_words(x)
+  wa <- .own_fam_keys(family)
+  if (!length(wx) || !length(wa)) return(NA)
+  if (any(wa %in% wx)) return(TRUE)
+  if (!inside) return(FALSE)
+  long <- .own_fam_keys(family, joined = TRUE)
+  any(vapply(long[nchar(long) >= 5], \(w) any(grepl(w, wx, fixed = TRUE)), logical(1)))
+}
+
+# The family part of each person in a list of people ("Name; Name"): the part
+# before the comma of "Family, Given"; otherwise every word after the first
+# ("Given Family", with any middle names), the first word when every other
+# word is an initial ("Smith AB"), or the name itself when it is one word
+.own_person_family <- function(people) {
+  p <- trimws(unlist(strsplit(as.character(people), ";")))
+  p <- p[!is.na(p) & nzchar(p)]
+  vapply(p, \(q) {
+    if (grepl(",", q, fixed = TRUE)) return(trimws(sub(",.*$", "", q)))
+    w <- strsplit(q, "\\s+")[[1]]
+    if (length(w) == 1) return(q)
+    if (all(grepl("^([[:upper:]][.]?){1,3}$", w[-1]))) return(w[[1]])
+    paste(w[-1], collapse = " ")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# TRUE when a family name of the paper's authors is the family name of a
+# person in `people` (a deposit's creators or contributors, "Name; Name", or
+# a reference's authors, "Family, G; ..."): a key of .own_fam_keys() is a
+# whole word of a person's family part. A given name ("Lissa" in "Melissa
+# Lewis"), a particle ("van" in "van Assen") or part of a word is no match
+# (#682). `families` gives each person's family name where the source says
+# it (the OSF does, as "Family; Family"); otherwise it is read from the
+# names. NA when either side has no names.
+.own_people_author <- function(people, family, families = NA_character_) {
+  if (length(people) != 1 || is.na(people) || !length(family)) return(NA)
+  fp <- if (length(families) == 1 && !is.na(families) && nzchar(trimws(families)))
+    trimws(unlist(strsplit(families, ";"))) else .own_person_family(people)
+  wp <- unique(unlist(lapply(fp, .own_fam_words)))
+  # a particle-only key ("vander") is a family part written together
+  wp <- c(wp, gsub("[^a-z]", "", .own_ascii(fp)))
+  wa <- .own_fam_keys(family)
+  if (!length(wp) || !any(nchar(wp) >= 3) || !length(wa)) return(NA)
+  any(wa %in% wp)
 }
 
 # A paper author's full name (first and last word) among a list of people
@@ -585,7 +658,8 @@
   "ref_year", "ref_title", "citing", "citing_sections", "cites_others", "cites_own", "dep_title",
   "dep_description", "dep_creators", "dep_orcids", "dep_type", "dep_related", "dep_year", "dep_date",
   "listed", "n_files", "has_data", "has_code", "pkg_layout", "file_paper_words", "readme", "osf_type",
-  "osf_category", "osf_contributors", "gh_owner_name", "gh_stars", "gh_forks", "cff_dois", "dep_org")
+  "osf_category", "osf_contributors", "gh_owner_name", "gh_stars", "gh_forks", "cff_dois", "dep_org",
+  "dep_creator_families", "dep_n_creators")
 
 #' Whose deposit is each repository link?
 #'
@@ -627,23 +701,38 @@
   dc_year_gap <- num(x$dep_year) - pf$year
   ref_year_gap <- num(x$ref_year) - pf$year
   creators <- chr(x$dep_creators)
-  n_creators <- vapply(strsplit(ifelse(is.na(creators), "", creators), ";"), length, 1L)
-  dc_creator_overlap <- vapply(creators, .own_overlap, NA, family = fam, USE.NAMES = FALSE)
-  ref_author_overlap <- ifelse(ref, vapply(chr(x$ref_authors), .own_overlap, NA, family = fam, ref = TRUE,
+  families <- chr(x$dep_creator_families)
+  # how many creators the deposit has. The OSF names only the first 10 of a
+  # project's contributors in its answer and says how many there are in all
+  # (270 for the Reproducibility Project: Psychology, #682); a record stored
+  # before that number was kept, naming exactly 10, may have been cut too.
+  # A list cut short shows who is among its creators, but not who is not.
+  n_listed <- vapply(strsplit(ifelse(is.na(creators), "", creators), ";"), length, 1L)
+  n_total <- num(x$dep_n_creators)
+  creators_cut <- !is.na(creators) &
+    ifelse(is.na(n_total), x$repo_type %in% "osf" & n_listed == 10, n_listed < n_total)
+  n_creators <- ifelse(!is.na(n_total), n_total, ifelse(creators_cut, NA, n_listed))
+  dc_creator_overlap <- vapply(seq_len(n), \(i) .own_people_author(creators[[i]], fam, families[[i]]), NA)
+  ref_author_overlap <- ifelse(ref, vapply(chr(x$ref_authors), .own_people_author, NA, family = fam,
                                            USE.NAMES = FALSE), NA)
-  osf_author <- vapply(chr(x$osf_contributors), .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  osf_people <- chr(x$osf_contributors)
+  osf_author <- vapply(seq_len(n), \(i) .own_people_author(osf_people[[i]], fam, families[[i]]), NA)
+  osf_author[creators_cut & F_(osf_author)] <- NA
   owner <- ifelse(x$repo_type %in% c("github", "gitlab"),
                   tolower(sub("^(https?://)?(www\\.)?(github|gitlab)[^/]*/([^/]+).*", "\\4", href, ignore.case = TRUE)), NA)
   # the account (its login, and the name its owner gives: a person's, or a
-  # lab's such as "Bourne & Mura Computational Biosciences Lab")
-  login_author <- vapply(owner, .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  # lab's such as "Bourne & Mura Computational Biosciences Lab"). A login
+  # runs names together ("cjvanlissa"); the name an account gives itself
+  # writes them as words (#682)
+  login_author <- vapply(owner, .own_names_author, NA, family = fam, inside = TRUE, USE.NAMES = FALSE)
   owner_name_author <- vapply(chr(x$gh_owner_name), .own_names_author, NA, family = fam, USE.NAMES = FALSE)
   owner_author <- ifelse(T_(login_author) | T_(owner_name_author), TRUE,
                          ifelse(F_(login_author) | F_(owner_name_author), FALSE, NA))
   # names in the README's opening only (its title and author line): further
   # down, a family name of five letters or more is too often part of an
   # ordinary word ("Chang" in "changes"), and short ones are words ("Very")
-  readme_author <- vapply(substr(rd, 1, 1500), .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  readme_author <- vapply(substr(rd, 1, 1500), .own_names_author, NA, family = fam, inside = TRUE,
+                          USE.NAMES = FALSE)
   title_words <- .own_cwords(pf$title)
   readme_paper_words <- vapply(rd, \(r) if (is.na(r)) NA_integer_ else sum(.own_cwords(r) %in% title_words), 1L,
                                USE.NAMES = FALSE)
@@ -729,7 +818,7 @@
   # authorship: a family name of the paper's authors among the reference's
   # authors, the deposit's creators (20 at most: community software lists
   # many), the OSF contributors, the account name, or the README
-  author_raw <- T_(ref_author_overlap) | (T_(dc_creator_overlap) & n_creators <= 20) | T_(osf_author) |
+  author_raw <- T_(ref_author_overlap) | (T_(dc_creator_overlap) & T_(n_creators <= 20)) | T_(osf_author) |
     T_(owner_author) | T_(readme_author)
   # a text record of a few files by others is a document
   publication <- publication | (dep_type %in% "Text" & T_(num(x$n_files) <= 3) & !author_raw & !x$repo_type %in% "osf")
@@ -737,7 +826,8 @@
   pkg_words <- ref & grepl("\\b(package|toolbox|library|plug-?in)\\b", chr(x$citing), ignore.case = TRUE, perl = TRUE)
   code_host <- x$repo_type %in% c("github", "gitlab") | dep_type %in% c("Software", "Workflow")
   tool <- T_(x$pkg_layout) | (readme_install & code_host) | pkg_words
-  known_not_author <- (F_(dc_creator_overlap) & n_creators <= 20) | F_(osf_author) | F_(owner_author)
+  known_not_author <- (F_(dc_creator_overlap) & T_(n_creators <= 20) & !creators_cut) | F_(osf_author) |
+    F_(owner_author)
   reused <- reuse_wording | T_(x$cites_others)
   old <- T_(gap_years < -3) & !osf_project
   recent <- T_(gap_years >= -1.5) | (is.na(gap_years) & (T_(dc_year_gap >= -1) | T_(ref_year_gap >= -1)))
