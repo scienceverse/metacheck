@@ -9,14 +9,19 @@
 # - with the PDF manual built, which finds problems in the help pages that the
 #   web pages do not show.
 # A last job checks every web address in the documentation.
-# Which systems: a pull request into dev is checked on Linux and Windows with
-# the released R only, where nearly every problem shows, so the check does not
-# keep the work waiting (all seven took 11 to 85 minutes); every other run
-# checks all seven: a pull request into main, the weekly run on Monday, a run
-# by hand, and a push to cran_fixes or linux_docker_fixes (from that branch's
-# own copy of this file, so it does not need to be on main). A push to dev is
-# not checked again: its pull request was. A pull request into dev merges by
-# itself when its required checks pass (auto-merge).
+# Which systems: a pull request into dev is checked once, on Linux with the
+# released R, without CRAN's settings (since 19 November 2026; metacheck does
+# not go to CRAN): the package must build, install, load and run its examples,
+# and only an error fails the check, not a warning or a note. That is what
+# keeps the SURF server, which runs Linux and installs dev, working, in about
+# half the time of the two systems checked before. Every other run checks all
+# seven with CRAN's settings: a pull request into main, the weekly run on
+# Monday, a run by hand, and a push to cran_fixes or linux_docker_fixes (from
+# that branch's own copy of this file, so it does not need to be on main). A
+# push to dev is not checked again: its pull request was. A pull request into
+# dev merges by itself when its required checks pass (auto-merge); the checks
+# dev requires are this Linux one and the job that decides whether the
+# package changed.
 # The tests are not part of the build (.Rbuildignore), so this checks
 # the package and runs its examples, including the \donttest ones; the tests
 # run in full-tests.yaml.
@@ -68,7 +73,8 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.base_ref }}
         run: |
-          two='[{"os":"ubuntu-latest","r":"release"},{"os":"windows-latest","r":"release"}]'
+          # light: without --as-cran, failing on errors only (see above)
+          one='[{"os":"ubuntu-latest","r":"release","light":true}]'
           seven='[{"os":"windows-latest","r":"release"},
                   {"os":"windows-latest","r":"devel"},
                   {"os":"macos-latest","r":"release"},
@@ -76,7 +82,7 @@ jobs:
                   {"os":"ubuntu-latest","r":"release","manual":true,"name":" with the PDF manual"},
                   {"os":"ubuntu-latest","r":"oldrel-1"},
                   {"os":"ubuntu-latest","r":"release","depends-only":true,"name":" with only the required packages"}]'
-          if [ "$EVENT" = "pull_request" ] && [ "$BASE" = "dev" ]; then m="$two"; else m="$seven"; fi
+          if [ "$EVENT" = "pull_request" ] && [ "$BASE" = "dev" ]; then m="$one"; else m="$seven"; fi
           echo "matrix={\"config\":$(jq -c . <<< "$m")}" >> "$GITHUB_OUTPUT"
 
   R-CMD-check:
@@ -126,8 +132,9 @@ jobs:
         with:
           upload-snapshots: true
           build_args: ${{ matrix.config.manual && '"--compact-vignettes=gs+qpdf"' || 'c("--no-manual", "--compact-vignettes=gs+qpdf")' }}
-          args: ${{ matrix.config.manual && '"--as-cran"' || 'c("--no-manual", "--as-cran")' }}
-          error-on: '"note"'
+          # without --as-cran, the examples in \donttest{} run only when asked
+          args: ${{ matrix.config.manual && '"--as-cran"' || (matrix.config.light && 'c("--no-manual", "--run-donttest")' || 'c("--no-manual", "--as-cran")') }}
+          error-on: ${{ matrix.config.light && '"error"' || '"note"' }}
 
   url-check:
     runs-on: ubuntu-latest
