@@ -1694,7 +1694,17 @@ osf_file_download <- function(osf_id,
         unzip_dir <- tempfile(pattern = "osf-zip-")
         dir.create(unzip_dir)
         on.exit(unlink(unzip_dir, recursive = TRUE), add = TRUE)
-        utils::unzip(zip_path, exdir = unzip_dir)
+        # A name in the old DOS characters (CP437, as the OSF stores an
+        # accented letter) stopped a whole-zip utils::unzip() on Windows, and
+        # with it the whole download (#680); .unzip_all() takes such a member
+        # out by its position. A member it cannot unpack is downloaded
+        # individually below, with the rest of the files the archive did not
+        # deliver.
+        unpacked <- .unzip_all(zip_path, unzip_dir)
+        note <- if (is.null(unpacked)) "the archive could not be read"
+                else .unzip_failed_note(unpacked, zip_name)
+        if (!is.null(note))
+          message(sprintf("[zip] %s: %s; downloaded individually below.", node, note))
         # Only this node's rows are offered for relocation, so an entry is
         # matched against the archive it actually came from.
         copied <- .osf_relocate_unzipped(files[node_idx, , drop = FALSE],

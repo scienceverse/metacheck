@@ -376,8 +376,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   urls <- as.character(urls %||% character(0))
   pat <- "^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
   hit <- !is.na(urls) & grepl(pat, urls, ignore.case = TRUE)
-  out <- data.frame(repo = rep(NA_character_, length(urls)),
-                    ref = NA_character_, path = NA_character_)
+  # every column as long as `urls`: a single NA for ref and path gave one
+  # row when there were no urls, and data.frame() stopped with "differing
+  # number of rows: 0, 1"
+  none <- rep(NA_character_, length(urls))
+  out <- data.frame(repo = none, ref = none, path = none)
   if (any(hit)) {
     m <- regmatches(urls[hit], regexec(pat, urls[hit], ignore.case = TRUE))
     out$repo[hit] <- vapply(m, \(x) paste(x[2], x[3], sep = "/"), "")
@@ -1488,16 +1491,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   extract_dir <- tempfile(pattern = "repo-zip-")
   dir.create(extract_dir)
   on.exit(unlink(extract_dir, recursive = TRUE), add = TRUE)
-  plain <- entries$Stored[match(to_extract, entries$Name)] == to_extract
-  if (any(plain))
-    tryCatch(
-      utils::unzip(zip_tmp, files = to_extract[plain], exdir = extract_dir),
-      error = \(e) NULL)
-  if (any(!plain)) .zip_extract_local(zip_tmp, to_extract[!plain], extract_dir)
+  # a member stored under the old DOS characters is taken out by its position
+  # (.unzip_all()); one that cannot be unpacked at all is named here, and its
+  # row is left for the file-by-file download
+  unpacked <- .unzip_all(zip_tmp, extract_dir, files = unique(to_extract))
+  if (is.null(unpacked)) return(files)
+  note <- .unzip_failed_note(unpacked, zip_url)
+  if (!is.null(note)) message(note, " (downloaded file by file instead)")
 
   for (j in seq_along(row_idx)) {
     if (is.na(matched_entry[j])) next
-    src  <- file.path(extract_dir, matched_entry[j])
+    src  <- unpacked$path[match(matched_entry[j], unpacked$name)]
+    if (is.na(src)) next
     dest <- files$.cache_path[row_idx[j]]
     # an empty member is an empty file, as the archive itself states (#575, item 5)
     empty_member <- isTRUE(entries$Length[match(matched_entry[j], entries$Name)] == 0)

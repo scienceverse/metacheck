@@ -473,6 +473,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   gated_repos <- NULL
   oversize_files <- NULL
   failed_files   <- NULL
+  # members of zips that could not be unpacked (.expand_zip(), #680)
+  unpack_failed  <- NULL
   # Which files this run WANTS to download (kept in scope for the manifest).
   want <- if (download == "all") {
     rep(TRUE, nrow(all_files))
@@ -665,6 +667,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!is.null(ov) && nrow(ov) > 0)
           oversize_files <- rbind(oversize_files, data.frame(
             repo_url = row1$repo_url, file_name = ov$file_name, file_size = ov$file_size))
+        uf <- attr(rows, "unpack_failed")
+        if (!is.null(uf) && nrow(uf) > 0) unpack_failed <- rbind(unpack_failed, uf)
         if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
       }
       # Drop the consumed container rows (see comment above); `want` is kept
@@ -1292,6 +1296,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # files whose download failed: the checks below did not see them (#667)
   failed_text <- .download_failed_text(failed_files)
   report <- c(report, failed_text$report)
+  unpack_text <- .unzip_failed_text(unpack_failed)
+  report <- c(report, unpack_text$report)
 
   # The data tree replaces the former "File Types" count table: it lists every
   # file with the same classification, so a separate per-type tally was a less
@@ -1533,7 +1539,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_studies <- NULL
     summary_ungrouped <- NULL
   }
-  summary_text <- c(failed_text$summary, summary_keys, summary_files, summary_data, summary_studies,
+  summary_text <- c(failed_text$summary, unpack_text$summary, summary_keys, summary_files, summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
                      summary_workspace, summary_nontabular, summary_trial_level) |>
     paste("\n- ", x = _, collapse = "")

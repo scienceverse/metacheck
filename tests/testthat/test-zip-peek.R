@@ -286,30 +286,38 @@ test_that("zip_peek() reuses a same-session result instead of re-fetching", {
   expect_null(other)
 })
 
+# The bytes of a zip built byte by byte, as zip tools write names in UTF-8
+# now: one list per member, with its stored `name` and `data` (raw), and
+# optionally its general-purpose `flag` (bit 0: encrypted, bit 11: the name is
+# UTF-8) and compression `method` (0, stored, by default; the data are written
+# as given whatever the method says).
+.test_zip_members <- function(members) {
+  le <- function(x, n) as.raw((x %/% 256^(0:(n - 1))) %% 256)
+  local <- raw(0); central <- raw(0)
+  for (m in members) {
+    fixed <- c(le(20, 2), le(m$flag %||% 0, 2), le(m$method %||% 0, 2), le(0, 2), le(0, 2),
+               le(metacheck:::.crc32(m$data), 4), le(length(m$data), 4),
+               le(length(m$data), 4), le(length(m$name), 2), le(0, 2))
+    central <- c(central, as.raw(c(0x50, 0x4b, 0x01, 0x02)), le(20, 2), fixed, le(0, 2), le(0, 2),
+                 le(0, 2), le(0, 4), le(length(local), 4), m$name)
+    local <- c(local, as.raw(c(0x50, 0x4b, 0x03, 0x04)), fixed, m$name, m$data)
+  }
+  n <- length(members)
+  c(local, central, as.raw(c(0x50, 0x4b, 0x05, 0x06)), le(0, 2), le(0, 2), le(n, 2), le(n, 2),
+    le(length(central), 4), le(length(local), 4), le(0, 2))
+}
+
 test_that("a zip whose names are stored in the old DOS characters (CP437) is listed and unpacked", {
   # medRxiv 2026.11.12.26367900v1: older releases of the German Index of
   # Socioeconomic Deprivation inside a Zenodo zip store "Baden-Wuerttemberg"
   # as "Baden-W\x81rttemberg"; gsub() on that name stopped data_check
   # ("input string 19 is invalid"). Built byte by byte, as zip tools write
   # names in UTF-8 now: stored members, no UTF-8 flag.
-  le <- function(x, n) writeBin(as.integer(x), raw(), size = n, endian = "little")
-  members <- list(list(name = charToRaw("data/a.csv"), data = charToRaw("id,x\n1,2\n")),
-                  list(name = c(charToRaw("Th"), as.raw(0x81), charToRaw("ringen/b.csv")),
-                       data = charToRaw("id,y\n3,4\n")))
-  local <- raw(0); central <- raw(0)
-  for (m in members) {
-    crc <- metacheck:::.crc32(m$data)
-    crc <- writeBin(if (crc > 2^31 - 1) as.integer(crc - 2^32) else as.integer(crc), raw(), size = 4, endian = "little")
-    fixed <- c(le(20, 2), le(0, 2), le(0, 2), le(0, 2), le(0, 2), crc,
-               le(length(m$data), 4), le(length(m$data), 4), le(length(m$name), 2), le(0, 2))
-    central <- c(central, as.raw(c(0x50, 0x4b, 0x01, 0x02)), le(20, 2), fixed, le(0, 2), le(0, 2),
-                 le(0, 2), le(0, 4), le(length(local), 4), m$name)
-    local <- c(local, as.raw(c(0x50, 0x4b, 0x03, 0x04)), fixed, m$name, m$data)
-  }
-  eocd <- c(as.raw(c(0x50, 0x4b, 0x05, 0x06)), le(0, 2), le(0, 2), le(2, 2), le(2, 2),
-            le(length(central), 4), le(length(local), 4), le(0, 2))
   z <- file.path(withr::local_tempdir(), "dos_names.zip")
-  writeBin(c(local, central, eocd), z)
+  writeBin(.test_zip_members(list(
+    list(name = charToRaw("data/a.csv"), data = charToRaw("id,x\n1,2\n")),
+    list(name = c(charToRaw("Th"), as.raw(0x81), charToRaw("ringen/b.csv")),
+         data = charToRaw("id,y\n3,4\n")))), z)
 
   l <- metacheck:::.unzip_list(z)
   expect_true(all(validUTF8(l$Name)))
@@ -340,6 +348,76 @@ test_that("a zip whose names are stored in the old DOS characters (CP437) is lis
   dest <- withr::local_tempdir()
   targets <- vapply(cd$name, metacheck:::.zip_member_target, "", dest = dest, USE.NAMES = FALSE)
   expect_false(anyNA(metacheck:::.zip_extract_members(z, cd, targets)))
+})
+
+test_that(".unzip_all unpacks every member it can and says why not the others (#680)", {
+  # The OSF stores a name with an accented letter in CP437, without the UTF-8
+  # flag (osf.io/9gju4). A whole-zip utils::unzip() stopped on it on Windows
+  # after writing no file, and the callers that caught the error went on with
+  # none of the files. Here: a plain name, a CP437 name, a UTF-8 name with the
+  # flag, a nested folder, a ".." member, a member compressed with Deflate64
+  # (method 9), an encrypted member, and a plain member after those two (unzip()
+  # stops at the first member it cannot unpack).
+  o <- intToUtf8(246)   # o with two dots; CP437 0x94
+  z <- file.path(withr::local_tempdir(), "mixed.zip")
+  writeBin(.test_zip_members(list(
+    list(name = charToRaw("a.csv"), data = charToRaw("a\n1\n")),
+    list(name = c(charToRaw("R"), as.raw(0x94), charToRaw("seler.txt")), data = charToRaw("cp\n")),
+    list(name = charToRaw(paste0("R", o, "seler_utf8.txt")), data = charToRaw("u8\n"), flag = 2048),
+    list(name = charToRaw("sub/dir/b.csv"), data = charToRaw("b\n2\n")),
+    list(name = charToRaw("../evil.txt"), data = charToRaw("evil\n")),
+    list(name = charToRaw("big.bin"), data = charToRaw("zzzz"), method = 9),
+    list(name = charToRaw("secret.txt"), data = charToRaw("ssss"), flag = 1),
+    list(name = charToRaw("z_last.csv"), data = charToRaw("z\n")))), z)
+
+  ex <- file.path(withr::local_tempdir(), "out")
+  res <- metacheck:::.unzip_all(z, ex)
+  expect_true(all(validUTF8(res$name)))
+  written <- c("a.csv", paste0("R", o, "seler.txt"), paste0("R", o, "seler_utf8.txt"),
+               "sub/dir/b.csv", "z_last.csv")
+  expect_setequal(res$name[!is.na(res$path)], written)
+  expect_true(all(file.exists(file.path(ex, written))))
+  expect_equal(readLines(file.path(ex, paste0("R", o, "seler.txt"))), "cp")
+  expect_equal(readLines(file.path(ex, "sub/dir/b.csv")), c("b", "2"))
+  expect_true(all(is.na(res$reason[!is.na(res$path)])))
+
+  # the others are not written, each with its reason
+  reason <- stats::setNames(res$reason, res$name)
+  expect_match(reason[["../evil.txt"]], "outside the folder")
+  expect_match(reason[["big.bin"]], "Deflate64")
+  expect_match(reason[["secret.txt"]], "encrypted")
+  expect_false(file.exists(file.path(dirname(ex), "evil.txt")))
+  expect_false(file.exists(file.path(ex, "evil.txt")))
+  expect_false(file.exists(file.path(ex, "big.bin")))
+  expect_false(file.exists(file.path(ex, "secret.txt")))
+
+  note <- metacheck:::.unzip_failed_note(res, "mixed.zip")
+  expect_match(note, "^3 files in mixed.zip could not be unpacked: ")
+  expect_match(note, "big.bin (it is compressed with Deflate64", fixed = TRUE)
+  expect_null(metacheck:::.unzip_failed_note(res[!is.na(res$path), ], "mixed.zip"))
+
+  # only the members asked for; a name not in the zip is said to be missing
+  ex2 <- withr::local_tempdir()
+  res2 <- metacheck:::.unzip_all(z, ex2, files = c(paste0("R", o, "seler.txt"), "nope.csv"))
+  expect_equal(nrow(res2), 2)
+  expect_equal(readLines(res2$path[1]), "cp")
+  expect_match(res2$reason[2], "not in the archive")
+  expect_equal(list.files(ex2, recursive = TRUE), paste0("R", o, "seler.txt"))
+
+  # a zip of plain names only is unpacked in one go, folders and all
+  z2 <- file.path(withr::local_tempdir(), "plain.zip")
+  writeBin(.test_zip_members(list(
+    list(name = charToRaw("x/y.csv"), data = charToRaw("1\n")),
+    list(name = charToRaw("w.txt"), data = raw(0)))), z2)
+  ex3 <- withr::local_tempdir()
+  res3 <- metacheck:::.unzip_all(z2, ex3)
+  expect_false(anyNA(res3$path))
+  expect_equal(file.size(file.path(ex3, "w.txt")), 0)
+
+  # not a zip
+  nz <- file.path(withr::local_tempdir(), "not.zip")
+  writeLines("<html>error</html>", nz)
+  expect_null(metacheck:::.unzip_all(nz, withr::local_tempdir()))
 })
 
 test_that(".tar_unescape gives back the bytes a tar stores", {
@@ -1289,4 +1367,48 @@ test_that(".resp_body_stream_raw joins the streamed pieces once (#584)", {
   out <- .resp_body_stream_raw(NULL)
   expect_equal(length(out), 128 * 512 * 1024)
   expect_lt(as.numeric(Sys.time() - t0, units = "secs"), 10)
+})
+
+test_that("an encrypted zip member is named as not unpacked, and data_check's report says so (#680)", {
+  skip_if_not_installed("zip")
+  d <- withr::local_tempdir()
+  writeLines("a,b\n1,2", file.path(d, "ok.csv"))
+  writeLines("a,b\n3,4", file.path(d, "secret.csv"))
+  z <- file.path(d, "mixed.zip")
+  zip::zip(z, c("ok.csv", "secret.csv"), root = d)
+  # mark secret.csv as encrypted (flag bit 0) in its local header and in the
+  # central directory, as a zip program with a password does; utils::unzip()
+  # then writes its bytes as they are, at the recorded size, without a word
+  b <- readBin(z, "raw", file.size(z))
+  cd <- .zip_list_local(z)
+  k <- which(cd$name == "secret.csv")
+  b[cd$offset[k] + 7] <- as.raw(bitwOr(as.integer(b[cd$offset[k] + 7]), 1L))
+  cd_sig <- as.raw(c(0x50, 0x4b, 0x01, 0x02))
+  at <- which(vapply(seq_len(length(b) - 3), \(i) identical(b[i:(i + 3)], cd_sig), logical(1)))
+  b[at[k] + 8] <- as.raw(bitwOr(as.integer(b[at[k] + 8]), 1L))
+  writeBin(b, z)
+  expect_equal(.zip_list_local(z)$encrypted, c(FALSE, TRUE))
+
+  out <- .unzip_all(z, file.path(d, "out"))
+  expect_false(is.na(out$path[out$name == "ok.csv"]))
+  expect_true(is.na(out$path[out$name == "secret.csv"]))
+  expect_equal(out$reason[out$name == "secret.csv"], "it is encrypted")
+
+  row <- data.frame(paper_id = "p", repo_url = "https://osf.io/abcde", file_name = "mixed.zip",
+                    file_path = "data/mixed.zip", file_location = z)
+  rows <- suppressMessages(.expand_zip(z, row))
+  expect_equal(rows$file_name, "ok.csv")
+  uf <- attr(rows, "unpack_failed")
+  expect_equal(uf$archive, "data/mixed.zip")
+  expect_equal(uf$file_name, "secret.csv")
+  # named again on a later run, as the member is still not on disk
+  expect_false(is.null(attr(suppressMessages(.expand_zip(z, row)), "unpack_failed")))
+
+  txt <- .unzip_failed_text(uf)
+  expect_equal(txt$report[1], "#### Files that could not be unpacked")
+  expect_match(paste(txt$report, collapse = " "),
+               "1 file in `data/mixed.zip` could not be unpacked: secret.csv (it is encrypted)", fixed = TRUE)
+  expect_equal(txt$summary, "1 file in the repository's archives could not be unpacked, so the checks did not see it.")
+  expect_null(.unzip_failed_text(NULL)$report)
+  expect_null(.unzip_failed_text(uf[0, ])$summary)
 })

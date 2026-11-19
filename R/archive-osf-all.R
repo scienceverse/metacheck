@@ -258,10 +258,23 @@
     if (isTRUE(ok) && file.exists(zip_path) && file.size(zip_path) > 0) {
       # An empty archive is 22 bytes (a zip with no entries), which a node with
       # no osfstorage files legitimately returns.
-      entries <- tryCatch(utils::unzip(zip_path, list = TRUE), error = \(e) NULL)
-      if (!is.null(entries) && nrow(entries) > 0) {
-        dir.create(node_dir, showWarnings = FALSE, recursive = TRUE)
-        tryCatch(utils::unzip(zip_path, exdir = node_dir), error = \(e) NULL)
+      #
+      # The OSF stores a name with an accented letter in the old DOS
+      # characters (CP437), on which a whole-zip utils::unzip() stopped on
+      # Windows, after writing no file at all; the error was caught, and the
+      # node was reported as downloaded with none of its files (#680,
+      # osf.io/9gju4). .unzip_all() takes such a member out by its position,
+      # and names any member it cannot unpack.
+      unpacked <- .unzip_all(zip_path, node_dir)
+      if (is.null(unpacked)) {
+        # utils::unzip() cannot open an empty archive either; anything else
+        # it cannot open is not a zip, and the download failed
+        empty <- identical(readBin(zip_path, "raw", 4),
+                           as.raw(c(0x50, 0x4b, 0x05, 0x06)))
+        if (!empty) ok <- FALSE
+      } else if (nrow(unpacked) > 0) {
+        note <- .unzip_failed_note(unpacked, paste0(node, ".zip"))
+        if (!is.null(note)) warning(node, ": ", note, call. = FALSE)
         on_disk <- list.files(node_dir, recursive = TRUE, all.files = FALSE)
         on_disk <- on_disk[!dir.exists(file.path(node_dir, on_disk))]
         n_files <- length(on_disk)

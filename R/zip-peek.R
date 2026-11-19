@@ -567,7 +567,7 @@
   n_max <- min(n_entries, floor((cd_end - cd_start) / 46))
   names <- character(n_max); name_lens <- numeric(n_max); sizes <- numeric(n_max)
   methods <- numeric(n_max); csizes <- numeric(n_max)
-  offsets <- numeric(n_max); crcs <- numeric(n_max)
+  offsets <- numeric(n_max); crcs <- numeric(n_max); encs <- logical(n_max)
   ff4 <- 4294967295
   n_read <- 0
   p <- cd_start
@@ -591,7 +591,8 @@
     # on it stopped data_check with "invalid multibyte string" (U76). Every
     # byte is a CP437 character, so the conversion cannot fail; a name marked
     # UTF-8 that is not gets its bad bytes read as Latin-1 (.utf8_lines()).
-    utf8_flag <- bitwAnd(.le_int(raw, p + 8, 2), 2048L) != 0
+    flags <- .le_int(raw, p + 8, 2)
+    utf8_flag <- bitwAnd(flags, 2048L) != 0
     if (!validUTF8(nm)) {
       nm <- if (utf8_flag) .utf8_lines(nm) else iconv(nm, "CP437", "UTF-8")
     }
@@ -610,6 +611,8 @@
     names[n_read] <- nm; name_lens[n_read] <- name_len; sizes[n_read] <- usize
     methods[n_read] <- method; csizes[n_read] <- csize
     offsets[n_read] <- offset; crcs[n_read] <- crc
+    # encrypted: flag bit 0, or AES (method 99)
+    encs[n_read] <- bitwAnd(flags, 1L) != 0 || method == 99
     p <- p + 46 + name_len + extra_len + comm_len
   }
   if (n_read == 0) return(NULL)
@@ -617,6 +620,7 @@
   names <- names[keep]; name_lens <- name_lens[keep]
   sizes <- sizes[keep]; methods <- methods[keep]
   csizes <- csizes[keep]; offsets <- offsets[keep]; crcs <- crcs[keep]
+  encs <- encs[keep]
   # A placeholder with no Zip64 extra field to resolve it (a malformed entry)
   # must not be read as a real size or byte offset, so it is marked NA and
   # .zip_member_fetch() refuses it. Listing still works: the names are correct
@@ -628,7 +632,7 @@
   # longer has; .zip_range_plan() and .zip_whole_size() need the stored length
   out <- data.frame(name = names, size = sizes, method = methods, csize = csizes,
                     offset = offsets, crc = crcs, name_bytes = name_lens,
-                    stringsAsFactors = FALSE)
+                    encrypted = encs, stringsAsFactors = FALSE)
   attr(out, "cd_offset") <- if (cd_offset == ff4) NA_real_ else cd_offset
   out
 }
@@ -1387,21 +1391,13 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   exdir <- tempfile("zipwhole")
   on.exit(unlink(exdir, recursive = TRUE), add = TRUE)
   safe <- !is.na(targets)
-  if (any(safe))
-    tryCatch(suppressWarnings(utils::unzip(archive_path, files = want$name[safe],
-                                           exdir = exdir)),
-             error = function(e) NULL)
-
-  # A member whose name zip_peek() converted from the old DOS characters
-  # (CP437) is not found by unzip() under that name: it is taken out by its
-  # position instead (.zip_extract_local())
-  absent <- which(safe & !file.exists(file.path(exdir, want$name)))
-  if (length(absent))
-    .zip_extract_local(archive_path, want$name[absent], exdir)
+  # a member whose name zip_peek() converted from the old DOS characters
+  # (CP437) is taken out by its position (.unzip_all())
+  if (any(safe)) .unzip_all(archive_path, exdir, files = want$name[safe])
 
   out <- rep(NA_character_, length(targets))
   for (i in which(safe)) {
-    src <- file.path(exdir, want$name[i])
+    src <- file.path(exdir, gsub("\\\\", "/", want$name[i]))
     # The archive's own record of the size checks the extracted bytes; a
     # mismatch or a missing file leaves the member to the per-member fetch.
     if (!file.exists(src) ||
@@ -1440,39 +1436,199 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # unzip() cannot take out by name (see .unzip_list()). Each member's bytes
 # are checked against the size the archive records. A name that would write
 # outside `exdir` ("..", or a path from the root) is skipped. Returns the
-# written path per name, NA when it was not written.
+# written path per name, NA when it was not written, with the reason for each
+# NA in the attribute "reason" (.zip_unpack_reason()).
 .zip_extract_local <- function(path, names, exdir) {
   out <- rep(NA_character_, length(names))
-  if (!length(names)) return(out)
+  reason <- rep(NA_character_, length(names))
+  done <- function() structure(out, reason = reason)
+  if (!length(names)) return(done())
   # the whole central directory, which can be larger than the 1 MB that is
   # read by default
   cd <- .zip_list_local(path, tail_bytes = min(file.size(path), 64 * 2^20))
-  if (is.null(cd) || !nrow(cd) || !all(c("offset", "csize", "method") %in% names(cd)))
-    return(out)
-  con <- tryCatch(file(path, "rb"), error = function(e) NULL)
-  if (is.null(con)) return(out)
+  con <- if (!is.null(cd) && nrow(cd) && all(c("offset", "csize", "method") %in% names(cd)))
+    tryCatch(file(path, "rb"), error = function(e) NULL)
+  if (is.null(con)) {
+    reason[] <- "the archive could not be read"
+    return(done())
+  }
   on.exit(close(con), add = TRUE)
   for (k in seq_along(names)) {
-    e <- cd[match(names[k], cd$name), , drop = FALSE]
+    m <- match(names[k], cd$name)
+    e <- cd[m, , drop = FALSE]
     rel <- gsub("\\\\", "/", names[k])
-    if (is.na(e$offset) || is.na(e$csize) || is.na(e$method) || grepl("^([A-Za-z]:)?/", rel) ||
-        any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) next
+    if (is.na(m)) {
+      reason[k] <- "not in the archive"
+      next
+    }
+    if (.zip_unsafe_path(rel)) {
+      reason[k] <- "its path leads outside the folder"
+      next
+    }
+    if (is.na(e$offset) || is.na(e$csize) || is.na(e$method)) {
+      reason[k] <- "its place in the archive could not be read"
+      next
+    }
+    flags <- NA_integer_
     bytes <- tryCatch({
       seek(con, e$offset)
       head <- readBin(con, "raw", 30)
-      if (!identical(head[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) NULL
-      else if (e$csize == 0) raw(0) else {
-        seek(con, e$offset + 30 + .le_int(head, 27, 2) + .le_int(head, 29, 2))
-        .zip_inflate_member(readBin(con, "raw", e$csize), e$method, size = e$size)
+      if (length(head) < 30 || !identical(head[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) NULL
+      else {
+        flags <- as.integer(.le_int(head, 7, 2))
+        # an encrypted member (flag bit 0) cannot be read without its password
+        if (bitwAnd(flags, 1L) != 0) NULL
+        else if (e$csize == 0) raw(0) else {
+          seek(con, e$offset + 30 + .le_int(head, 27, 2) + .le_int(head, 29, 2))
+          .zip_inflate_member(readBin(con, "raw", e$csize), e$method, size = e$size)
+        }
       }
     }, error = function(err) NULL)
-    if (is.null(bytes) || (!is.na(e$size) && length(bytes) != e$size)) next
+    if (is.null(bytes) || (!is.na(e$size) && length(bytes) != e$size)) {
+      reason[k] <- .zip_unpack_reason(e$method, flags)
+      next
+    }
     target <- file.path(exdir, rel)
     dir.create(dirname(target), showWarnings = FALSE, recursive = TRUE)
     if (isTRUE(tryCatch({ writeBin(bytes, target); TRUE }, error = function(err) FALSE)))
       out[k] <- target
+    else reason[k] <- "the file could not be written to disk"
+  }
+  done()
+}
+
+# Whether a member's name (with "/" between folders) would write outside the
+# folder it is unpacked into: a ".." folder, or a path from the root or a
+# drive letter. Such a member is never unpacked.
+.zip_unsafe_path <- function(rel) {
+  grepl("^([A-Za-z]:)?/", rel) |
+    vapply(strsplit(rel, "/", fixed = TRUE), function(p) any(p == ".."), logical(1))
+}
+
+# Why a member of a zip could not be unpacked, from its compression method and
+# its flags (as its local header gives them; NA when the header could not be
+# read). metacheck unpacks stored members (method 0) and deflate (method 8,
+# with the zip package); other methods, such as Deflate64 (9), which Windows
+# uses for large files, are named so the reader knows what to do.
+.zip_unpack_reason <- function(method, flags = NA_integer_) {
+  if (!is.na(flags) && bitwAnd(flags, 1L) != 0) return("it is encrypted")
+  if (!is.na(method) && method == 99) return("it is encrypted (AES)")
+  if (!is.na(method) && !method %in% c(0, 8)) {
+    known <- c(`9` = "Deflate64", `12` = "bzip2", `14` = "LZMA",
+               `93` = "Zstandard", `95` = "XZ", `98` = "PPMd")
+    what <- known[as.character(method)]
+    return(sprintf("it is compressed with %s, which metacheck cannot unpack",
+                   if (is.na(what)) paste("method", method) else what))
+  }
+  if (identical(method, 8) && !requireNamespace("zip", quietly = TRUE))
+    return("unpacking it needs the R package zip (install.packages(\"zip\"))")
+  "its contents did not unpack to the size the archive records"
+}
+
+# Unpack a zip on disk into `exdir`: every file in it, or only the members
+# named in `files` (as .unzip_list() names them, in valid UTF-8). A member
+# whose name is stored as it reads is unpacked by utils::unzip(); a name in
+# the old DOS characters (CP437, see .unzip_list()) is taken out by its
+# position (.zip_extract_local()), as unzip() cannot find it by name and on
+# Windows stops on it ("invalid multibyte string"). A whole-zip unzip() that
+# stopped there wrote no member at all, and the callers that caught the error
+# went on without any file (#680: osf.io/9gju4, whose dissertation PDF has
+# an "o" with two dots in its name, stored in CP437).
+# A member unzip() did not write in full (it stops at the first member it
+# cannot unpack) is also taken out by position, and a member that cannot be
+# unpacked either way (encrypted, compressed with a method metacheck cannot
+# unpack, a path outside `exdir`) is reported with its reason.
+#
+# Returns a data frame with one row per member: `name`, `path` (the written
+# file, NA when not written) and `reason` (why not, NA when written); NULL when
+# the file is not a readable zip. .unzip_failed_note() turns the members not
+# written into a sentence for a message.
+.unzip_all <- function(path, exdir, files = NULL) {
+  entries <- .unzip_list(path)
+  if (is.null(entries)) return(NULL)
+  # whether unzip() can write every entry, folders included, under its name
+  all_plain <- all(entries$Stored == entries$Name)
+  entries <- entries[!grepl("/$", entries$Name), , drop = FALSE]
+  name <- if (is.null(files)) entries$Name else as.character(files)
+  out <- data.frame(name = name, path = rep(NA_character_, length(name)),
+                    reason = rep(NA_character_, length(name)), stringsAsFactors = FALSE)
+  if (!length(name)) return(out)
+
+  i <- match(name, entries$Name)
+  rel <- gsub("\\\\", "/", name)
+  unsafe <- .zip_unsafe_path(rel)
+  out$reason[is.na(i)] <- "not in the archive"
+  out$reason[!is.na(i) & unsafe] <- "its path leads outside the folder"
+  ok <- !is.na(i) & !unsafe
+  # an encrypted member is left to .zip_extract_local(), which names it:
+  # unzip() writes its scrambled bytes, at the recorded size, without a word
+  cd <- .zip_list_local(path, tail_bytes = min(file.size(path), 64 * 2^20))
+  encrypted <- if (!is.null(cd$encrypted)) cd$name[cd$encrypted %in% TRUE] else character(0)
+  # a name with "\" is written by unzip() as one file on Linux, not in folders
+  plain <- ok & entries$Stored[i] == name & !grepl("\\", name, fixed = TRUE) &
+    !name %in% encrypted
+  dir.create(exdir, showWarnings = FALSE, recursive = TRUE)
+  target <- file.path(exdir, rel)
+  if (any(plain)) {
+    # every member at once when all are wanted and all can be (faster than
+    # naming thousands of members)
+    whole <- is.null(files) && all(plain) && isTRUE(all_plain)
+    tryCatch(suppressWarnings(
+      if (whole) utils::unzip(path, exdir = exdir)
+      else utils::unzip(path, files = name[plain], exdir = exdir)),
+      error = function(e) NULL)
+  }
+  size <- entries$Length[i]
+  written <- plain & file.exists(target) & !dir.exists(target) &
+    (is.na(size) | file.size(target) == size)
+  # a member unzip() wrote only in part is not left behind as if complete
+  partial <- plain & !written & file.exists(target) & !dir.exists(target)
+  if (any(partial)) unlink(target[partial])
+  out$path[written] <- target[written]
+
+  rest <- which(ok & !written)
+  if (length(rest)) {
+    got <- .zip_extract_local(path, name[rest], exdir)
+    out$path[rest] <- as.vector(got)
+    out$reason[rest] <- attr(got, "reason")
   }
   out
+}
+
+# The report section and summary sentence for members of zips that data_check
+# could not unpack (encrypted, or compressed with a method metacheck cannot
+# unpack): before, they were named only in a message during the run, and the
+# checks did not see them. `failed` has the columns archive, file_name and
+# reason (.expand_zip()'s attribute "unpack_failed"). Returns list(report,
+# summary), NULL when none.
+.unzip_failed_text <- function(failed) {
+  none <- list(report = NULL, summary = NULL)
+  if (!is.data.frame(failed) || !nrow(failed)) return(none)
+  failed <- failed[!duplicated(paste(failed$archive, failed$file_name)), , drop = FALSE]
+  n <- nrow(failed)
+  lines <- vapply(split(failed, factor(failed$archive, unique(failed$archive))), function(f)
+    paste0("- ", .unzip_failed_note(data.frame(name = f$file_name, path = NA_character_,
+                                                reason = f$reason), sprintf("`%s`", f$archive[1])), "."),
+    character(1))
+  list(report = c("#### Files that could not be unpacked",
+                  sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s:",
+                          n, plural(n), plural(n, "it", "them")),
+                  "", unname(lines)),
+       summary = sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s.",
+                         n, plural(n), plural(n, "it", "them")))
+}
+
+# A sentence naming the members .unzip_all() could not write and why, for a
+# message or a warning; NULL when every member was written. `archive` names
+# the zip in the sentence. At most five members are named.
+.unzip_failed_note <- function(unpacked, archive) {
+  if (is.null(unpacked)) return(NULL)
+  bad <- unpacked[is.na(unpacked$path), , drop = FALSE]
+  if (!nrow(bad)) return(NULL)
+  shown <- sprintf("%s (%s)", utils::head(bad$name, 5), utils::head(bad$reason, 5))
+  sprintf("%d file%s in %s could not be unpacked: %s%s",
+          nrow(bad), plural(nrow(bad)), archive, paste(shown, collapse = "; "),
+          if (nrow(bad) > 5) sprintf("; and %d more", nrow(bad) - 5) else "")
 }
 
 # ── Archive-format classification ────────────────────────────────────────────
@@ -1715,7 +1871,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   # a zip of the user's own is extracted elsewhere (.archive_dest()).
   dest <- .archive_dest(zip_path)
   # names in valid UTF-8; a member stored under the old DOS characters is
-  # taken out by its position (.unzip_list())
+  # taken out by its position (.unzip_all())
   entries <- .unzip_list(zip_path)
   if (is.null(entries) || nrow(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries$Name), , drop = FALSE]
@@ -1724,21 +1880,28 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   unlink(file.path(dest, entries$Name[over]))
   want <- entries$Name[keep & !over]
   missing <- want[!file.exists(file.path(dest, want))]
+  failed <- NULL
   if (length(missing) > 0) {
     part <- paste0(dest, ".part")
-    stored <- entries$Stored[match(missing, entries$Name)]
-    plain <- stored == missing
-    if (any(plain))
-      tryCatch(utils::unzip(zip_path, files = missing[plain], exdir = part),
-               error = function(e) NULL, warning = function(w) NULL)
-    if (any(!plain)) .zip_extract_local(zip_path, missing[!plain], part)
+    # a member that cannot be unpacked (encrypted, or compressed with a
+    # method metacheck cannot unpack) is named, not left out without a word
+    unpacked <- .unzip_all(zip_path, part, files = missing)
+    note <- .unzip_failed_note(unpacked, basename(zip_path))
+    if (!is.null(note)) message(note)
     .move_extracted(part, dest, missing)
+    # and given to data_check, which names them in its report (attribute
+    # "unpack_failed", see .unzip_failed_text())
+    failed <- if (!is.null(unpacked)) unpacked[is.na(unpacked$path), c("name", "reason"), drop = FALSE]
   }
 
   label <- .archive_label(zip_row, zip_path)
   rows <- if (length(want) > 0) .archive_rows(dest, zip_row, label, skip_types, archive = zip_path)
           else empty
-  .with_oversize(rows, zip_row, label, entries$Name[over], entries$Length[over], archive = zip_path)
+  out <- .with_oversize(rows, zip_row, label, entries$Name[over], entries$Length[over], archive = zip_path)
+  if (!is.null(failed) && nrow(failed) > 0)
+    attr(out, "unpack_failed") <- data.frame(archive = label, file_name = failed$name,
+                                             reason = failed$reason)
+  out
 }
 
 # Expand a downloaded tar-family archive (.tar / .tar.gz / .tgz / .tar.bz2 /
