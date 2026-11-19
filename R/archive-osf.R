@@ -221,6 +221,13 @@ osf_info <- function(osf_url, id_col = 1,
   if (!is.null(disk_key)) {
     hit <- .repo_info_cache_get("osf_listing", disk_key)
     if (is.data.frame(hit)) {
+      # a listing stored with a project's first 10 contributors only gets the
+      # full list, and is stored again with it (#682)
+      done <- .osf_complete_table(hit)
+      if (!identical(done, hit)) {
+        hit <- done
+        .repo_info_cache_put("osf_listing", disk_key, hit)
+      }
       if (!is.null(pb)) pb$tick(0, list(what = "OSF listing (cached)"))
       if (use_cache) assign(cache_key, hit, envir = .osf_listing_cache)
       return(hit)

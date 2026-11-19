@@ -630,12 +630,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           file_type = osf_file_list$filetype,
           # provider (osfstorage / dropbox / github / ...) drives the
           # Waterbutler-zip decision in download_repo_files(): only osfstorage is
-          # coverable by the node's ?zip= endpoint. NULL when osf_info did not
+          # coverable by the node's ?zip= endpoint. NA when osf_info did not
           # return the column, which download_repo_files() falls back on gracefully.
-          provider = osf_file_list$provider %||% NA_character_,
+          # (.col_chr(), not `%||% NA`: a listing without files and without
+          # the column gave one NA for no rows, and data.frame() stopped with
+          # "differing number of rows: 0, 1")
+          provider = .col_chr(osf_file_list, "provider"),
           # the component the file is stored in: its storage is downloaded as
           # one zip per component (#675)
-          osf_node = osf_file_list$project %||% NA_character_
+          osf_node = .col_chr(osf_file_list, "project")
         )
       }
 
@@ -779,8 +782,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                 file_location = rep(NA_character_, nrow(parent_file_list)),
                 file_size = parent_file_list$size,
                 file_type = parent_file_list$filetype,
-                provider = parent_file_list$provider %||% NA_character_,
-                osf_node = parent_file_list$project %||% NA_character_
+                provider = .col_chr(parent_file_list, "provider"),
+                osf_node = .col_chr(parent_file_list, "project")
               )
             )
           }
@@ -930,11 +933,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       creator_orcids = .col_chr(own, "contributor_orcids")[k],
       published = substr(dplyr::coalesce(.col_chr(own, "date_registered")[k],
                                           .col_chr(own, "date_created")[k]), 1, 10),
-      updated = substr(.col_chr(own, "date_modified")[k], 1, 10)
+      updated = substr(.col_chr(own, "date_modified")[k], 1, 10),
+      # the contributors' own family names, and how many there are: the OSF
+      # names only the first 10 (#682). For the ownership step only, not
+      # for repo_metadata (below).
+      creator_families = .col_chr(own, "contributor_families")[k],
+      n_creators = .col_chr(own, "n_contributors")[k]
     )
   }
   if (length(osf_repo_urls) > 0 && !is.null(osf_desc_all)) {
-    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url), , drop = FALSE]
+    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url),
+                             setdiff(names(osf_desc_all), c("creator_families", "n_creators")), drop = FALSE]
     osf_desc$repo_url <- osf_repo_urls
     osf_meta_df <- if (nrow(osf_meta_df) > 0) {
       dplyr::left_join(osf_meta_df, osf_desc, by = "repo_url")
