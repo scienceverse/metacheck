@@ -31,7 +31,15 @@
 
 # Repo-relative cache location (per-repo key + repo-relative path), shared by the
 # persistent and the session cache so both use an identical on-disk layout.
-.repo_cache_rel <- function(repo_url, file_path) {
+# `storage` is an OSF file's storage (`provider`): a storage other than OSF
+# Storage, such as a GitHub repository linked to the project, gets a folder
+# of its own ("_storage_github"), as its paths can be the same as OSF
+# Storage's under the same repository address. osf.io/haz6u holds 458 files
+# under the same paths in both, not always the same file (Data/CogBIAS_DPT.csv
+# of 7,273,516 and 7,408,565 bytes); with one place for both, one copy
+# replaced the other, and the GitHub rows were fetched one by one although
+# the OSF zip had filled their place (#679). Any other file keeps its path.
+.repo_cache_rel <- function(repo_url, file_path, storage = NA_character_) {
   rel <- gsub("\\\\", "/", file_path)
   rel <- gsub("^/+", "", rel)
   key <- as.character(repo_url %||% "unknown")
@@ -39,15 +47,19 @@
   key <- gsub("[^A-Za-z0-9._-]+", "_", key)
   key <- gsub("^_+|_+$", "", key)
   if (!nzchar(key)) key <- "unknown"
+  st <- as.character(storage %||% NA_character_)
+  st[is.na(st)] <- ""
+  own <- nzchar(st) & tolower(st) != "osfstorage"
+  key <- ifelse(own, file.path(key, paste0("_storage_", gsub("[^A-Za-z0-9._-]+", "_", st))), key)
   file.path(key, rel)
 }
 
 # Local cache path for one file, preserving its repo-relative path so files with
 # the same basename in different folders don't collide. With `cache = FALSE`
 # the path is in the session's temporary cache (see .repo_cache_subdir()).
-.repo_cache_path <- function(repo_url, file_path, cache = TRUE) {
+.repo_cache_path <- function(repo_url, file_path, cache = TRUE, storage = NA_character_) {
   root <- if (isTRUE(cache)) .repo_cache_dir() else .repo_session_dir()
-  file.path(root, .repo_cache_rel(repo_url, file_path))
+  file.path(root, .repo_cache_rel(repo_url, file_path, storage))
 }
 
 # Per-session scratch cache used when cache = FALSE: a single temp directory
@@ -392,6 +404,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # project, whose size and number of files repo_check records
 # (`storage_size`, `storage_n`; else those of the rows passed).
 .storage_archive_skip <- function(files, idx, max_download_size, mb) {
+  # Without the storage's own totals, the archive's size is not known: the
+  # rows passed are only the files wanted, and when the paper linked single
+  # files they are not the storage either (#679: 6 linked files, 35 KB, of a
+  # storage of 612 files, 8.5 MB). repo_check records the totals only for a
+  # storage it listed in full (.osf_storage_totals()).
+  known_size <- suppressWarnings(as.numeric(files$storage_size[idx]))
+  known_n <- suppressWarnings(as.numeric(files$storage_n[idx]))
+  if (!any(is.finite(known_size)) || !any(is.finite(known_n)))
+    return("the size of the whole storage is not known, as it was not listed in full")
   archive_bytes <- .storage_size_estimate(files, idx)
   size_why <- .archive_size_refusal(archive_bytes, max_download_size, mb)
   if (!is.na(size_why)) return(size_why)
@@ -413,12 +434,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # is passed only the files a check wants, so it cannot count the storage
 # itself. A file listed twice (through a registration and its project) counts
 # once. A table without `osf_node` and `provider` is returned as it is.
-.osf_storage_totals <- function(files) {
+# `complete` marks the rows of a listing that holds whole storages (a linked
+# project, component or registration listed in full); only those are counted
+# (#679). Rows from a link to a single file or folder are not the storage: six
+# linked files of 35 KB were counted as a storage that holds 612 files and
+# 8.5 MB, and its zip was fetched for them. A storage with no complete rows
+# gets NA, and its files are fetched one by one (.storage_archive_skip()).
+.osf_storage_totals <- function(files, complete = rep(TRUE, nrow(files))) {
   if (!is.data.frame(files) || !nrow(files) ||
       !all(c("osf_node", "provider", "file_size") %in% names(files))) return(files)
   key <- ifelse(is.na(files$osf_node) | is.na(files$provider), NA_character_,
                 paste(files$osf_node, files$provider))
-  use <- !is.na(key) & !duplicated(paste(key, files$file_path))
+  cand <- !is.na(key) & complete %in% TRUE
+  # a row that is not counted never hides a counted copy of the same file
+  use <- cand & !duplicated(ifelse(cand, paste(key, files$file_path), paste("not counted", seq_along(key))))
   size <- suppressWarnings(as.numeric(files$file_size))
   total <- tapply(size[use], key[use], function(s) if (any(!is.na(s))) sum(s, na.rm = TRUE) else NA_real_)
   n <- tapply(key[use], key[use], length)
@@ -1377,13 +1406,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   unknown (in which case `timeout_s` is returned unchanged)
 #' @param min_bytes_per_s the conservative transfer-rate floor used to
 #'   derive a timeout from `expected_bytes`
+#' @param expected_files the number of files in the archive, or `NA` when
+#'   unknown. The OSF builds its zips file by file, and sent zips of many
+#'   small files at about 0.3 to 0.4 seconds per file (612 files, 8.5 MB in
+#'   178 s; 458 files, 9.8 MB in 190 s; #679), far below the byte rate
+#' @param s_per_file the seconds allowed per file in the archive
 #'
 #' @returns the timeout to actually use, in seconds
 #' @keywords internal
 .zip_timeout_for_size <- function(timeout_s, expected_bytes = NA_real_,
-                                  min_bytes_per_s = 200 * 1024) {
-  if (is.na(expected_bytes) || expected_bytes <= 0) return(timeout_s)
-  max(timeout_s, expected_bytes / min_bytes_per_s)
+                                  min_bytes_per_s = 200 * 1024,
+                                  expected_files = NA_real_, s_per_file = 0.4) {
+  bytes_s <- if (is.na(expected_bytes) || expected_bytes <= 0) 0 else expected_bytes / min_bytes_per_s
+  files_s <- if (is.na(expected_files) || expected_files <= 0) 0 else expected_files * s_per_file
+  max(timeout_s, bytes_s + files_s)
 }
 
 .download_zip_to_cache <- function(files, row_idx, zip_url,
@@ -1393,7 +1429,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                                    max_bytes = Inf,
                                    skip_on_api_limit = FALSE,
                                    expected_bytes = NA_real_,
-                                   rel_paths = NULL) {
+                                   rel_paths = NULL,
+                                   expected_files = NA_real_) {
   # rel_paths: each row's path inside the archive, one per row_idx, when it is
   # not the row's file_path (a GitHub repository behind an OSF project, whose
   # path is read from the file's address, #675)
@@ -1404,7 +1441,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
 
-  timeout_s <- .zip_timeout_for_size(timeout_s, expected_bytes)
+  timeout_s <- .zip_timeout_for_size(timeout_s, expected_bytes, expected_files = expected_files)
 
   # One connection attempt, then (if it was rate-limited AND
   # skip_on_api_limit is FALSE) ONE retry after waiting for the host's own
@@ -1753,10 +1790,11 @@ download_repo_files <- function(files,
   # The layout (per-repo subdir, repo-relative path) is identical either way, so
   # the rest of the function does not care which root is in use.
   cache_root <- if (isTRUE(cache)) NULL else .repo_session_dir()
-  cache_path <- function(repo_url, file_path) {
-    if (is.null(cache_root)) .repo_cache_path(repo_url, file_path)
-    else file.path(cache_root, .repo_cache_rel(repo_url, file_path))
+  cache_path <- function(repo_url, file_path, storage = NA_character_) {
+    if (is.null(cache_root)) .repo_cache_path(repo_url, file_path, storage = storage)
+    else file.path(cache_root, .repo_cache_rel(repo_url, file_path, storage))
   }
+  storage <- files$provider %||% rep(NA_character_, nrow(files))
 
   # Cache path per file; reuse anything already cached.
   rel_path <- files$file_path %||% files$file_name
@@ -1766,7 +1804,7 @@ download_repo_files <- function(files,
     # file under a long OneDrive root can exceed ~260 chars). .safe_write_path
     # shortens + warns; using its result for BOTH the download target and the
     # recorded file_location keeps the on-disk name and the record in agreement.
-    .safe_write_path(cache_path(files$repo_url[i], rel_path[i]))
+    .safe_write_path(cache_path(files$repo_url[i], rel_path[i], storage[i]))
   }, character(1))
 
   already <- file.exists(files$.cache_path)
@@ -2442,7 +2480,8 @@ download_repo_files <- function(files,
       zip_url <- sprintf("https://api.github.com/repos/%s/zipball/%s", repo_name,
                          utils::URLencode(gh_raw$ref[sel[1]], reserved = TRUE))
       label <- sprintf("github.com/%s (linked to %s)", repo_name, files$repo_url[ridx[1]])
-      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      # the archive holds the whole repository, not only the files wanted (#679)
+      expected_bytes <- .storage_size_estimate(files, ridx)
       skip_why <- .storage_archive_skip(files, ridx, max_download_size, mb)
       if (!is.na(skip_why)) {
         message(sprintf(
@@ -2496,7 +2535,10 @@ download_repo_files <- function(files,
       }
       zip_url <- sprintf("https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=",
                          node)
-      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      # the time limit follows the whole storage, which the zip holds, and its
+      # number of files, as the OSF builds the zip file by file (#679)
+      expected_bytes <- .storage_size_estimate(files, ridx)
+      expected_files <- suppressWarnings(max(as.numeric(files$storage_n[ridx]), na.rm = TRUE))
       # see the GitHub loop above for why the locations are cleared
       files$file_location[ridx] <- NA_character_
       message(sprintf("Downloading %s as zip (%d file%s)...",
@@ -2507,7 +2549,8 @@ download_repo_files <- function(files,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = archive_cap,
                                       skip_on_api_limit = skip_on_api_limit,
-                                      expected_bytes = expected_bytes)
+                                      expected_bytes = expected_bytes,
+                                      expected_files = expected_files)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 

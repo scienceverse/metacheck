@@ -7,7 +7,9 @@
 .zip_timeout_for_size(
   timeout_s,
   expected_bytes = NA_real_,
-  min_bytes_per_s = 200 * 1024
+  min_bytes_per_s = 200 * 1024,
+  expected_files = NA_real_,
+  s_per_file = 0.4
 )
 }
 \arguments{
@@ -20,6 +22,13 @@ unknown (in which case \code{timeout_s} is returned unchanged)}
 
 \item{min_bytes_per_s}{the conservative transfer-rate floor used to
 derive a timeout from \code{expected_bytes}}
+
+\item{expected_files}{the number of files in the archive, or \code{NA} when
+unknown. The OSF builds its zips file by file, and sent zips of many
+small files at about 0.3 to 0.4 seconds per file (612 files, 8.5 MB in
+178 s; 458 files, 9.8 MB in 190 s; #679), far below the byte rate}
+
+\item{s_per_file}{the seconds allowed per file in the archive}
 }
 \value{
 the timeout to actually use, in seconds

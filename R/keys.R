@@ -414,10 +414,11 @@
   shown_name <- col("file_path")
   shown_name[is.na(shown_name) | !nzchar(shown_name)] <- col("file_name")[is.na(shown_name) | !nzchar(shown_name)]
   repo <- col("repo_url")
+  storage <- col("provider")
   on_disk <- !is.na(loc) & nzchar(loc) & file.exists(loc)
   look <- which(!on_disk & !is.na(repo) & nzchar(repo) & !is.na(shown_name) & nzchar(shown_name))
   for (i in look) {
-    p <- .repo_cache_path(repo[[i]], shown_name[[i]], cache = cache)
+    p <- .repo_cache_path(repo[[i]], shown_name[[i]], cache = cache, storage = storage[[i]])
     if (file.exists(p) && !dir.exists(p)) loc[[i]] <- p
   }
   pid <- col("paper_id")
