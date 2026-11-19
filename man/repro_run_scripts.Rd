@@ -54,7 +54,11 @@ NA), \code{undefined_var} (the missing variable name when
 \code{elapsed} (seconds), and \code{script_lines} (list-column: the EXECUTED script's
 own text, one element per source line — the exact text \code{stdout}'s echoed
 statements were run from, so \code{\link[=read_r_output]{read_r_output()}} can match them back to a
-line number; empty character(0) for a script that did not run).
+line number; empty character(0) for a script that did not run),
+\code{captures}, and \code{started_at}, \code{ended_at} (when the run started and ended,
+ISO 8601 in UTC) and \code{exit_status} (the process's exit status, as callr
+reports it; NA for a script that did not run or reached a time limit),
+kept for a TRO (see \code{R/provenance.R}).
 }
 \description{
 Runs each script with \code{\link[callr:r]{callr::r()}} from \code{run_dir}, with \code{lib_dir} prepended to
