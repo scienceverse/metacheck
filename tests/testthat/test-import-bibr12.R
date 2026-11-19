@@ -126,21 +126,21 @@ test_that("modules read citations of bibr 12.x papers", {
 
 test_that("ref_accuracy scores bibr 12.x matches 0-1", {
   paper <- read(bibr12("full"))
-  # a reference without a DOI, and a match scoring 0.98 with one (the module
-  # suggests the DOIs of matches that have no title)
+  # a reference without a DOI, and a title-search match scoring 0.98 with one
   paper$bib$doi <- NA_character_
   paper$bib$text_id <- 2L
-  paper$bib_match$title <- NA_character_
   expect_equal(paper$bib_match$score, 0.98)
 
   mo <- module_run(paper, "ref_accuracy")
   expect_match(paste(mo$report, collapse = "\n"), "10.1234/prior", fixed = TRUE)
 
-  # for an older paper, 0.98 is far below the default suggest_score of 70
-  paper$info$schema_version <- NA_character_
+  # after add_bib_match() refreshes the paper, its scores are CrossRef
+  # relevance scores: 60 is below the default suggest_score of 70, but a
+  # match with the cited title, authors, year and journal is suggested
+  # whatever its score (Crossref scores short references low)
+  paper$bib_match$score <- 60
   mo <- module_run(paper, "ref_accuracy")
-  expect_no_match(paste(mo$report, collapse = "\n"), "10.1234/prior",
-                  fixed = TRUE)
+  expect_true(mo$table$doi_suggested)
 })
 
 test_that("a later bibr 12.x file reads, ignoring keys it does not know", {

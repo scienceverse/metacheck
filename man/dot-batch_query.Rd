@@ -15,7 +15,8 @@
  },
   throttle_capacity = NULL,
   throttle_fill_time_s = 1,
-  timeout_s = 60
+  timeout_s = 60,
+  max_tries = 5
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ a metadata/listing response has no meaningful "expected size" to scale
 against (see download_repo_files()'s size-scaled timeout for that case),
 so this is a flat default generous enough for a slow-but-real API
 response while still bounding a truly stalled connection.}
+
+\item{max_tries}{attempts per request, including the first, for a
+refused or failed request}
 }
 \value{
 a list of responses

@@ -105,6 +105,14 @@ test_that("doi_clean", {
   doi <- "10.1234/mypaper/full"
   clean <- doi_clean(doi)
   expect_equal(clean, "10.1234/mypaper")
+
+  # what reading a PDF adds: spaces, punctuation, "%2F", a bracket around a
+  # link; a parenthesis in the DOI stays
+  doi <- c("10.1037/0003-066x.54.6.4 08", "10.1037/0003-066x.54.6.408.",
+           "<https://doi.org/10.1037/0003-066x.54.6.408>.",
+           "(https://doi.org/10.1037%2F0003-066x.54.6.408).")
+  expect_equal(doi_clean(doi), rep("10.1037/0003-066x.54.6.408", 4))
+  expect_equal(doi_clean("10.1016/0010-0277(93)90058-4"), "10.1016/0010-0277(93)90058-4")
 }, "mock")
 
 test_that("doi_valid_format", {

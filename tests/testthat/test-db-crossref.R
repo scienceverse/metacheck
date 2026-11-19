@@ -394,3 +394,31 @@ test_that(".crossref_parse_item reads a record with null fields (U13)", {
   expect_equal(out$DOI, "10.1/x")
   expect_false("volume" %in% names(out))
 })
+
+test_that("doi_ra tells registered from missing DOIs", {
+  skip_if_not(online("doi.org"))
+  ra <- doi_ra(c("10.1037/0033-2909.126.1.78", "10.1037/0033-2909.1261.7",
+                 NA, "https://doi.org/10.48550/arxiv.1706.03762"))
+  expect_equal(ra$ra, c("Crossref", NA, NA, "DataCite"))
+  expect_equal(ra$exists, c(TRUE, FALSE, NA, TRUE))
+})
+
+test_that("datacite_query finds a title misread from the PDF", {
+  skip_if_not(online("api.datacite.org"))
+  dc <- datacite_query(c("Deep residual learning for image recog- nition", NA))
+  expect_true("10.48550/arxiv.1512.03385" %in% dc$doi[dc$query == 1])
+  expect_false(2 %in% dc$query)
+  expect_true(all(c("title", "year", "authors", "type") %in% names(dc)))
+})
+
+test_that("datacite_query reads a record without a title, and searches operators as words", {
+  urls <- NULL
+  local_mocked_bindings(online = \(...) TRUE, .batch_query = \(u, ...) {
+    urls <<- u
+    list(httr2::response(200, headers = list(`Content-Type` = "application/json"),
+      body = charToRaw('{"data":[{"id":"10.5281/x","attributes":{"titles":[],"publicationYear":2020,"creators":[]}}]}')))
+  })
+  dc <- datacite_query("To be or NOT to be")
+  expect_true(is.na(dc$title))
+  expect_false(grepl("NOT", utils::URLdecode(urls)))
+})

@@ -16,7 +16,7 @@
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
-#' @author Lukas Wallrich (\email{lukas.wallrich@gmail.com})
+#' @author Lukas Wallrich (\email{l.wallrich@bbk.ac.uk})
 #'
 #'
 #' @import dplyr
