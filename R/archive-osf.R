@@ -683,9 +683,11 @@ osf_check_id <- function(osf_id) {
 #' @param guid the 5-letter GUID
 #'
 #' @returns the type, or `"inaccessible"` when the GUID is a validly-formed
-#'   OSF ID but the resource itself could not be reached (private, embargoed,
-#'   withdrawn, or deleted) -- distinct from `NA`, which means the input was
-#'   not a valid OSF ID at all
+#'   OSF ID but the OSF refused it or does not have it (private, embargoed,
+#'   withdrawn, or deleted), or `"unreachable"` when the request itself failed
+#'   (no connection, a server error, or too many requests), so nothing is
+#'   known about the link -- both distinct from `NA`, which means the input
+#'   was not a valid OSF ID at all
 #' @export
 #'
 #' @examples
@@ -721,7 +723,11 @@ osf_type <- function(guid) {
   )
   info <- osf_get_all_pages(url)
 
-  if (!is.null(attr(info, "osf_error"))) return("inaccessible")
+  # A request that failed (no connection, a server error, too many requests)
+  # says nothing about the link: "inaccessible" made prereg_check call such a
+  # link private, embargoed or withdrawn (#541)
+  err <- attr(info, "osf_error")
+  if (!is.null(err)) return(if (identical(err, "request_failed")) "unreachable" else "inaccessible")
 
   otype <- info$relationships$referent$links$related$meta$type
 

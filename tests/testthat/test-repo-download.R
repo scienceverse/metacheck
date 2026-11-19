@@ -316,6 +316,52 @@ test_that("an archive member saved by an earlier run is not fetched again (#561)
   expect_match(attr(third, "failed")$error, "fetched again")
 })
 
+test_that("archive members share one budget per repository with its other files (#698)", {
+  # three archives of three 300,000-byte members under a 1 MB budget: each
+  # archive had its own budget, so all 9 members were fetched
+  repo <- paste0("https://example.org/repo-698-", paste(sample(c(letters, 0:9), 10, TRUE), collapse = ""))
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+  g <- expand.grid(a = 1:3, m = 1:3)
+  files <- data.frame(
+    repo_url = repo, file_name = sprintf("m%d_%d.csv", g$a, g$m),
+    file_path = sprintf("arc%d.zip/m%d_%d.csv", g$a, g$a, g$m),
+    file_url = NA_character_, file_size = 300000, file_location = NA_character_,
+    archive_url = sprintf("%s/arc%d.zip", repo, g$a),
+    archive_member = sprintf("m%d_%d.csv", g$a, g$m), paper_id = "p", stringsAsFactors = FALSE)
+  fetched <- character(0)
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) {
+      fetched <<- c(fetched, names)
+      path <- file.path(dest, names)
+      for (p in path) writeBin(raw(300000), p)
+      data.frame(name = names, path = path, size = 300000, ok = TRUE, error = NA_character_)
+    }
+  )
+  expect_message(first <- download_repo_files(files, max_download_size = 1),
+                 "Repository .* exceeds the 1 MB per-repository budget: fetched the smallest archive members up to the cap, 6 members omitted")
+  expect_length(fetched, 3)
+  expect_equal(sum(!is.na(first$file_location)), 3)
+
+  # a second call counts the saved members first and fetches nothing new
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) stop("fetched again")
+  )
+  second <- suppressMessages(download_repo_files(files, max_download_size = 1))
+  expect_equal(nrow(attr(second, "failed")), 0)
+  expect_equal(second$file_location, first$file_location)
+
+  # a file with its own address shares the budget: the members kept
+  # (900,000 bytes) leave no room for 200,000 bytes more
+  own <- data.frame(repo_url = repo, file_name = "own.csv", file_path = "own.csv",
+                    file_url = paste0(repo, "/own.csv"), file_size = 200000,
+                    file_location = NA_character_, archive_url = NA_character_,
+                    archive_member = NA_character_, paper_id = "p", stringsAsFactors = FALSE)
+  expect_message(third <- download_repo_files(rbind(files, own), max_download_size = 1),
+                 "downloaded the smallest files up to the cap, 1 file omitted")
+  expect_true(is.na(third$file_location[10]))
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+})
+
 test_that("a successful archive-member fetch still populates file_location (#429)", {
   # Guards the happy path against the same change: a real ok = TRUE row must
   # still set file_location, not get swept into `failed`.
@@ -1189,12 +1235,14 @@ test_that("archive members on any host may use whole-archive mode; Dryad counts 
   for (r in files$repo_url) unlink(metacheck:::.repo_cache_subdir(r), recursive = TRUE)
   suppressMessages(download_repo_files(files, max_download_size = 10))
 
+  # a whole copy may use what is left of the repository's budget after its
+  # 100-byte member (#698)
   other <- seen[[files$archive_url[1]]]
-  expect_equal(other$max_whole_bytes, 10 * 1024 * 1024)
+  expect_equal(other$max_whole_bytes, 10 * 1024 * 1024 - 100)
   expect_equal(other$request_bytes, 1048576)
   expect_equal(other$size, 5000)   # carried from repo_check's listing
   dryad <- seen[[files$archive_url[2]]]
-  expect_equal(dryad$max_whole_bytes, 10 * 1024 * 1024)
+  expect_equal(dryad$max_whole_bytes, 10 * 1024 * 1024 - 100)
   expect_true(is.infinite(dryad$request_bytes))
   expect_equal(dryad$size, 6000)
 })

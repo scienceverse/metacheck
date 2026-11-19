@@ -2280,7 +2280,9 @@ repro_defined_vars <- function(code_text_list) {
   is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
   piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
   placeholder <- grepl("[%{}$*]|: ", d$ref)
-  !is_call & !piece & !placeholder & !(tolower(d$basename) %in% built)
+  # a file read from a web address is not one the deposit should hold (#695)
+  web <- grepl("://", d$ref, fixed = TRUE)
+  !is_call & !piece & !placeholder & !web & !(tolower(d$basename) %in% built)
 }
 
 # The predicted missing files worth reporting. Without a run, all of them. After a run,

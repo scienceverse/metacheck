@@ -213,6 +213,45 @@ test_that("registration that type-checks but fails to fetch is reported", {
   expect_true(any(grepl(guid, mo$report)))
 })
 
+test_that("a link the OSF did not answer for is not called private (#541)", {
+  # a failed request says nothing about the link: osf_type() gives
+  # "unreachable", and the report says the link could not be checked
+  guid <- "klmno"
+  paper <- test_paper(url = paste0("https://osf.io/", guid))
+  mo <- testthat::with_mocked_bindings(
+    module_run(paper, "prereg_check"),
+    osf_type = function(guid) "unreachable",
+    .package = "metacheck"
+  )
+  expect_false(grepl("no registrations", mo$summary_text))
+  expect_match(mo$summary_text, "could not be checked, because the OSF did not answer")
+  expect_false(any(grepl("private, embargoed, or withdrawn", mo$report)))
+  expect_true(any(grepl(guid, mo$report)))
+
+  # the same for a registration whose details fail to load
+  mo <- testthat::with_mocked_bindings(
+    module_run(paper, "prereg_check"),
+    osf_type = function(guid) "registrations",
+    osf_get_all_pages = function(url, page_end = Inf) {
+      metacheck:::.osf_error_result("request_failed")
+    },
+    .package = "metacheck"
+  )
+  expect_match(mo$summary_text, "could not be checked, because the OSF did not answer")
+  expect_false(grepl("could not be accessed", mo$summary_text))
+})
+
+test_that("osf_type() tells a failed request from a refusal (#541)", {
+  types <- testthat::with_mocked_bindings(
+    c(osf_type("abcde"), osf_type("fghij")),
+    osf_get_all_pages = function(url, page_end = Inf) {
+      metacheck:::.osf_error_result(if (grepl("abcde", url)) "request_failed" else "not_found")
+    },
+    .package = "metacheck"
+  )
+  expect_equal(types, c("unreachable", "inaccessible"))
+})
+
 test_that("combine >10 OSF registrations", {
   # https://github.com/scienceverse/metacheck/issues/262
 

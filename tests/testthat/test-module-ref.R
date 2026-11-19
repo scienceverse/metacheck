@@ -332,6 +332,23 @@ test_that("ref_replication drops a citation of the original only when the same p
   expect_true(tolower(row$doi_r) %in% tolower(mo$table$replication_doi[mo$table$paper_id == "A"]))
 })
 
+test_that("ref_replication does not suggest the citing paper itself (#695)", {
+  # a replication report cites its original, and was told to cite itself
+  fl <- FLoRA()
+  row <- fl[!is.na(fl$doi_r) & nzchar(fl$doi_r) & !is.na(fl$doi_o) & nzchar(fl$doi_o), ][1, ]
+  n_rep <- sum(tolower(fl$doi_o) == tolower(row$doi_o))
+  pa <- test_paper("x"); pa$paper_id <- "A"
+  pa$info$doi <- paste0("https://doi.org/", toupper(row$doi_r))
+  pb <- test_paper("y"); pb$paper_id <- "B"
+  local_mocked_bindings(ref_table = function(paper)
+    data.frame(paper_id = c("A", "B"), bib_id = 1L, doi = row$doi_o, text = "original"))
+  mo <- module_run(paperlist(pa, pb), "ref_replication")
+  expect_false(tolower(row$doi_r) %in% tolower(mo$table$replication_doi[mo$table$paper_id == "A"]))
+  expect_equal(sum(mo$table$paper_id == "A"), n_rep - 1)
+  # another paper citing the same original is still told about it
+  expect_true(tolower(row$doi_r) %in% tolower(mo$table$replication_doi[mo$table$paper_id == "B"]))
+})
+
 test_that("ref_summary labels unmatched references and keeps one row per reference (U119)", {
   # no_match with every *_mismatch FALSE gave NA; two replications repeated
   # the reference

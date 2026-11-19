@@ -1434,6 +1434,13 @@ test_that("files a script writes or downloads are not missing, in any language, 
   expect_equal(out$loaded_files_missing_names[1], "gone.csv")
   expect_equal(out$loaded_files_missing, c(1L, 0L, 0L))
   expect_false("loaded_refs" %in% names(out))
+
+  # a file read from a web address is not missing from the repository (#695)
+  cf <- data.frame(paper_id = "p", repo_url = "r", file_name = "a.R",
+                   loaded_refs = paste("http://journal.sjdm.org/16/1234/study1.sav", "gone.csv", sep = "\u001f"),
+                   files_written = "")
+  out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
+  expect_equal(out$loaded_files_missing_names, "gone.csv")
 })
 
 test_that("text that is not a path on the authors' computer is not an absolute path (#648)", {
