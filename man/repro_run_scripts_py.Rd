@@ -49,7 +49,7 @@ default) sets no such limit.}
 a data frame — same columns as \code{\link[=repro_run_scripts]{repro_run_scripts()}}'s return:
 \code{file_name}, \code{outcome}, \code{error}, \code{error_type}, \code{undefined_var},
 \code{stdout}, \code{stderr}, \code{elapsed}, \code{script_lines}, \code{captures} (always \code{NULL}
-per row — see above)
+per row — see above), \code{started_at}, \code{ended_at}, \code{exit_status}
 }
 \description{
 The Python sibling of \code{\link[=repro_run_scripts]{repro_run_scripts()}}: runs each script WHOLE, as a

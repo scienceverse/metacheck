@@ -57,7 +57,8 @@ default) sets no such limit.}
 \value{
 a data frame — identical columns to \code{\link[=repro_run_scripts_py]{repro_run_scripts_py()}}'s
 return: \code{file_name}, \code{outcome}, \code{error}, \code{error_type}, \code{undefined_var},
-\code{stdout}, \code{stderr}, \code{elapsed}, \code{script_lines}, \code{captures} (always \code{NULL})
+\code{stdout}, \code{stderr}, \code{elapsed}, \code{script_lines}, \code{captures} (always \code{NULL}),
+\code{started_at}, \code{ended_at}, \code{exit_status}
 }
 \description{
 The Docker-backed twin of \code{\link[=repro_run_scripts_py]{repro_run_scripts_py()}}: same return contract,

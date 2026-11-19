@@ -231,6 +231,8 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
            "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/pylib", image = image),
            image, "sh", container_driver)
+  # kept for the environment element of the output (R/provenance.R)
+  .repro_prov_note_docker("python_install", args, image)
 
   out_file <- tempfile(fileext = ".out")
   res <- tryCatch(
@@ -304,7 +306,8 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #'
 #' @returns a data frame — identical columns to [repro_run_scripts_py()]'s
 #'   return: `file_name`, `outcome`, `error`, `error_type`, `undefined_var`,
-#'   `stdout`, `stderr`, `elapsed`, `script_lines`, `captures` (always `NULL`)
+#'   `stdout`, `stderr`, `elapsed`, `script_lines`, `captures` (always `NULL`),
+#'   `started_at`, `ended_at`, `exit_status`
 #' @param deadline the time ([Sys.time()] plus the time for all scripts
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
@@ -331,7 +334,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
                       error = character(0), error_type = character(0),
                       undefined_var = character(0), stdout = character(0),
                       stderr = character(0), elapsed = numeric(0)) |>
-             dplyr::mutate(script_lines = list(), captures = list()))
+             dplyr::mutate(script_lines = list(), captures = list()) |> .repro_add_run_clock())
   if (!requireNamespace("processx", quietly = TRUE))
     stop("the 'processx' package is required for sandbox = \"docker\".", call. = FALSE)
 
@@ -346,7 +349,10 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
   pb_run$tick(0, list(what = ""))
   on.exit(pb_run$terminate())
 
-  rows <- lapply(ordered_names, function(fn) {
+  # each script's start, end and exit status, for run_results' started_at,
+  # ended_at and exit_status (see .repro_add_run_clock(), R/provenance.R)
+  clock <- new.env()
+  run_one <- function(fn) {
     pb_run$tick(1, list(what = fn))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
@@ -415,14 +421,19 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
                  if (!is.null(lib_dir_norm)) "/pylib")
     if (length(py_path)) args <- c(args, "-e", paste0("PYTHONPATH=", paste(py_path, collapse = ":")))
     args <- c(args, image, .repro_docker_counted_cmd(c("python", container_script), net))
+    # kept for the environment element of the output (R/provenance.R)
+    .repro_prov_note_docker("python_run", args, image)
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
+    clock$started <- t0
     watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
                                          sandbox_root, net)
     res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    clock$ended <- Sys.time()
+    clock$status <- .repro_exit_status(res)
 
     is_timeout <- (inherits(res, "condition") &&
       grepl("timed? ?out", conditionMessage(res), ignore.case = TRUE)) ||
@@ -497,6 +508,10 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
               error_type = NA_character_, undefined_var = NA_character_,
               stdout = so, stderr = se, elapsed = elapsed) |>
       dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL))
+  }
+  rows <- lapply(ordered_names, function(fn) {
+    rm(list = ls(clock), envir = clock)
+    .repro_add_run_clock(run_one(fn), clock)
   })
-  dplyr::bind_rows(rows)
+  .repro_add_run_clock(dplyr::bind_rows(rows))
 }

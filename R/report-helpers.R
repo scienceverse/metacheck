@@ -86,6 +86,25 @@ report_type <- function(report_type = NULL) {
   report_type %in% c("simple", "simple_brief", "checklist")
 }
 
+# The files that get their own table in a report's per-file set of tables
+# (data_check's data previews and descriptives, codebook_check's column
+# documentation): at most getOption("metacheck.report_max_file_tabs", 20)
+# files, in their order, so the report's size does not grow with the number of
+# files in a deposit. Without a limit, a deposit with 1,190 data files gave a
+# report of 2,398 tables (81 MB of markdown) that pandoc could not turn into
+# HTML within an hour. The module's output still has every file. Returns the
+# files to show, with attribute "note": the line telling the reader that only
+# part is shown (NULL when all are shown).
+.report_file_tabs <- function(files) {
+  n_max <- suppressWarnings(as.integer(getOption("metacheck.report_max_file_tabs", 20L)))
+  if (length(n_max) != 1 || is.na(n_max) || n_max < 1L) n_max <- 20L
+  shown <- utils::head(files, n_max)
+  attr(shown, "note") <- if (length(files) > n_max) {
+    sprintf("*Showing the first %d of %d files.*", n_max, length(files))
+  }
+  shown
+}
+
 # Whether a report_type value shows only flagged modules (red/yellow/fail)
 # with summary text only, skipping full detail -- true for "brief" and
 # "simple_brief".
