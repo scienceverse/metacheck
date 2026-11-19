@@ -93,6 +93,193 @@ datacite_doi <- function(doi) {
   bib_table
 }
 
+#' Registration agency of DOIs from doi.org
+#'
+#' Asks doi.org which registration agency (Crossref, DataCite, mEDRA, ...)
+#' registered each DOI, which also tells whether the DOI exists at all.
+#'
+#' @param doi the DOI(s) to check
+#'
+#' @returns a data frame with the DOI as given, the registration agency
+#'   (`ra`, NA when there is none) and `exists`: TRUE for a registered DOI,
+#'   FALSE for a DOI that doi.org reports as not existing or invalid, NA when
+#'   the DOI was missing or the lookup failed
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' doi_ra(c("10.1037/0033-2909.126.1.78", "10.1037/0033-2909.1261.7"))
+#' }
+doi_ra <- function(doi) {
+  out <- data.frame(doi = doi, ra = rep(NA_character_, length(doi)),
+                    exists = rep(NA, length(doi)))
+  cleaned <- doi_clean(doi)
+  todo <- unique(cleaned[!is.na(cleaned) & nzchar(cleaned)])
+  if (!length(todo) || !online("doi.org")) return(out)
+  # doi.org answers several comma-separated DOIs at once
+  res <- lapply(split(todo, ceiling(seq_along(todo) / 20)), \(dois) {
+    url <- paste0("https://doi.org/ra/",
+                  paste(utils::URLencode(dois, reserved = TRUE), collapse = ","))
+    tryCatch({
+      j <- .mc_request(url) |> httr2::req_timeout(30) |>
+        httr2::req_retry(max_tries = 2) |>
+        httr2::req_perform() |> httr2::resp_body_json()
+      data.frame(
+        doi = dois,
+        ra = vapply(j, \(x) x$RA %||% NA_character_, ""),
+        status = vapply(j, \(x) x$status %||% NA_character_, ""))
+    }, error = \(e) data.frame(doi = dois, ra = NA_character_, status = NA_character_))
+  }) |> dplyr::bind_rows()
+  m <- match(cleaned, res$doi)
+  out$ra <- res$ra[m]
+  out$exists <- ifelse(!is.na(res$ra[m]), TRUE,
+    ifelse(res$status[m] %in% c("DOI does not exist", "Invalid DOI"), FALSE, NA))
+  out
+}
+
+#' Record of DOIs from doi.org
+#'
+#' Asks doi.org for the citation record (CSL JSON) of each DOI. doi.org passes
+#' the request to the agency that registered the DOI, so this also returns
+#' records of DataCite, mEDRA, JaLC and other agencies whose records are not
+#' looked up in Crossref.
+#'
+#' @param doi the DOI(s) to look up
+#'
+#' @returns a data frame with one row per DOI, in the order given, with the
+#'   `doi`, `title`, `authors` (a list of data frames with `given` and
+#'   `family`), `year`, `container` and `bib_type` of each record; all NA, with
+#'   no authors, when no record was returned
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' doi_csl("10.5281/zenodo.1165402")
+#' }
+doi_csl <- function(doi) {
+  na_chr <- rep(NA_character_, length(doi))
+  out <- data.frame(doi = na_chr, title = na_chr, year = rep(NA_integer_, length(doi)),
+                    container = na_chr, bib_type = na_chr)
+  out$authors <- replicate(length(doi), data.frame(given = character(0),
+                                                   family = character(0)),
+                           simplify = FALSE)
+  cleaned <- doi_clean(doi)
+  todo <- which(!is.na(cleaned) & nzchar(cleaned))
+  if (!length(todo) || !online("doi.org")) return(out)
+  urls <- paste0("https://doi.org/", utils::URLencode(cleaned[todo], reserved = TRUE))
+  resps <- .batch_query(urls, msg = NULL,
+                        accept = "application/vnd.citationstyles.csl+json",
+                        max_tries = 2, timeout_s = 30)
+  first <- \(x) if (length(x)) as.character(unlist(x)[[1]]) else NA_character_
+  # CSL types, as bib_match names them (see .bibtype_convert())
+  csl_type <- c("article-journal" = "article", "book" = "book",
+                "chapter" = "incollection", "paper-conference" = "inproceedings",
+                "report" = "techreport", "thesis" = "phdthesis",
+                "entry-encyclopedia" = "incollection", "entry-dictionary" = "incollection")
+  for (j in seq_along(todo)) {
+    resp <- resps[[j]]
+    failed <- is.null(resp) || inherits(resp, "error") ||
+      httr2::resp_status(resp) >= 400
+    rec <- if (!failed) tryCatch(httr2::resp_body_json(resp, check_type = FALSE),
+                                 error = \(e) NULL)
+    if (!is.list(rec) || is.null(rec$title)) next
+    i <- todo[j]
+    out$doi[i] <- rec$DOI %||% NA_character_
+    out$title[i] <- first(rec$title)
+    dp <- rec$issued$`date-parts`
+    out$year[i] <- if (length(dp) && length(dp[[1]])) as.integer(dp[[1]][[1]]) else NA_integer_
+    out$container[i] <- first(rec$`container-title`)
+    type <- rec$type %||% NA_character_
+    # Crossref's records keep Crossref's type names ("journal-article")
+    type <- if (type %in% names(csl_type)) csl_type[[type]] else .bibtype_convert(type)
+    out$bib_type[i] <- if (type %in% c(csl_type, "inbook", "proceedings")) type else "misc"
+    out$authors[[i]] <- data.frame(
+      given = vapply(rec$author, \(a) a$given %||% NA_character_, ""),
+      family = vapply(rec$author, \(a) a$family %||% a$literal %||% NA_character_, ""))
+  }
+  out
+}
+
+#' Search DataCite by title
+#'
+#' Searches DataCite's records (which include arXiv, Zenodo, OSF and many data
+#' repositories) for works whose titles share words with each title, most
+#' relevant first.
+#'
+#' @param title the title(s) to search for
+#' @param n how many records to return per title
+#'
+#' @returns a data frame with the index of the title searched for (`query`),
+#'   and the `doi`, `title`, `year`, `authors` ("Family, Given" names
+#'   separated by "; ") and `type` (DataCite's resourceTypeGeneral) of each record found. A title whose search failed has a row with
+#'   `doi` NA and `error` TRUE; a title with no records has no rows.
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' datacite_query("Deep residual learning for image recognition")
+#' }
+datacite_query <- function(title, n = 5) {
+  empty <- data.frame(query = integer(0), doi = character(0),
+                      title = character(0), year = integer(0),
+                      authors = character(0), type = character(0),
+                      error = logical(0))
+  words <- lapply(title, \(x) {
+    if (is.na(x)) return(character(0))
+    # lower case, so that "AND", "OR", "NOT" and "TO" in a title are words,
+    # not search operators (DataCite answered 400 to them)
+    w <- strsplit(gsub("[^[:alnum:] ]", " ", tolower(x)), "\\s+")[[1]]
+    w[nchar(w) >= 2]
+  })
+  todo <- which(lengths(words) > 0)
+  if (!length(todo)) return(empty)
+  if (!online("api.datacite.org")) {
+    return(data.frame(query = todo, doi = NA_character_, title = NA_character_,
+                      year = NA_integer_, authors = NA_character_,
+                      type = NA_character_, error = TRUE))
+  }
+  # words joined with OR and sorted by relevance, so a title misread from the
+  # PDF ("ulti- matum") still finds the work; the caller compares the titles
+  urls <- vapply(todo, \(i) paste0(
+    "https://api.datacite.org/dois?sort=relevance&page[size]=", n,
+    "&fields[dois]=titles,publicationYear,creators,types&query=",
+    utils::URLencode(sprintf("titles.title:(%s)",
+                             paste(words[[i]], collapse = " OR ")), reserved = TRUE)),
+    character(1))
+  resps <- .batch_query(urls, msg = NULL)
+  lapply(seq_along(todo), \(j) {
+    resp <- resps[[j]]
+    failed <- is.null(resp) || inherits(resp, "error") ||
+      httr2::resp_status(resp) >= 400
+    data <- if (!failed) tryCatch(httr2::resp_body_json(resp)$data,
+                                  error = \(e) NULL)
+    if (failed || is.null(data)) {
+      return(data.frame(query = todo[j], doi = NA_character_,
+                        title = NA_character_, year = NA_integer_,
+                        authors = NA_character_, type = NA_character_,
+                        error = TRUE))
+    }
+    if (!length(data)) return(empty)
+    data.frame(
+      query = todo[j],
+      doi = vapply(data, \(d) d$id %||% NA_character_, ""),
+      # a record may have no title
+      title = vapply(data, \(d) {
+        t <- d$attributes$titles
+        if (length(t)) t[[1]]$title %||% NA_character_ else NA_character_
+      }, ""),
+      year = vapply(data, \(d) as.integer(d$attributes$publicationYear %||% NA), 1L),
+      # "Family, Given; ...", so that a name with its parts swapped (family
+      # "Kui", given "Wu", cited as "Wu, K.") can be recognised
+      authors = vapply(data, \(d) paste(vapply(d$attributes$creators, \(a) {
+        if (is.null(a$familyName)) return(a$name %||% "")
+        paste(c(a$familyName, a$givenName), collapse = ", ")
+      }, ""), collapse = "; "), ""),
+      type = vapply(data, \(d) d$attributes$types$resourceTypeGeneral %||% NA_character_, ""),
+      error = FALSE)
+  }) |> dplyr::bind_rows(empty)
+}
+
 #' Convert crossref/doi types to bibtex types
 #'
 #' @param type a vector of crossref types
@@ -281,10 +468,10 @@ crossref_doi <- function(doi, select = c(
     item$`container-title` <- NULL
   }
 
-  if (length(item$`journal-issue`$`published-print`$`date-parts`) &
+  if (length(item$`journal-issue`$`published-print`$`date-parts`) &&
       length(item$`journal-issue`$`published-print`$`date-parts`[[1]])) {
     item$year <- item$`journal-issue`$`published-print`$`date-parts`[[1]][[1]]
-  } else if (length(item$published$`date-parts`) &
+  } else if (length(item$published$`date-parts`) &&
     length(item$published$`date-parts`[[1]])) {
     item$year <- item$published$`date-parts`[[1]][[1]]
   }
@@ -515,7 +702,9 @@ add_bib_match <- function(paper, min_score = 50) {
   }
 
   # look up by doi
-  has_doi <- doi_valid_format(bib$doi) %in% TRUE
+  # cleaned first, so a DOI written as a URL or read with a space or a full
+  # stop from the PDF is looked up as a DOI
+  has_doi <- doi_valid_format(doi_clean(bib$doi)) %in% TRUE
 
   # look up papers with DOI
   cr_data_doi <- data.frame()

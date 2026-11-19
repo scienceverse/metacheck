@@ -1,6 +1,6 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.4.4.25
+Version: 0.4.4.26
 Date: 2026-11-06
 Authors@R: c(
   person(  given = "Lisa",
@@ -100,6 +100,7 @@ Imports:
     rvest,
     tidytext,
     statcheck,
+    stringi,
     base64enc,
     gitcreds, 
     roxygen2, 

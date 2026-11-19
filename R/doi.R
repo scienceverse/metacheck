@@ -1,5 +1,10 @@
 #' Clean DOIs
 #'
+#' Removes a surrounding doi.org or journal URL, a "doi:" label, a section
+#' marker, whitespace, trailing punctuation, and an unmatched closing angle
+#' bracket, parenthesis or square bracket. Decodes "%2F" as "/". Balanced
+#' parentheses within the DOI are kept.
+#'
 #' @param doi a character vector of one or more DOIs
 #'
 #' @returns a character vector of cleaned DOIs (no https://doi.org or DOI:)
@@ -9,6 +14,7 @@
 #' doi_clean("https://doi.org/10.1038/nphys1170")
 #' doi_clean("doi:10.1038/nphys1170")
 #' doi_clean("DOI: 10.1038/nphys1170")
+#' doi_clean("<https://doi.org/10.1037/0003-066x.54.6.4 08>.")
 doi_clean <- function(doi) {
   doi <- doi |>
     unlist() |>
@@ -26,7 +32,26 @@ doi_clean <- function(doi) {
   # remove /full off the end
   doi <- sub("/full$", "", doi)
 
-  doi <- trimws(doi)
+  # PDF reading: spaces from line breaks ("10.1037/0003-066x.54.6.4 08"), a
+  # URL-encoded slash, and punctuation or a closing bracket after the DOI
+  # ("<https://doi.org/...>.", "(https://doi.org/...)."). A closing bracket
+  # is dropped only when it has no opening one in the DOI, as in
+  # "10.1016/0010-0277(93)90058-4" it is part of the DOI.
+  doi <- gsub("[[:space:]]+", "", doi)
+  doi <- gsub("%2F", "/", doi, ignore.case = TRUE)
+  unbalanced <- \(x, open, close) {
+    !is.na(x) & lengths(regmatches(x, gregexpr(close, x, fixed = TRUE))) >
+      lengths(regmatches(x, gregexpr(open, x, fixed = TRUE)))
+  }
+  repeat {
+    before <- doi
+    doi <- sub("[.,;:]+$", "", doi)
+    for (b in list(c("(", ")"), c("<", ">"), c("[", "]"))) {
+      end <- !is.na(doi) & endsWith(doi, b[2]) & unbalanced(doi, b[1], b[2])
+      doi[end] <- substr(doi[end], 1, nchar(doi[end]) - 1)
+    }
+    if (identical(before, doi)) break
+  }
 
   return(doi)
 }
