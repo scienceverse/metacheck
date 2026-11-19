@@ -174,7 +174,11 @@ osf_cache_clear <- function() {
 #'   a folder already started is listed in full, with its retries, so the count
 #'   can end a little above the limit. Default `Inf` (no limit).
 #'
-#' @returns a data frame of information
+#' @returns a data frame of information. With `recursive = TRUE`, a folder or
+#'   component the OSF refused or sent back short (as it does under load) is
+#'   asked for once more, after 30 seconds; when it still fails, the result
+#'   has a column `listing_short` (`TRUE`), with a warning: files in that
+#'   folder are missing from it. Such a listing is not kept in either cache.
 #' @export
 #' @examples
 #' \donttest{
@@ -308,10 +312,18 @@ osf_info <- function(osf_url, id_col = 1,
     # `max_requests` (2026-11-14): every listing request made from here on is
     # counted (.osf_requests, see .osf_get_one_page()), and no new component
     # tree or folder is opened once the limit is used up (`cut`). A folder
-    # that answers with a failed or short page (`short`; a refusal under load)
-    # is noted too: such a listing is not kept in any cache, because it lacks
-    # files the project has. A folder the OSF calls forbidden, not found or
-    # gone is a settled answer, not a short listing.
+    # that answers with a failed or short page (a refusal under load) is noted
+    # too (`failed_urls`): such a listing is not kept in any cache, because it
+    # lacks files the project has. A folder the OSF calls not found or gone
+    # is a settled answer, not a short listing; so is one it calls forbidden,
+    # except an OSF Storage folder or a component listing in a project the
+    # OSF has already shown to be public, as the OSF also refuses public
+    # projects for a while under load (see .osf_info()). Each stage asks for
+    # its failed folders once more after waiting (.osf_retry_wait()), and
+    # what still fails makes the listing short (`short`, the column
+    # `listing_short`): in a corpus run, a project's listing lacked the files
+    # of two of its components after a refusal (#681), and the checks
+    # reported on the rest without a word.
     #
     # The walk has three stages: the component tree of each linked node
     # (`trees`), the components it did not cover (`components`), and the
@@ -324,22 +336,49 @@ osf_info <- function(osf_url, id_col = 1,
     # spend that on the same first 50 requests every time.
     n_start <- .osf_requests$n
     cut <- FALSE
-    short <- FALSE
+    failed_urls <- character(0)
+    lost_urls <- character(0)
+    is_public <- any(info$public %in% TRUE)
     budget_left <- function() max_requests - (.osf_requests$n - n_start)
     # Lists `urls` in order while the limit lasts; returns the rows and the
-    # urls not yet asked for.
+    # urls not yet asked for. The urls the OSF refused or answered short for
+    # are added to `failed_urls`.
     fetch <- function(urls) {
       out <- vector("list", length(urls))
       done <- 0
       for (k in seq_along(urls)) {
         if (budget_left() < 1) { cut <<- TRUE; break }
         res <- osf_get_all_pages(urls[k])
-        if (identical(attr(res, "osf_error"), "request_failed") ||
-            !is.null(attr(res, "osf_incomplete"))) short <<- TRUE
+        err <- attr(res, "osf_error")
+        if (identical(err, "request_failed") || !is.null(attr(res, "osf_incomplete")) ||
+            (identical(err, "forbidden") && is_public && .osf_refusable_url(urls[k])))
+          failed_urls <<- c(failed_urls, urls[k])
         out[[k]] <- res
         done <- k
       }
       list(data = dplyr::bind_rows(out), left = urls[seq_along(urls) > done])
+    }
+    # Once per stage: wait for the OSF, then ask again for the urls it
+    # refused. Returns the urls to ask for, or none when nothing failed, the
+    # limit was reached, or the stage already asked again.
+    retry_failed <- function(retried) {
+      if (cut || retried || length(failed_urls) == 0) return(character(0))
+      urls <- unique(failed_urls)
+      failed_urls <<- character(0)
+      wait <- .osf_retry_wait()
+      sprintf("Waiting %d seconds before asking the OSF again for %d folder%s it refused",
+              as.integer(wait), length(urls), plural(length(urls))) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+      Sys.sleep(wait)
+      urls
+    }
+    # rows of a folder asked for again that an answer cut short had already
+    # given; their subfolders were already queued then
+    drop_seen <- function(rows, seen) {
+      if (!is.data.frame(rows) || !nrow(rows) || !"osf_id" %in% names(rows) ||
+          !is.data.frame(seen) || !"osf_id" %in% names(seen)) return(rows)
+      rows[is.na(rows$osf_id) | !rows$osf_id %in% seen$osf_id, , drop = FALSE]
     }
 
     st <- if (!is.null(disk_key)) .repo_info_cache_get("osf_listing_part", disk_key) else NULL
@@ -383,19 +422,32 @@ osf_info <- function(osf_url, id_col = 1,
 
     if (!cut && st$stage == "components") {
       depth <- 0
-      while (length(st$urls) > 0) {
-        depth <- depth + 1
-        sprintf("Listing components: level %d, %d to check (%d found so far)",
-                depth, length(st$urls), nrow(st$child)) |>
-          list(what = _) |>
-          pb$tick(0, tokens = _)
-        got <- fetch(st$urls)
-        children <- .osf_parse_response(got$data)
-        st$child <- dplyr::bind_rows(st$child, children)
-        st$walked <- dplyr::bind_rows(st$walked, children)
-        st$urls <- c(got$left, children$children[!is.na(children$children %||% NA_character_)])
+      retried <- FALSE
+      repeat {
+        while (length(st$urls) > 0) {
+          depth <- depth + 1
+          sprintf("Listing components: level %d, %d to check (%d found so far)",
+                  depth, length(st$urls), nrow(st$child)) |>
+            list(what = _) |>
+            pb$tick(0, tokens = _)
+          got <- fetch(st$urls)
+          children <- .osf_parse_response(got$data)
+          if (retried) children <- drop_seen(children, st$child)
+          st$child <- dplyr::bind_rows(st$child, children)
+          st$walked <- dplyr::bind_rows(st$walked, children)
+          st$urls <- c(got$left, children$children[!is.na(children$children %||% NA_character_)])
+          if (cut) break
+        }
         if (cut) break
+        again <- retry_failed(retried)
+        if (length(again) == 0) break
+        st$urls <- again
+        retried <- TRUE
       }
+      # what this stage could not list, kept apart so the next stage does
+      # not ask for it again as a folder
+      lost_urls <- c(lost_urls, failed_urls)
+      failed_urls <- character(0)
       if (!cut) {
         if (nrow(st$child) > 0) {
           sprintf("Found %d component%s", nrow(st$child),
@@ -417,35 +469,49 @@ osf_info <- function(osf_url, id_col = 1,
     }
 
     if (!cut && st$stage == "files") {
-      while (length(st$urls) > 0) {
-        # A GitHub repository linked to a node is listed through GitHub
-        # itself (.osf_github_files()): 2 requests for the whole repository
-        # instead of one slow OSF-proxied request per folder. Only the
-        # provider's top folder is matched, so a fallback below lists it the
-        # old way in full.
-        is_gh <- grepl("/nodes/[a-z0-9]+/files/github/?$", st$urls)
-        for (u in st$urls[is_gh]) {
-          node <- sub("^.*/nodes/([a-z0-9]+)/files/github/?$", "\\1", u)
-          gh_rows <- .osf_github_files(node)
-          if (!is.null(gh_rows)) {
-            st$files <- dplyr::bind_rows(st$files, gh_rows)
-            st$urls <- setdiff(st$urls, u)
+      retried <- FALSE
+      repeat {
+        while (length(st$urls) > 0) {
+          # A GitHub repository linked to a node is listed through GitHub
+          # itself (.osf_github_files()): 2 requests for the whole repository
+          # instead of one slow OSF-proxied request per folder. Only the
+          # provider's top folder is matched, so a fallback below lists it the
+          # old way in full.
+          is_gh <- grepl("/nodes/[a-z0-9]+/files/github/?$", st$urls)
+          for (u in st$urls[is_gh]) {
+            node <- sub("^.*/nodes/([a-z0-9]+)/files/github/?$", "\\1", u)
+            gh_rows <- .osf_github_files(node)
+            if (!is.null(gh_rows)) {
+              st$files <- dplyr::bind_rows(st$files, gh_rows)
+              st$urls <- setdiff(st$urls, u)
+            }
           }
-        }
-        if (length(st$urls) == 0) break
+          if (length(st$urls) == 0) break
 
-        n_files <- sum(st$files$kind %in% "file")
-        sprintf("Listing files: %d folder%s to check (%d file%s found so far)",
-                length(st$urls), plural(length(st$urls)), n_files, plural(n_files)) |>
-          list(what = _) |>
-          pb$tick(0, tokens = _)
-        got <- fetch(st$urls)
-        files <- .osf_parse_response(got$data)
-        st$files <- dplyr::bind_rows(st$files, files)
-        st$urls <- c(got$left, files$files[!is.na(files$files %||% NA_character_)])
+          n_files <- sum(st$files$kind %in% "file")
+          sprintf("Listing files: %d folder%s to check (%d file%s found so far)",
+                  length(st$urls), plural(length(st$urls)), n_files, plural(n_files)) |>
+            list(what = _) |>
+            pb$tick(0, tokens = _)
+          got <- fetch(st$urls)
+          files <- .osf_parse_response(got$data)
+          if (retried) files <- drop_seen(files, st$files)
+          st$files <- dplyr::bind_rows(st$files, files)
+          st$urls <- c(got$left, files$files[!is.na(files$files %||% NA_character_)])
+          if (cut) break
+        }
         if (cut) break
+        again <- retry_failed(retried)
+        if (length(again) == 0) break
+        st$urls <- again
+        retried <- TRUE
       }
+      lost_urls <- c(lost_urls, failed_urls)
+      failed_urls <- character(0)
     }
+
+    # What the OSF still refused after it was asked again (#681).
+    short <- length(lost_urls) > 0
 
     # Until the files stage, the providers listed with the trees are kept
     # in `st$providers` only; they are part of what was found so far.
@@ -464,6 +530,15 @@ osf_info <- function(osf_url, id_col = 1,
         "The OSF listing of %s stopped at the limit of %d requests (`max_requests`), with %d file%s listed: files in folders not yet opened are missing from it. Raise `max_requests` to list it in full%s.",
         paste(valid_ids, collapse = ", "), max_requests, n_files, plural(n_files),
         if (!is.null(disk_key)) ", or run again with `cache = TRUE` to list the next part" else ""),
+        call. = FALSE)
+    }
+    if (short) {
+      n_files <- sum(found_files$kind %in% "file")
+      data$listing_short <- rep(TRUE, nrow(data))
+      warning(sprintf(
+        "The OSF refused part of the listing of %s, also when asked again (%d folder%s), with %d file%s listed: files in those folders are missing from it. Run again later.",
+        paste(valid_ids, collapse = ", "), length(unique(lost_urls)), plural(length(unique(lost_urls))),
+        n_files, plural(n_files)),
         call. = FALSE)
     }
   } else {
@@ -675,6 +750,32 @@ osf_type <- function(guid) {
   else NULL
 }
 
+# Whether a refusal (HTTP 403) of this listing url, in a project the OSF has
+# shown to be public, is a refusal under load rather than a settled answer
+# (see osf_info()): a component listing (/children/), a node's list of
+# storages (/files/), or an OSF Storage folder. A linked storage such as
+# Google Drive or Dropbox can refuse for good when its link to the account
+# has lapsed, so its folders keep a 403 as settled.
+.osf_refusable_url <- function(url) {
+  url <- sub("\\?.*$", "", url)
+  grepl("/children/?$|/files/?$|/files/osfstorage(/[^/]*)?/?$", url)
+}
+
+# Answers of the OSF API worth asking again for at once (httr2::req_retry()):
+# a rate limit (429), and a server error (500, 502, 503, 504), which the OSF
+# gives under load and which was otherwise asked again only by
+# osf_get_all_pages(), 2 and 4 seconds later (#681).
+.osf_is_transient <- function(resp) {
+  httr2::resp_status(resp) %in% c(429, 500, 502, 503, 504)
+}
+
+# How long osf_info() waits before asking the OSF once more for the folders
+# it refused (seconds). Under load the OSF refuses requests in bursts; the
+# retries of osf_get_all_pages() (2 and 4 seconds) fall inside such a burst,
+# while the folder that failed in the corpus run of #681 was listed in full
+# by a later run.
+.osf_retry_wait <- function() 30
+
 # NULL cannot carry an attribute (attr(NULL, x) <- y errors), so an
 # osf_get_all_pages() failure is represented as an empty list() instead --
 # still length() == 0 for every existing caller, but able to carry osf_error.
@@ -777,12 +878,27 @@ osf_get_all_pages <- function(url, page_end = Inf) {
   per_page <- content$links$meta$per_page %||% content$meta$per_page
   if (!length(next_page_num) || is.na(next_page_num) ||
       is.null(total) || is.null(per_page) || per_page <= 0) {
+    # A later page that failed (after its own retries), or came back short,
+    # makes this listing short too: it was dropped without the mark, so the
+    # listing looked complete (#681). A short later page has already said so
+    # in its own warning.
     subdata <- osf_get_all_pages(next_url, page_end)
-    if (!is.null(attr(subdata, "osf_error"))) subdata <- NULL
-    return(tryCatch(dplyr::bind_rows(content$data, subdata), error = \(e) {
+    lost <- !is.null(attr(subdata, "osf_error"))
+    short_later <- !is.null(attr(subdata, "osf_incomplete"))
+    if (lost) subdata <- NULL
+    out <- tryCatch(dplyr::bind_rows(content$data, subdata), error = \(e) {
       logger("osf_get_all_pages", list(url = url))
+      lost <<- TRUE
       dplyr::bind_rows(content$data)
-    }))
+    })
+    if (lost || short_later) {
+      got <- if (is.data.frame(out)) nrow(out) else length(out)
+      if (lost) warning(sprintf(
+        "The OSF did not send every page of the listing of %s (%d item%s listed). Anything not listed is not retrieved, so this listing is incomplete. Run again (see ?osf_pat, which raises the request limit).",
+        sub("\\?.*$", "", url), got, plural(got)), call. = FALSE)
+      attr(out, "osf_incomplete") <- c(expected = NA, got = got)
+    }
+    return(out)
   }
 
   current_page <- next_page_num - 1
@@ -864,10 +980,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     resp <- .mc_request(.osf_max_page_size(url)) |>
       .osf_headers() |>
       httr2::req_error(is_error = \(resp) FALSE) |>
-      httr2::req_retry(
-        max_tries = 3,
-        is_transient = \(resp) httr2::resp_status(resp) == 429
-      ) |>
+      httr2::req_retry(max_tries = 3, is_transient = .osf_is_transient) |>
       httr2::req_perform()
     sc <- httr2::resp_status(resp)
     # A private, embargoed, withdrawn, or deleted OSF resource is a normal
@@ -896,7 +1009,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     .mc_request(.osf_max_page_size(url)) |>
       .osf_headers() |>
       httr2::req_error(is_error = \(resp) FALSE) |>
-      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429)
+      httr2::req_retry(max_tries = 3, is_transient = .osf_is_transient)
   })
   resps <- httr2::req_perform_parallel(reqs, on_error = "continue", progress = FALSE)
 
