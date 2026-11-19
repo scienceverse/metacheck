@@ -1030,13 +1030,17 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 codebook_file_tabset <- function(tbl) {
   files <- unique(tbl$source_file)
   if (length(files) == 0) return(NULL)
+  # at most .report_file_tabs() files (R/report-helpers.R), with a note when
+  # there are more, so the report stays small for large deposits
+  files <- .report_file_tabs(files)
+  note <- attr(files, "note")
   if (.report_is_static(report_type())) {
     secs <- vapply(files, function(f) {
       sub <- tbl[tbl$source_file == f, setdiff(names(tbl), "source_file"),
                  drop = FALSE]
       paste(c(paste0("##### ", f), scroll_table(sub, maxrows = 25)), collapse = "\n\n")
     }, character(1))
-    return(paste(secs, collapse = "\n\n"))
+    return(paste(c(note, secs), collapse = "\n\n"))
   }
   # Blank-line-separate every block so Pandoc parses each `## file` as a tab
   # heading rather than swallowing it into the preceding table block.
@@ -1045,7 +1049,7 @@ codebook_file_tabset <- function(tbl) {
                drop = FALSE]
     paste(c(paste0("## ", f), scroll_table(sub, maxrows = 25)), collapse = "\n\n")
   }, character(1))
-  paste(c("::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
+  paste(c(note, "::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
 }
 
 # LLM tier 1: parse unstructured codebook text (a character vector of lines) into

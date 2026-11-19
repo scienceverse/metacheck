@@ -376,8 +376,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   urls <- as.character(urls %||% character(0))
   pat <- "^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
   hit <- !is.na(urls) & grepl(pat, urls, ignore.case = TRUE)
-  out <- data.frame(repo = rep(NA_character_, length(urls)),
-                    ref = NA_character_, path = NA_character_)
+  # every column as long as `urls`: a single NA for ref and path gave one
+  # row when there were no urls, and data.frame() stopped with "differing
+  # number of rows: 0, 1"
+  none <- rep(NA_character_, length(urls))
+  out <- data.frame(repo = none, ref = none, path = none)
   if (any(hit)) {
     m <- regmatches(urls[hit], regexec(pat, urls[hit], ignore.case = TRUE))
     out$repo[hit] <- vapply(m, \(x) paste(x[2], x[3], sep = "/"), "")
