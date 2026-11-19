@@ -194,13 +194,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # lets the framework handle tab switching and widget sizing, rather than
   # hand-rolled show/hide JS. Tab-heading level (##) becomes a tab label and is
   # not added to the report TOC.
+  # At most .report_file_tabs() files get a table (R/report-helpers.R), with a
+  # note when there are more, so the report stays small for large deposits.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
+    files <- .report_file_tabs(files)
+    note <- attr(files, "note")
     if (.report_is_static(report_type())) {
       secs <- vapply(files, function(f) {
         paste(c(paste0("##### ", f), table_fun(f)), collapse = "\n\n")
       }, character(1))
-      return(paste(secs, collapse = "\n\n"))
+      return(paste(c(note, secs), collapse = "\n\n"))
     }
     # Each tab heading and its body are separate blocks joined by a blank line:
     # Pandoc only parses a `## heading` when a blank line precedes it, so a
@@ -209,7 +213,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     tabs <- vapply(files, function(f) {
       paste(c(paste0("## ", f), table_fun(f)), collapse = "\n\n")
     }, character(1))
-    paste(c("::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
+    paste(c(note, "::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
   }
 
   # One descriptives table per source file. `desc` must include a `source_file`
