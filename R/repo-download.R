@@ -212,6 +212,67 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   list(report = report, summary = summary)
 }
 
+# The report section and summary sentence for repositories repo_check could
+# not list in full (#681), for code_check and data_check: OSF projects listed
+# only in part (repo_check's `partial_repos`, with `reason` "request limit"
+# or "refused by the OSF"), and repositories that could not be listed at all
+# (its `gated_repos`, with `repo_error`) and have no files in `repo_urls`,
+# the repositories of the files the check has; repo_check's own report names
+# the same ones as "could not be checked". Until 0.4.4.22 these checks said
+# nothing of either, so a check on part of the files read as a check on all
+# of them: code_check reported 13 files as missing from a repository whose
+# folders holding them the OSF had refused to list. Returns list(report,
+# summary), NULL when there is none.
+.repos_not_listed_text <- function(partial, gated, repo_urls) {
+  none <- list(report = NULL, summary = NULL)
+  if (!is.data.frame(partial) || !"repo_url" %in% names(partial)) partial <- NULL
+  if (!is.data.frame(gated) || !"repo_url" %in% names(gated)) gated <- NULL
+  if (!is.null(partial)) partial <- partial[!duplicated(partial$repo_url), , drop = FALSE]
+  if (!is.null(gated)) {
+    gated <- gated[!is.na(gated$repo_url) & !gated$repo_url %in% repo_urls &
+                     !gated$repo_url %in% partial$repo_url, , drop = FALSE]
+    gated <- gated[!duplicated(gated$repo_url), , drop = FALSE]
+  }
+  n_part <- if (is.null(partial)) 0L else nrow(partial)
+  n_gated <- if (is.null(gated)) 0L else nrow(gated)
+  if (n_part + n_gated == 0) return(none)
+
+  part_line <- part_why <- character(0)
+  if (n_part > 0) {
+    refused <- (partial$reason %||% rep(NA_character_, n_part)) %in% "refused by the OSF"
+    n <- partial$files_listed %||% rep(NA_integer_, n_part)
+    listed <- ifelse(is.na(n), "", sprintf(" (%d file%s listed)", n, ifelse(n == 1, "", "s")))
+    part_line <- ifelse(refused,
+      sprintf("- %s: the OSF refused part of the listing, also when asked again%s. Run the check again later.",
+              partial$repo_url, listed),
+      sprintf("- %s: the listing stopped at the request limit%s. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
+              partial$repo_url, listed))
+    part_why <- sprintf("%s (%s)", partial$repo_url,
+                        ifelse(refused, "the OSF refused part of the listing",
+                               "listed in part: the request limit was reached"))
+  }
+  gated_line <- gated_why <- character(0)
+  if (n_gated > 0) {
+    err <- as.character(gated$repo_error %||% rep(NA_character_, n_gated))
+    err[is.na(err) | !nzchar(err)] <- "no reason given"
+    gated_line <- sprintf("- %s: could not be listed (%s), so none of its files were checked.",
+                          gated$repo_url, err)
+    gated_why <- sprintf("%s (could not be listed: %s)", gated$repo_url, err)
+  }
+  n_all <- n_part + n_gated
+  report <- c(
+    "#### Repositories not listed in full",
+    paste("The checks below did not see every file of",
+          if (n_all == 1) "this repository, because it" else "these repositories, because they",
+          "could not be listed in full:"),
+    part_line, gated_line)
+  summary <- sprintf(
+    "We could not list every file of %d %s, so the checks did not see all %s files: %s.",
+    n_all, plural(n_all, "repository", "repositories"), if (n_all == 1) "its" else "their",
+    paste(c(part_why, gated_why), collapse = "; "))
+  list(report = report, summary = summary)
+}
+
 .remote_size <- function(url) {
   # a space or other character an address may not hold, encoded (#667);
   # a file on disk is left as it is
@@ -1491,16 +1552,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   extract_dir <- tempfile(pattern = "repo-zip-")
   dir.create(extract_dir)
   on.exit(unlink(extract_dir, recursive = TRUE), add = TRUE)
-  plain <- entries$Stored[match(to_extract, entries$Name)] == to_extract
-  if (any(plain))
-    tryCatch(
-      utils::unzip(zip_tmp, files = to_extract[plain], exdir = extract_dir),
-      error = \(e) NULL)
-  if (any(!plain)) .zip_extract_local(zip_tmp, to_extract[!plain], extract_dir)
+  # a member stored under the old DOS characters is taken out by its position
+  # (.unzip_all()); one that cannot be unpacked at all is named here, and its
+  # row is left for the file-by-file download
+  unpacked <- .unzip_all(zip_tmp, extract_dir, files = unique(to_extract))
+  if (is.null(unpacked)) return(files)
+  note <- .unzip_failed_note(unpacked, zip_url)
+  if (!is.null(note)) message(note, " (downloaded file by file instead)")
 
   for (j in seq_along(row_idx)) {
     if (is.na(matched_entry[j])) next
-    src  <- file.path(extract_dir, matched_entry[j])
+    src  <- unpacked$path[match(matched_entry[j], unpacked$name)]
+    if (is.na(src)) next
     dest <- files$.cache_path[row_idx[j]]
     # an empty member is an empty file, as the archive itself states (#575, item 5)
     empty_member <- isTRUE(entries$Length[match(matched_entry[j], entries$Name)] == 0)

@@ -148,7 +148,10 @@
 #'   an hour to list in full. A project that reaches the limit is listed in
 #'   part: it is named in `partial_repos` and in the report, and its row in
 #'   `ownership` has `listing_cut` TRUE. With `cache = TRUE`, the next run
-#'   goes on where the listing stopped (see [osf_info()]).
+#'   goes on where the listing stopped (see [osf_info()]). A project part of
+#'   whose listing the OSF refused, also when asked again, is named there too
+#'   (`reason` "refused by the OSF" in `partial_repos`, `listing_short` TRUE
+#'   in `ownership`).
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -551,6 +554,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   osf_files_df <- data.frame(repo_name = character(0))
   # OSF projects whose listing stopped at `osf_max_requests` (see below)
   osf_cut_urls <- character(0)
+  # OSF projects part of whose listing the OSF refused, also when asked
+  # again (`listing_short`, see osf_info(); #681)
+  osf_short_urls <- character(0)
   # private projects read through a view-only link in the paper (see below)
   osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
                               project = character(0))
@@ -566,6 +572,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       })
       if ("listing_cut" %in% names(osf_info))
         osf_cut_urls <- unique(osf_info$repo_name[osf_info$listing_cut %in% TRUE])
+      if ("listing_short" %in% names(osf_info))
+        osf_short_urls <- unique(osf_info$repo_name[osf_info$listing_short %in% TRUE])
 
       # A registration is never itself the place files "live": either it
       # mirrors files into its own storage (in which case those files really
@@ -763,6 +771,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         if ("listing_cut" %in% names(parent_info))
           osf_cut_urls <- unique(c(osf_cut_urls,
                                    parent_info$repo_name[parent_info$listing_cut %in% TRUE]))
+        if ("listing_short" %in% names(parent_info))
+          osf_short_urls <- unique(c(osf_short_urls,
+                                     parent_info$repo_name[parent_info$listing_short %in% TRUE]))
 
         # public parent: its files belong under the PARENT's real URL (the
         # place a reader would actually need to look). Any file also reached
@@ -2565,16 +2576,23 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (is.data.frame(pub_files) && nrow(pub_files))
       dplyr::bind_rows(all_files, pub_files[, intersect(pub_cols, names(pub_files)), drop = FALSE]) else all_files,
     osf_desc_all)
-  # OSF projects listed only in part (`osf_max_requests`): what their row says
-  # about files describes only the folders that were opened. A registration's
-  # files are kept under the project it was registered from, so that project
-  # counts as listed in part as well.
+  # OSF projects listed only in part (`osf_max_requests`, `listing_cut`; or
+  # part of the listing refused by the OSF, `listing_short`): what their row
+  # says about files describes only the folders that were listed. A
+  # registration's files are kept under the project it was registered from,
+  # so that project counts as listed in part as well.
   if (length(osf_cut_urls)) {
     osf_cut_urls <- unique(c(osf_cut_urls,
       unname(reg_url_to_parent[intersect(osf_cut_urls, names(reg_url_to_parent))])))
   }
-  if (is.data.frame(ownership) && nrow(ownership))
+  if (length(osf_short_urls)) {
+    osf_short_urls <- unique(c(osf_short_urls,
+      unname(reg_url_to_parent[intersect(osf_short_urls, names(reg_url_to_parent))])))
+  }
+  if (is.data.frame(ownership) && nrow(ownership)) {
     ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
+    ownership$listing_short <- ownership$repo_url %in% osf_short_urls
+  }
   # the links that were checked: those in the text, and the authors' own
   # deposits cited in the reference list (see above)
   checked_ref <- ownership$source %in% "reference" &
@@ -3083,27 +3101,47 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## OSF projects listed only in part ----
-  # The listing of these stopped at `osf_max_requests` (see the OSF block
-  # above, and `listing_cut` in `ownership`).
-  cut_urls <- intersect(osf_cut_urls, c(repos$repo_url, all_files$repo_url))
+  # The listing of these stopped at `osf_max_requests` (reason "request
+  # limit"), or the OSF refused part of it, also when asked again (reason
+  # "refused by the OSF", #681); see the OSF block above, and `listing_cut`
+  # and `listing_short` in `ownership`. A project with both is named for the
+  # refusal: the part listed is then not kept for a next run to go on with,
+  # so running the check again is what helps.
+  part_urls <- intersect(unique(c(osf_short_urls, osf_cut_urls)),
+                         c(repos$repo_url, all_files$repo_url))
   partial_repos <- data.frame(
-    paper_id = repos$paper_id[match(cut_urls, repos$repo_url)],
-    repo_url = cut_urls,
-    files_listed = vapply(cut_urls, \(u) sum(all_files$repo_url %in% u), integer(1), USE.NAMES = FALSE))
+    paper_id = repos$paper_id[match(part_urls, repos$repo_url)],
+    repo_url = part_urls,
+    files_listed = vapply(part_urls, \(u) sum(all_files$repo_url %in% u), integer(1), USE.NAMES = FALSE),
+    reason = ifelse(part_urls %in% osf_short_urls, "refused by the OSF", "request limit"))
   if (nrow(partial_repos) > 0) {
-    report_partial <- sprintf(
-      "#### Partly Listed Repositories\n\n%s %s (%s) %s more folders than metacheck lists by default, so only part of %s files %s listed (%s), and what this report says about %s files describes only that part. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
-      nrow(partial_repos),
-      plural(nrow(partial_repos), "OSF project", "OSF projects"),
-      paste(partial_repos$repo_url, collapse = ", "),
-      if (nrow(partial_repos) == 1) "has" else "have",
-      if (nrow(partial_repos) == 1) "its" else "their",
-      if (sum(partial_repos$files_listed) == 1) "was" else "were",
-      paste(partial_repos$files_listed, plural(partial_repos$files_listed, "file", "files"), collapse = ", "),
-      if (nrow(partial_repos) == 1) "its" else "their")
-    summary_partial <- sprintf(
-      "We listed only part of %d OSF %s (the request limit was reached).",
-      nrow(partial_repos), plural(nrow(partial_repos), "project", "projects"))
+    cut_part <- partial_repos[partial_repos$reason == "request limit", , drop = FALSE]
+    short_part <- partial_repos[partial_repos$reason == "refused by the OSF", , drop = FALSE]
+    report_partial <- c(
+      "#### Partly Listed Repositories",
+      if (nrow(cut_part) > 0) sprintf(
+        "%s %s (%s) %s more folders than metacheck lists by default, so only part of %s files %s listed (%s), and what this report says about %s files describes only that part. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
+        nrow(cut_part),
+        plural(nrow(cut_part), "OSF project", "OSF projects"),
+        paste(cut_part$repo_url, collapse = ", "),
+        if (nrow(cut_part) == 1) "has" else "have",
+        if (nrow(cut_part) == 1) "its" else "their",
+        if (sum(cut_part$files_listed) == 1) "was" else "were",
+        paste(cut_part$files_listed, plural(cut_part$files_listed, "file", "files"), collapse = ", "),
+        if (nrow(cut_part) == 1) "its" else "their"),
+      if (nrow(short_part) > 0) sprintf(
+        "The OSF refused part of the listing of %s, also when asked again, so what this report says about %s files describes only the part that was listed. Run the check again later.",
+        paste(sprintf("%s (%d %s listed)", short_part$repo_url, short_part$files_listed,
+                      plural(short_part$files_listed, "file", "files")), collapse = ", "),
+        if (nrow(short_part) == 1) "its" else "their")
+    ) |> paste(collapse = "\n\n")
+    summary_partial <- c(
+      if (nrow(cut_part) > 0) sprintf(
+        "We listed only part of %d OSF %s (the request limit was reached).",
+        nrow(cut_part), plural(nrow(cut_part), "project", "projects")),
+      if (nrow(short_part) > 0) sprintf(
+        "We listed only part of %d OSF %s, because the OSF refused part of the listing; run the check again.",
+        nrow(short_part), plural(nrow(short_part), "project", "projects")))
   } else {
     report_partial <- NULL
     summary_partial <- NULL
@@ -3536,9 +3574,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Repositories that were found but could not be listed (e.g. a GitHub repo
   # over the size gate, or a private OSF component). Carried out of the module
   # so downstream converters can explain *why* a paper produced no files,
-  # instead of reporting "no repository".
+  # instead of reporting "no repository". code_check and data_check name the
+  # ones with no files in their reports (#681); with `paper_id`, as a
+  # paper list's run holds the repositories of every paper.
   gated_repos <- repos[!is.na(repos$repo_error),
-                       c("repo_url", "repo_type", "repo_error"), drop = FALSE]
+                       intersect(c("paper_id", "repo_url", "repo_type", "repo_error"), names(repos)),
+                       drop = FALSE]
 
   # return a list ----
   list(
@@ -3550,8 +3591,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Listed, not in `table`; code_check names them when files are missing.
     archive_deposits = arch_out,
     # OSF projects listed only in part, because their listing stopped at
-    # `osf_max_requests`: paper_id, repo_url and files_listed. data_check and
-    # code_check warn that their files may be missing from what they download.
+    # `osf_max_requests` or the OSF refused part of it: paper_id, repo_url,
+    # files_listed and reason ("request limit", "refused by the OSF").
+    # data_check and code_check warn that their files may be missing from
+    # what they download, and name them in their reports (#681).
     partial_repos = partial_repos,
     # naming_issues_by_paper (paper_id attached), not the un-tagged
     # naming_issues used only for this call's own narrative report/summary

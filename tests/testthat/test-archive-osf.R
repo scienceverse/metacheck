@@ -448,6 +448,108 @@ test_that("osf_info keeps a complete recursive listing in the lasting cache, and
   expect_identical(hit, x)
 }, "mock")
 
+test_that("osf_info asks again for a folder the OSF refused, and marks the listing short when it still fails (#681)", {
+  waits <- 0
+  # the recordings have no answer for the component tree, which is asked 3
+  # times with waits; the listing falls back to node by node either way
+  local_mocked_bindings(.osf_retry_wait = \() { waits <<- waits + 1; 0 },
+                        .osf_tree = \(...) NULL)
+  full <- osf_info("j3gcx", recursive = TRUE)
+  dir <- withr::local_tempdir()
+  withr::local_options(metacheck.repo_info_cache.dir = dir)
+  key <- metacheck:::.osf_cache_key("j3gcx", TRUE)
+  complete_file <- metacheck:::.repo_info_cache_path("osf_listing", key)
+  # folder nest-1, which holds 5 of the 7 files, in it and its subfolders
+  folder <- "685a46eb8c103f8ab307047f"
+  real <- metacheck::osf_get_all_pages
+  # the answers for nest-1, in order: what each request gives, then the rest
+  # as recorded
+  refuse <- function(answers) {
+    asked <- 0
+    local_mocked_bindings(osf_get_all_pages = \(url, page_end = Inf) {
+      if (!grepl(folder, url, fixed = TRUE)) return(real(url, page_end))
+      asked <<- asked + 1
+      a <- if (asked <= length(answers)) answers[[asked]] else "real"
+      if (identical(a, "real")) real(url, page_end) else a(url, page_end)
+    }, .env = parent.frame())
+    environment()
+  }
+  failed <- \(url, page_end) metacheck:::.osf_error_result("request_failed")
+
+  # refused twice: short, with a warning, and not kept in the lasting cache
+  waits <- 0
+  e <- refuse(list(failed, failed))
+  expect_warning(x <- osf_info("j3gcx", recursive = TRUE, cache = TRUE),
+                 "The OSF refused part of the listing of j3gcx, also when asked again \\(1 folder\\)")
+  expect_equal(e$asked, 2)
+  expect_equal(waits, 1)
+  expect_true(all(x$listing_short))
+  expect_false("listing_cut" %in% names(x))
+  expect_lt(sum(x$kind %in% "file"), sum(full$kind %in% "file"))
+  expect_false(file.exists(complete_file))
+
+  # refused once, answered when asked again: complete, and kept
+  waits <- 0
+  e <- refuse(list(failed))
+  expect_no_warning(x <- osf_info("j3gcx", recursive = TRUE, cache = TRUE))
+  expect_equal(e$asked, 2)
+  expect_equal(waits, 1)
+  expect_false("listing_short" %in% names(x))
+  expect_setequal(x$osf_id, full$osf_id)
+  expect_equal(nrow(x), nrow(full))
+  expect_true(file.exists(complete_file))
+  unlink(complete_file)
+
+  # answered short (one row only, marked osf_incomplete), then in full: the
+  # row of the short answer is not listed twice
+  short_page <- \(url, page_end) {
+    out <- real(url, page_end)[1, , drop = FALSE]
+    attr(out, "osf_incomplete") <- c(expected = 3, got = 1)
+    out
+  }
+  e <- refuse(list(short_page))
+  expect_no_warning(x <- osf_info("j3gcx", recursive = TRUE))
+  expect_false("listing_short" %in% names(x))
+  expect_equal(nrow(x), nrow(full))
+  expect_false(anyDuplicated(x$osf_id) > 0)
+
+  # refused as forbidden (HTTP 403) in a project the OSF has shown public:
+  # a refusal under load, not a settled answer
+  forbidden <- \(url, page_end) metacheck:::.osf_error_result("forbidden")
+  e <- refuse(list(forbidden, forbidden))
+  expect_warning(x <- osf_info("j3gcx", recursive = TRUE), "refused part of the listing")
+  expect_true(all(x$listing_short))
+
+  # nothing refused: no wait
+  waits <- 0
+  expect_no_warning(x <- osf_info("j3gcx", recursive = TRUE))
+  expect_equal(waits, 0)
+}, "mock")
+
+test_that("only a refusal of a component, storage list or OSF Storage folder can be one under load (#681)", {
+  api <- "https://api.osf.io/v2/nodes/j3gcx"
+  expect_true(metacheck:::.osf_refusable_url(paste0(api, "/children/?page[size]=100")))
+  expect_true(metacheck:::.osf_refusable_url(paste0(api, "/files/")))
+  expect_true(metacheck:::.osf_refusable_url(paste0(api, "/files/osfstorage/")))
+  expect_true(metacheck:::.osf_refusable_url(paste0(api, "/files/osfstorage/685a46eb8c103f8ab307047f/")))
+  # a linked storage can refuse for good when its link to the account lapsed
+  expect_false(metacheck:::.osf_refusable_url(paste0(api, "/files/github/")))
+  expect_false(metacheck:::.osf_refusable_url(paste0(api, "/files/googledrive/abc/")))
+})
+
+test_that("osf_get_all_pages marks a listing short when a later page fails on the page-by-page path (#681)", {
+  # a first page without the total, so later pages are asked one by one
+  local_mocked_bindings(.osf_get_one_page = \(url) {
+    if (grepl("page=2", url, fixed = TRUE)) return(metacheck:::.osf_error_result("forbidden"))
+    list(data = data.frame(id = c("a", "b")),
+         links = list(`next` = "https://api.osf.io/v2/nodes/abcde/files/osfstorage/?page=2"))
+  })
+  expect_warning(out <- osf_get_all_pages("https://api.osf.io/v2/nodes/abcde/files/osfstorage/"),
+                 "did not send every page")
+  expect_equal(nrow(out), 2)
+  expect_false(is.null(attr(out, "osf_incomplete")))
+})
+
 test_that("osf_info - view_only", {
   skip_if_offline("api.osf.io")
 
