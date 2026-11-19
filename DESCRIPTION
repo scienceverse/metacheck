@@ -60,6 +60,7 @@ Suggests:
     callr,
     readxl,
     data.table,
+    bit64,
     officer,
     pdftools,
     SnowballC,

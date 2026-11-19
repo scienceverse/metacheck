@@ -2,6 +2,8 @@
 
 * A report gives at most 20 files their own table in data_check's previews of the data and descriptives per file, and in codebook_check's column documentation per file, with the line "Showing the first 20 of N files" when there are more (`.report_file_tabs()`, option `metacheck.report_max_file_tabs`); the module's output still holds every file. There was no limit, so a deposit with many data files gave a report that pandoc could not turn into HTML within an hour: for the 1,190 data files of a Proceedings B paper's deposit (rspb.2026.1381) the report had 2,398 tables with 136,906 rows (81 MB of markdown), and the SURF server stopped the job at its time limit and returned nothing. This was the most frequent cause of the PsyArXiv and medRxiv preprints that failed on the server's time limit. For 300 data files the report took 4 seconds with the limit, against more than 39 minutes without.
 
+* bit64 is listed under Suggests: data_check uses it when it is installed (since 0.4.4.18), and R CMD check warned that the package was not declared.
+
 * `repo_check()` no longer stops with "differing number of rows: 0, 1" for an OSF listing without files that lacks the `provider` or `project` column, and `.github_raw_parts()` no longer stops on an empty list of addresses: both gave a single NA for no rows. Both came with #675; three medRxiv results checked with 0.4.4.18 had codebook_check fail this way.
 
 * Other text in an older encoding that reached text functions is read as Latin-1 when it is not valid UTF-8, as data values already were, so it no longer stops a module ("input string 1 is invalid"):
