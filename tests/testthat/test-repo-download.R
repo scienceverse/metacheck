@@ -126,6 +126,50 @@ test_that("max_files_per_repo gates a repository by file COUNT, not size", {
   expect_equal(sum(!is.na(dl2$file_location)), 2)
 })
 
+test_that("each file left out by a limit is named with its reason (#699)", {
+  withr::local_options(
+    metacheck.repo_cache.dir = withr::local_tempdir(),
+    metacheck.repo_cache.session_dir = withr::local_tempdir())
+
+  # over max_file_size
+  files <- make_dl_files(sizes = c(50, 5000))
+  cap_mb <- files$file_size[2] / (1024 * 1024) * 0.5
+  dl <- suppressMessages(download_repo_files(files, max_file_size = cap_mb,
+                                             max_download_size = 100))
+  refused <- attr(dl, "limit_refused")
+  expect_length(refused, 2)
+  expect_true(is.na(refused[1]))
+  expect_match(refused[2], "per-file limit (max_file_size)", fixed = TRUE)
+
+  # over the budget
+  files <- make_dl_files(sizes = c(1000, 3000))
+  cap <- (files$file_size[1] + sum(files$file_size)) / 2 / (1024 * 1024)
+  dl <- suppressWarnings(download_repo_files(files, max_file_size = 100,
+                                             max_download_size = cap))
+  refused <- attr(dl, "limit_refused")
+  expect_true(is.na(refused[1]))
+  expect_match(refused[2], "budget for its repository was spent", fixed = TRUE)
+
+  # over max_files_per_repo
+  files <- make_dl_files(sizes = c(100, 100, 100))
+  dl <- suppressMessages(suppressWarnings(
+    download_repo_files(files, max_files_per_repo = 2)))
+  expect_match(attr(dl, "limit_refused"), "more than max_files_per_repo (2)",
+               fixed = TRUE)
+
+  # of unknown size and over its limit while downloading
+  local_mocked_bindings(.remote_size = function(...) NA_real_)
+  files <- make_dl_files(c(5000))
+  files$file_size <- NA_real_
+  dl <- suppressMessages(download_repo_files(files, max_file_size = 0.001))
+  expect_match(attr(dl, "limit_refused"), "per-file limit", fixed = TRUE)
+
+  # a file that is downloaded is not named
+  files <- make_dl_files(c(100, 200))
+  dl <- download_repo_files(files)
+  expect_equal(attr(dl, "limit_refused"), c(NA_character_, NA_character_))
+})
+
 test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
@@ -337,7 +381,7 @@ test_that("archive members share one budget per repository with its other files 
       data.frame(name = names, path = path, size = 300000, ok = TRUE, error = NA_character_)
     }
   )
-  expect_message(first <- download_repo_files(files, max_download_size = 1),
+  expect_message(suppressWarnings(first <- download_repo_files(files, max_download_size = 1)),
                  "Repository .* exceeds the 1 MB per-repository budget: fetched the smallest archive members up to the cap, 6 members omitted")
   expect_length(fetched, 3)
   expect_equal(sum(!is.na(first$file_location)), 3)
@@ -346,7 +390,7 @@ test_that("archive members share one budget per repository with its other files 
   local_mocked_bindings(
     .zip_fetch_members = function(url, names, dest, ...) stop("fetched again")
   )
-  second <- suppressMessages(download_repo_files(files, max_download_size = 1))
+  second <- suppressWarnings(suppressMessages(download_repo_files(files, max_download_size = 1)))
   expect_equal(nrow(attr(second, "failed")), 0)
   expect_equal(second$file_location, first$file_location)
 
@@ -356,7 +400,7 @@ test_that("archive members share one budget per repository with its other files 
                     file_url = paste0(repo, "/own.csv"), file_size = 200000,
                     file_location = NA_character_, archive_url = NA_character_,
                     archive_member = NA_character_, paper_id = "p", stringsAsFactors = FALSE)
-  expect_message(third <- download_repo_files(rbind(files, own), max_download_size = 1),
+  expect_message(suppressWarnings(third <- download_repo_files(rbind(files, own), max_download_size = 1)),
                  "downloaded the smallest files up to the cap, 1 file omitted")
   expect_true(is.na(third$file_location[10]))
   unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)

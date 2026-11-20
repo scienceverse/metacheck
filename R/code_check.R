@@ -107,6 +107,47 @@ code_read <- function(file_path) {
   return(file_lines)
 }
 
+# A code file without a local copy, fetched from its web address into a
+# temporary file that stops at `max_file_size` MB, so that code_check's read
+# from the web stays within the download limits: it read the whole file into
+# memory, also a file left out for its size (#699). Returns the temporary
+# file's path, or `url` itself when it is not a web address; stops with the
+# reason when the file cannot be fetched, worded as code_read()'s errors.
+# The file keeps its extension, which the readers of .Rmd, .qmd and .ipynb
+# files use.
+.code_fetch_capped <- function(url, file_name, max_file_size = Inf,
+                               skip_on_api_limit = FALSE) {
+  # A file inside an archive has no address of its own: it was read as the
+  # address "NA", which waited 10 seconds for the name to be looked up
+  if (is.na(url) || !nzchar(url)) {
+    stop("it has no web address of its own (such as a file inside an archive), ",
+         "so it is read only when downloaded (download = TRUE)", call. = FALSE)
+  }
+  if (!grepl("^https?://", url)) return(url)
+  max_bytes <- if (is.numeric(max_file_size) && length(max_file_size) == 1 &&
+                   is.finite(max_file_size)) max_file_size * 1024 * 1024 else Inf
+  ext <- tools::file_ext(file_name %||% "")
+  tmp <- tempfile(fileext = if (!is.na(ext) && nzchar(ext)) paste0(".", ext) else "")
+  err <- .download_capped(url, tmp, max_bytes = max_bytes,
+                          skip_on_api_limit = skip_on_api_limit)
+  if (identical(attr(err, "over_cap"), TRUE)) {
+    stop(sprintf("it was not read, because it is larger than the %s MB per-file limit (max_file_size)",
+                 .cap_num(max_file_size)), call. = FALSE)
+  }
+  # an empty file is read as no lines, as code_read() reads it
+  if (identical(err, "empty response")) {
+    file.create(tmp)
+    return(tmp)
+  }
+  if (!is.na(err)) {
+    if (grepl("^HTTP [0-9]+$", err))
+      stop(sprintf("cannot open URL '%s': HTTP status was %s", url, sub("^HTTP ", "", err)),
+           call. = FALSE)
+    stop(sprintf("cannot open URL '%s': %s", url, err), call. = FALSE)
+  }
+  tmp
+}
+
 
 # The language a Jupyter notebook's code cells are written in.
 #

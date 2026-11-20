@@ -1022,12 +1022,22 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # into place only when complete, as in .download_one(). Returns NA on success,
 # else the reason; a file over the limit returns "over the byte limit" with
 # attributes over_cap = TRUE and bytes (how many had arrived).
+# `url` may also be a prepared httr2 request (with its own method, headers and
+# body, such as ResearchBox's download from a box's web page), so that every
+# download of unknown size goes through this one function (#699); it is sent
+# as it is.
 .download_capped <- function(url, dest, max_bytes = Inf, timeout_s = 120,
                              skip_on_api_limit = FALSE) {
-  # a space or other character an address may not hold, encoded (#667);
-  # a file on disk is left as it is
-  web <- !is.na(url) & grepl("^https?://", url)
-  url[web] <- utils::URLencode(url[web])
+  if (inherits(url, "httr2_request")) {
+    req <- url
+    url <- req$url
+  } else {
+    # a space or other character an address may not hold, encoded (#667);
+    # a file on disk is left as it is
+    web <- !is.na(url) & grepl("^https?://", url)
+    url[web] <- utils::URLencode(url[web])
+    req <- httr2::request(url) |> .auth_for_url()
+  }
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   final <- dest
   dest <- paste0(final, ".part")
@@ -1038,8 +1048,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   timeout_s <- .zip_timeout_for_size(timeout_s,
                                      if (is.finite(max_bytes)) max_bytes else NA_real_)
   resp <- tryCatch(
-    httr2::request(url) |>
-      .auth_for_url() |>
+    req |>
       httr2::req_error(is_error = function(r) FALSE) |>
       # non-blocking, so a stalled read cannot defeat the deadline below (see
       # .download_zip_to_cache())
@@ -1677,11 +1686,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
-#' is a budget on the repository's TOTAL cached footprint (already-cached plus
-#' newly-downloaded), not on a single run's increment — already-cached files are
-#' kept for free, then the smallest still-missing files are added until the next
-#' one would exceed the budget, so re-running never grows a repository's cache
-#' past the budget and the canonical "files we ever download" set is fixed.
+#' is a budget per repository on the files in `files`, cached and new together
+#' — the cached ones among them count first, then the smallest still-missing
+#' files are added until the next one would exceed the budget. Only the rows
+#' passed in are counted: files of the same repository downloaded by an earlier
+#' call, and not passed again, do not count, so several calls can together
+#' download more than `max_download_size` for one repository (#699).
 #'
 #' @param files a data.frame of files (as returned by `repo_check()`'s
 #'   `table`): needs `repo_url`, `file_url`, and `file_path` or `file_name`
@@ -1748,7 +1758,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   someone at the file directly instead of re-deriving the link. `paper_id`
 #'   is `files$paper_id[i]` when `files` carries that column (e.g. a
 #'   paperlist batch), `NA` otherwise — lets a caller attribute a failure back
-#'   to the paper it belongs to without re-joining on `repo_url`).
+#'   to the paper it belongs to without re-joining on `repo_url`). A fourth
+#'   attribute, `"limit_refused"`, is a character vector with one element per
+#'   row of `files`: why a file was left out by `max_file_size`,
+#'   `max_download_size` or `max_files_per_repo`, and `NA` for every other
+#'   row, so that a caller does not fetch such a file another way (#699).
 #' @export
 #' @keywords internal
 #' @examples
@@ -1817,6 +1831,16 @@ download_repo_files <- function(files,
     file.size(files$.cache_path) %in% 0
   already <- already & !empty_copy
   files$file_location[already] <- files$.cache_path[already]
+  # Why a file was left out by a limit, per row (NA for the others): returned
+  # as the attribute "limit_refused", so that a caller can tell these files
+  # from failed downloads and does not fetch them another way (#699).
+  files$.limit_refused <- rep(NA_character_, nrow(files))
+  refused_size <- sprintf(
+    "it was not downloaded, because it is larger than the %s MB per-file limit (max_file_size)",
+    .cap_num(max_file_size))
+  refused_budget <- sprintf(
+    "it was not downloaded, because the %s MB budget for its repository was spent (max_download_size)",
+    .cap_num(max_download_size))
 
   mb <- 1024 * 1024
   gated <- data.frame(repo_url = character(0), message = character(0),
@@ -1915,6 +1939,7 @@ download_repo_files <- function(files,
       # and max_download_size = 500 (MB).
       member_sizes <- as.numeric(files$file_size[idx])
       over <- !is.na(member_sizes) & member_sizes > max_file_size * mb
+      files$.limit_refused[idx[over]] <- refused_size
       if (any(over)) {
         oversize_skipped <- rbind(oversize_skipped, data.frame(
           repo_url  = files$repo_url[idx[over]],
@@ -1978,6 +2003,7 @@ download_repo_files <- function(files,
         }
       }
       member_bytes[[repo]] <- kept + sum(cand_size[take])
+      files$.limit_refused[cand[!saved & !take]] <- refused_budget
       n_omitted <- sum(!saved & !take)
       if (n_omitted > 0 && is.finite(cap_bytes)) {
         msg <- sprintf(
@@ -2101,10 +2127,11 @@ download_repo_files <- function(files,
   # max_file_size is a PER-FILE filter: files over it are skipped individually,
   # the rest of the repo still downloads. max_download_size is a REPO BUDGET on
   # the TOTAL cached footprint of the repo (already-cached + newly-downloaded),
-  # NOT on a single run's increment. So re-running never grows a repo's cache
-  # beyond the budget: the canonical set of files "we ever download" is fixed —
-  # already-cached files are kept for free, then the smallest still-missing files
-  # are added until the next one would exceed the budget. A repo whose kept data
+  # NOT on a single run's increment -- but only over the rows passed to this
+  # call: files of the repo fetched by an earlier call and not passed again do
+  # not count (#699). Already-cached files are kept for free, then the smallest
+  # still-missing files are added until the next one would exceed the budget.
+  # A repo whose kept data
   # is under the budget downloads fully; a larger one downloads its smallest
   # files up to the cap (partial fill), the same set every run.
   #
@@ -2143,6 +2170,9 @@ download_repo_files <- function(files,
                "Raise `max_files_per_repo` to include it."),
         repo, true_n, max_files_per_repo)
       .cap_report(msg)
+      files$.limit_refused[idx[!already[idx]]] <- sprintf(
+        "it was not downloaded, because its repository holds %d files, more than max_files_per_repo (%s)",
+        true_n, .cap_num(max_files_per_repo))
       gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
                                        stringsAsFactors = FALSE))
       next
@@ -2171,6 +2201,7 @@ download_repo_files <- function(files,
             else rep(FALSE, length(idx))
     if (any(over & !is_cached)) {
       o <- over & !is_cached
+      files$.limit_refused[idx[o]] <- refused_size
       oversize_skipped <- rbind(oversize_skipped, data.frame(
         repo_url  = repo,
         file_name = files$file_name[idx[o]],
@@ -2225,6 +2256,7 @@ download_repo_files <- function(files,
         files$.byte_cap[unknown] <- lim
         to_get <- c(to_get, unknown)
       } else {
+        files$.limit_refused[unknown] <- refused_budget
         msg <- sprintf(
           paste0("Repository %s: %d file%s of unknown size not downloaded, ",
                  "because the %s MB per-repository budget is spent. ",
@@ -2239,6 +2271,7 @@ download_repo_files <- function(files,
     # Report a partial fill: some kept files were left out because the budget was
     # reached (distinct from the per-file oversize skips reported separately).
     omitted <- setdiff(missing_order, take_missing)
+    files$.limit_refused[c_idx[omitted]] <- refused_budget
     if (length(omitted) > 0 && is.finite(cap_bytes)) {
       msg <- sprintf(
         paste0("Repository %s exceeds the %s MB per-repository budget: ",
@@ -2263,7 +2296,9 @@ download_repo_files <- function(files,
         nrow(sub), plural(nrow(sub)), repo, .cap_num(max_file_size),
         if (nrow(sub) == 1) "was" else "were",
         paste(sprintf("%s (%s MB)", sub$file_name[order(-sub$file_size)][1],
-                      .cap_num(round(max(sub$file_size) / mb))))))
+                      # rounded up to 0.1 MB: rounded to whole MB, a 1.4 MB
+                      # file over a 1 MB limit read "(1 MB)" (#699)
+                      .cap_num(ceiling(max(sub$file_size) / mb * 10) / 10)))))
     }
   }
 
@@ -2664,7 +2699,10 @@ download_repo_files <- function(files,
         }
         if (identical(attr(err, "over_cap"), TRUE)) {
           # a file of unknown size that passed its limit: reported as over the
-          # limit, like a file whose listed size is over it
+          # limit, like a file whose listed size is over it. Its limit was
+          # the per-file limit, or what the budget had left when that is less.
+          files$.limit_refused[i] <-
+            if (files$.byte_cap[i] < max_file_size * mb) refused_budget else refused_size
           oversize_skipped <- rbind(oversize_skipped, data.frame(
             repo_url = files$repo_url[i], file_name = files$file_name[i],
             file_size = attr(err, "bytes"), stringsAsFactors = FALSE))
@@ -2720,9 +2758,14 @@ download_repo_files <- function(files,
 
   files$.cache_path <- NULL
   files$.byte_cap <- NULL
+  limit_refused <- files$.limit_refused
+  # a file that is on disk after all (a copy found later) was not refused
+  limit_refused[!is.na(files$file_location)] <- NA_character_
+  files$.limit_refused <- NULL
   if (!had_size) files$file_size <- NULL
   attr(files, "gated") <- gated
   attr(files, "oversize_skipped") <- oversize_skipped
   attr(files, "failed") <- failed
+  attr(files, "limit_refused") <- limit_refused
   files
 }

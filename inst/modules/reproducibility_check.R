@@ -552,16 +552,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (mod == "data_check") {
       args$model <- model; args$params <- params
     }
+    # The size limits go to code_check too: it used its own defaults whatever
+    # this module was given (#699).
     if (mod %in% c("data_check", "code_check")) {
       args$cache <- cache
       args$skip_on_api_limit <- skip_on_api_limit
+      args$max_file_size <- max_file_size
+      args$max_download_size <- max_download_size
     }
     if (mod == "data_check") {
       args$download <- download
       args$skip_types <- skip_types
       args$peek_zips <- peek_zips
-      args$max_file_size <- max_file_size
-      args$max_download_size <- max_download_size
     }
 
     # This module's own execution/matching logic never depends on LLM-refined

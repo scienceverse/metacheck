@@ -118,7 +118,9 @@
 #' @param max_download_size largest total download per repository, in MB
 #'   (default 500), used as a budget: files already in the cache count first,
 #'   then the smallest missing files are added until the next one would not
-#'   fit. A file whose size cannot be found out is skipped on its own. Skipped
+#'   fit. A file whose size cannot be found out is downloaded only up to
+#'   `max_file_size` or what is left of the budget, whichever is smaller, and
+#'   left out if it is larger. Skipped
 #'   files are named in the summary text, with the size to lift the limit. Set
 #'   `Inf` for no cap.
 #' @param max_files_per_repo largest file COUNT a single repository may have
@@ -296,11 +298,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       mo <- module_run(paper, "repo_check", local_path = local_path,
                        local_only = local_only, cache = cache,
                        osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
                        osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     }
     all_files <- mo$table %||% data.frame(
       file_name = character(0), repo_url = character(0),

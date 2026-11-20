@@ -1497,3 +1497,39 @@ test_that("code is not recovered from a knitted .html whose .Rmd is in the depos
   # only other.html, which has no source in the deposit, gives a code file
   expect_equal(setdiff(out$file_name, af$file_name), "other.R")
 })
+
+test_that(".code_fetch_capped() reads a web file only up to max_file_size (#699)", {
+  # not a web address: returned as it is
+  expect_equal(metacheck:::.code_fetch_capped("C:/a/b.R", "b.R"), "C:/a/b.R")
+  # no address at all (a file inside an archive): said at once, no request
+  expect_error(metacheck:::.code_fetch_capped(NA_character_, "b.R"),
+               "no web address of its own", fixed = TRUE)
+
+  limit <- NULL
+  local_mocked_bindings(.download_capped = function(url, dest, max_bytes = Inf, ...) {
+    limit <<- max_bytes
+    writeLines("x <- 1", dest)
+    NA_character_
+  })
+  p <- metacheck:::.code_fetch_capped("https://x.org/a.Rmd", "a.Rmd", max_file_size = 2)
+  expect_equal(limit, 2 * 1024 * 1024)
+  expect_equal(tools::file_ext(p), "Rmd")   # the readers of .Rmd files need it
+  expect_equal(readLines(p), "x <- 1")
+  metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R", max_file_size = Inf)
+  expect_equal(limit, Inf)
+
+  local_mocked_bindings(.download_capped = function(...)
+    structure("over the byte limit", over_cap = TRUE, bytes = 3e6))
+  expect_error(metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R", max_file_size = 2),
+               "larger than the 2 MB per-file limit (max_file_size)", fixed = TRUE)
+
+  # an error from the web reads as code_read()'s
+  local_mocked_bindings(.download_capped = function(...) "HTTP 404")
+  expect_error(metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R"),
+               "cannot open URL 'https://x.org/a.R': HTTP status was 404", fixed = TRUE)
+
+  # an empty file is no error
+  local_mocked_bindings(.download_capped = function(...) "empty response")
+  p <- metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R")
+  expect_equal(file.size(p), 0)
+})
