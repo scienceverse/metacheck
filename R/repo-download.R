@@ -2045,7 +2045,11 @@ download_repo_files <- function(files,
         # it fits the budget (`request_bytes = Inf`, counting requests only),
         # because Dryad counts every request against a strict daily quota
         # (issue #471).
-        whole_bytes <- max(cap_bytes - used, 0)
+        # The archive is a file like any other, so it is held to
+        # max_file_size as well (#699): an OSF zip of 20.5 MB, reported as
+        # left out by a 20 MB limit, was still downloaded whole to take its
+        # members. A larger archive has its members fetched by byte range.
+        whole_bytes <- min(max(cap_bytes - used, 0), max_file_size * mb)
         request_bytes <- if (grepl("datadryad\\.org", arc, ignore.case = TRUE)) Inf else 1048576
         # The archive's own size, carried from repo_check's listing, saves
         # zip_peek() a HEAD request when this runs in a new session (within

@@ -1289,6 +1289,32 @@ test_that("archive members on any host may use whole-archive mode; Dryad counts 
   expect_equal(dryad$max_whole_bytes, 10 * 1024 * 1024 - 100)
   expect_true(is.infinite(dryad$request_bytes))
   expect_equal(dryad$size, 6000)
+
+  # the whole copy is a file like any other: held to max_file_size too (#699)
+  seen <- list()
+  for (r in files$repo_url) unlink(metacheck:::.repo_cache_subdir(r), recursive = TRUE)
+  suppressMessages(download_repo_files(files, max_file_size = 2, max_download_size = 10))
+  expect_equal(seen[[files$archive_url[1]]]$max_whole_bytes, 2 * 1024 * 1024)
+  expect_equal(seen[[files$archive_url[2]]]$max_whole_bytes, 2 * 1024 * 1024)
+})
+
+test_that(".code_expand_zip() holds a whole zip to max_file_size (#699)", {
+  seen <- NULL
+  local_mocked_bindings(
+    zip_peek = function(...) data.frame(name = "a.R", size = 10),
+    .zip_fetch_members = function(url, names, dest, ..., max_whole_bytes = 0) {
+      seen <<- max_whole_bytes
+      data.frame(name = names, path = NA_character_, size = 10, ok = FALSE,
+                 error = "not fetched in this test", stringsAsFactors = FALSE)
+    }
+  )
+  files <- data.frame(repo_url = "https://osf.io/abcde", file_name = "code.zip",
+                      file_path = "code.zip", file_url = "https://osf.io/download/zzzzz",
+                      file_size = 5000, stringsAsFactors = FALSE)
+  metacheck:::.code_expand_zip(files, max_download_size = 50, max_file_size = 20)
+  expect_equal(seen, 20 * 1024 * 1024)
+  metacheck:::.code_expand_zip(files, max_download_size = 5, max_file_size = 20)
+  expect_equal(seen, 5 * 1024 * 1024)
 })
 
 assignInNamespace(".zip_fetch_members", .real_zip_fetch_members, ns = "metacheck")

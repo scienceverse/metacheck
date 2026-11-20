@@ -248,7 +248,7 @@
   if (is.na(src)) {
     known <- suppressWarnings(as.numeric(size %||% NA_real_))[1]
     if (isTRUE(known > max_whole_bytes))
-      return(fail("the archive is larger than the download budget"))
+      return(fail("the archive is larger than the download limits (max_file_size or max_download_size)"))
     if (is.null(archive_path)) {
       archive_path <- tempfile(fileext = ".tar")
       on.exit(unlink(archive_path), add = TRUE)
@@ -263,7 +263,7 @@
     else .download_one(url, archive_path, skip_on_api_limit = skip_on_api_limit,
                        expected_bytes = known)
     if (identical(attr(err, "over_cap"), TRUE))
-      return(fail("the archive is larger than the download budget"))
+      return(fail("the archive is larger than the download limits (max_file_size or max_download_size)"))
     if (!is.na(err)) return(fail(err))
     src <- archive_path
   }

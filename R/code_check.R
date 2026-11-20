@@ -835,7 +835,7 @@ code_lang <- function(file_name) {
 # which will fetch the whole archive and (if data_check expands it) recover
 # its contents that way instead.
 .code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE,
-                             max_download_size = 500) {
+                             max_download_size = 500, max_file_size = 100) {
   has_url <- !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
   # A zip already on disk (a ResearchBox box is downloaded and unpacked whole
   # by repo_check, so a zip inside it has file_location set and the box's web
@@ -873,8 +873,9 @@ code_lang <- function(file_name) {
     # takes the archive whenever it fits the budget (`request_bytes = Inf`),
     # because its strict daily request quota otherwise stalls the run (issue
     # #471). Kept at the zip's own cache path, where the ordinary download
-    # would also put it, so it is not requested again.
-    whole_bytes <- max_download_size * 1024 * 1024
+    # would also put it, so it is not requested again. The archive is held to
+    # max_file_size as well (#699); a larger one is read by byte range.
+    whole_bytes <- min(max_download_size, max_file_size) * 1024 * 1024
     request_bytes <- if (grepl("datadryad\\.org", url, ignore.case = TRUE)) Inf else 1048576
     fetched <- tryCatch(
       .zip_fetch_members(url, names = peek$name[is_code], dest = dest,
