@@ -229,7 +229,8 @@
 # copy .tar_peek() downloaded this session; `archive_path` when an earlier run
 # left a readable copy there; or one new download of the whole archive to
 # `archive_path` (a temporary file when NULL), when its size is at most
-# `max_whole_bytes`.
+# `max_whole_bytes`. An archive of unknown size is downloaded only up to
+# `max_whole_bytes`, and refused if it is larger.
 .tar_fetch_members <- function(url, names, dest, archive_path = NULL, size = NULL,
                                max_whole_bytes = Inf, skip_on_api_limit = FALSE) {
   fail <- function(msg) data.frame(
@@ -247,14 +248,22 @@
   if (is.na(src)) {
     known <- suppressWarnings(as.numeric(size %||% NA_real_))[1]
     if (isTRUE(known > max_whole_bytes))
-      return(fail("the archive is larger than the download budget"))
+      return(fail("the archive is larger than the download limits (max_file_size or max_download_size)"))
     if (is.null(archive_path)) {
       archive_path <- tempfile(fileext = ".tar")
       on.exit(unlink(archive_path), add = TRUE)
     }
     unlink(archive_path)
-    err <- .download_one(url, archive_path, skip_on_api_limit = skip_on_api_limit,
-                         expected_bytes = known)
+    # An archive of unknown size is stopped once it passes `max_whole_bytes`,
+    # as download_repo_files() does for a file of unknown size: it was
+    # downloaded whole, whatever its size (#699)
+    err <- if (is.na(known) && is.finite(max_whole_bytes))
+      .download_capped(url, archive_path, max_bytes = max_whole_bytes,
+                       skip_on_api_limit = skip_on_api_limit)
+    else .download_one(url, archive_path, skip_on_api_limit = skip_on_api_limit,
+                       expected_bytes = known)
+    if (identical(attr(err, "over_cap"), TRUE))
+      return(fail("the archive is larger than the download limits (max_file_size or max_download_size)"))
     if (!is.na(err)) return(fail(err))
     src <- archive_path
   }

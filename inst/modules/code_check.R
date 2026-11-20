@@ -34,7 +34,7 @@
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param download if TRUE (default), download the code files to be checked from online repositories so they are read locally. Set FALSE to stream each file from its URL instead.
 #' @param max_file_size largest single file to download, in MB (default 100). A file over this is skipped on its own; the rest of the repository is still downloaded. Set `Inf` for no cap.
-#' @param max_download_size largest total download per repository, in MB (default 500), used as a budget: files already in the cache count first, then the smallest missing files are added until the next one would not fit. A file whose size cannot be found out is skipped on its own. Set `Inf` for no cap.
+#' @param max_download_size largest total download per repository, in MB (default 500), used as a budget: files already in the cache count first, then the smallest missing files are added until the next one would not fit. A file whose size cannot be found out is downloaded only up to `max_file_size` or what is left of the budget, whichever is smaller, and left out if it is larger. Set `Inf` for no cap.
 #' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
 #' @param osf_max_requests the largest number of requests to the OSF for listing one OSF project, passed to `repo_check()` when this module runs it (default 50; `Inf` for no limit). A project listed only in part is named in a warning before anything is downloaded, because files in folders not yet opened are not downloaded either.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
@@ -99,11 +99,15 @@ code_check <- function(paper, local_path = NULL,
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only,
                        cache = cache, osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
                        osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
     listing_partial <- mo$partial_repos
@@ -192,7 +196,8 @@ code_check <- function(paper, local_path = NULL,
   # .code_expand_zip() and issue #383 (Gap 2).
   if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_zip(all_files, skip_on_api_limit, cache,
-                                  max_download_size = max_download_size)
+                                  max_download_size = max_download_size,
+                                  max_file_size = max_file_size)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -284,6 +289,9 @@ code_check <- function(paper, local_path = NULL,
   # classified (and so weren't in its candidate set) when it ran -- e.g. new
   # rows appended by the expand steps between here and there. Files without a
   # local copy fall back to streaming from file_url below.
+  # Why a row was left out by a download limit (NA for the others), from the
+  # download below: such a file is not read from the web instead (#699).
+  limit_refused <- rep(NA_character_, nrow(checked_files))
   if (isTRUE(download) && "file_url" %in% names(checked_files)) {
     # A row has a real file_url, OR (for a member of a zip repo_check's own
     # peek already expanded) an archive_url + archive_member pair instead --
@@ -312,6 +320,7 @@ code_check <- function(paper, local_path = NULL,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location
+      limit_refused[need_dl] <- attr(dl, "limit_refused") %||% NA_character_
       predl_gated <- dplyr::bind_rows(predl_gated, attr(dl, "gated"))
       code_failed_files <- dplyr::bind_rows(code_failed_files, attr(dl, "failed"))
     }
@@ -352,11 +361,19 @@ code_check <- function(paper, local_path = NULL,
     pb_code$tick(1, list(what = the_file$file_name))
 
     tryCatch({
-      # access via URL if not local
-      if (!is.na(the_file$file_location)) {
+      # A file left out by a download limit is not read from the web instead
+      # (#699); the reason becomes its error
+      if (!is.na(limit_refused[i])) stop(limit_refused[i], call. = FALSE)
+      # access via URL if not local: fetched into a temporary file that stops
+      # at max_file_size (#699)
+      fetched_copy <- is.na(the_file$file_location)
+      if (!fetched_copy) {
         file_path <- the_file$file_location
       } else {
-        file_path <- the_file$file_url
+        file_path <- .code_fetch_capped(the_file$file_url, the_file$file_name,
+                                        max_file_size = max_file_size,
+                                        skip_on_api_limit = skip_on_api_limit)
+        fetched_copy <- !identical(file_path, the_file$file_url)
       }
 
       # read in files
@@ -385,6 +402,7 @@ code_check <- function(paper, local_path = NULL,
       } else {
         file_lines <- code_read(file_path)
       }
+      if (fetched_copy) unlink(file_path)
 
       # Side-collect R text for the version-pinning scan after this loop
       # (.code_version_pin_check()'s groundhog/checkpoint detection), keyed

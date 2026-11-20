@@ -90,7 +90,11 @@ errored, e.g. a transient network failure, or — when \code{skip_on_api_limit =
 someone at the file directly instead of re-deriving the link. \code{paper_id}
 is \code{files$paper_id[i]} when \code{files} carries that column (e.g. a
 paperlist batch), \code{NA} otherwise — lets a caller attribute a failure back
-to the paper it belongs to without re-joining on \code{repo_url}).
+to the paper it belongs to without re-joining on \code{repo_url}). A fourth
+attribute, \code{"limit_refused"}, is a character vector with one element per
+row of \code{files}: why a file was left out by \code{max_file_size},
+\code{max_download_size} or \code{max_files_per_repo}, and \code{NA} for every other
+row, so that a caller does not fetch such a file another way (#699).
 }
 \description{
 Fetches the bytes for a table of repository files (as produced by
@@ -113,11 +117,12 @@ falls back to file-by-file fetching automatically, as do all other hosts.
 \details{
 Two independent size gates apply: \code{max_file_size} skips oversize files
 individually (the rest of the repository still downloads); \code{max_download_size}
-is a budget on the repository's TOTAL cached footprint (already-cached plus
-newly-downloaded), not on a single run's increment — already-cached files are
-kept for free, then the smallest still-missing files are added until the next
-one would exceed the budget, so re-running never grows a repository's cache
-past the budget and the canonical "files we ever download" set is fixed.
+is a budget per repository on the files in \code{files}, cached and new together
+— the cached ones among them count first, then the smallest still-missing
+files are added until the next one would exceed the budget. Only the rows
+passed in are counted: files of the same repository downloaded by an earlier
+call, and not passed again, do not count, so several calls can together
+download more than \code{max_download_size} for one repository (#699).
 }
 \examples{
 \donttest{

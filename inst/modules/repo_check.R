@@ -152,6 +152,12 @@
 #'   whose listing the OSF refused, also when asked again, is named there too
 #'   (`reason` "refused by the OSF" in `partial_repos`, `listing_short` TRUE
 #'   in `ownership`).
+#' @param max_file_size,max_download_size the download limits, in MB, for
+#'   ResearchBox boxes, which are listed by downloading them (defaults 100 and
+#'   500, as in data_check and code_check). With a ResearchBox API key only
+#'   the smallest files up to `max_download_size` are downloaded, none over
+#'   `max_file_size`; without a key a box larger than `max_download_size` is
+#'   not downloaded. See [rbox_file_download()].
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -162,7 +168,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        model = llm_model(),
                        params = list(),
                        skip_on_api_limit = FALSE,
-                       references = TRUE) {
+                       references = TRUE,
+                       max_file_size = 100,
+                       max_download_size = 500) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -1219,7 +1227,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                              project = character(0))
   if (length(rb_urls) > 0) {
     tryCatch({
-      rb_file_list <- rbox_file_download(rb_urls, pb = pb, cache = cache)
+      # the download limits apply to the boxes too (#699)
+      rb_file_list <- rbox_file_download(rb_urls, pb = pb, cache = cache,
+                                         max_file_size = max_file_size,
+                                         max_download_size = max_download_size)
       # Each box that could not be retrieved (refused, removed, ResearchBox's
       # hourly limit) gets its own reason. Only a failure of every box was
       # reported before; one failed box among several lost its files silently.
@@ -1229,8 +1240,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (nrow(rb_failed) > 0) {
         hit <- match(repos$repo_url, rb_failed$rb_url)
         fill <- !is.na(hit) & is.na(repos$repo_error)
-        repos$repo_error[fill] <- paste("ResearchBox did not serve the box:",
-                                         rb_failed$error[hit[fill]])
+        # a box the download limits left out was served, but not downloaded
+        why <- rb_failed$error[hit[fill]]
+        over <- grepl("download budget|download limits", why)
+        repos$repo_error[fill] <- ifelse(over,
+          paste("The box was not downloaded:", why),
+          paste("ResearchBox did not serve the box:", why))
         # the API answers "does not exist or is not public"; the web page asks
         # for a captcha (.rbox_info_page()). A link with its passcode that
         # fails this way is not a box readers were meant to open without it.

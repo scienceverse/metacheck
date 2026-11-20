@@ -619,3 +619,107 @@ test_that("an empty ResearchBox page, and several boxes that all fail (U43, U45)
   expect_equal(failed$rb_url, c("https://researchbox.org/1", "https://researchbox.org/2"))
   expect_equal(failed$error, c("unfound", "unfound"))
 })
+
+test_that(".rbox_limit_choice keeps the smallest files within the limits (#699)", {
+  mb <- 1024^2
+  # 3 MB is over max_file_size; of the rest, the smallest fit the budget
+  why <- .rbox_limit_choice(c(1, 3, 0.5, 0.7, NA) * mb, max_file_size = 2,
+                            max_download_size = 1.5)
+  expect_true(all(is.na(why[c(3, 4)])))
+  expect_match(why[2], "per-file limit (max_file_size)", fixed = TRUE)
+  expect_match(why[1], "budget for the box was spent", fixed = TRUE)
+  expect_match(why[5], "size is not listed", fixed = TRUE)
+  # no limits: every file with a size
+  expect_true(all(is.na(.rbox_limit_choice(c(1, 3) * mb))))
+})
+
+test_that("rbox_file_download with a key downloads only the files the limits allow (#699)", {
+  d <- withr::local_tempdir()
+  box <- .rbox_test_box(d, toc = FALSE)
+  skip_if_not(file.exists(box$zip), "zip utility unavailable")
+  withr::local_options(metacheck.researchbox.token = "test-token",
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.repo_cache.session_dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
+  rm(list = ls(.rbox_list_memo), envir = .rbox_list_memo)
+  listed <- box$files
+  listed$size[listed$basename == "analysis.R"] <- 3 * 1024^2   # over max_file_size
+  asked <- character(0)
+  sent <- list()
+  local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
+    asked <<- c(asked, action)
+    if (action == "download_files") {
+      sent <<- list(...)
+      if (identical(sent$file_ids, "all")) {
+        file.copy(box$zip, path, overwrite = TRUE)
+      } else {
+        withr::with_dir(file.path(d, "box"), utils::zip(
+          path, c("Data/study1.csv", "Codebook/study1.csv___CODEBOOK.csv"), flags = "-q"))
+      }
+    }
+    list(ok = TRUE, error = NA_character_, body = list(files = listed))
+  })
+
+  url <- "https://researchbox.org/99990"
+  expect_warning(files <- suppressMessages(
+    rbox_file_download(url, max_file_size = 2, max_download_size = 10)),
+    "1 of its 3 files not downloaded")
+  # the file list first, then only the files within the limits
+  expect_equal(asked[1:2], c("list_files", "download_files"))
+  expect_equal(sent$file_ids, "1,2")
+  expect_setequal(files$name, c("Data/study1.csv", "Codebook/study1.csv___CODEBOOK.csv"))
+  refused <- attr(files, "limit_refused")
+  expect_equal(refused$name, "analysis.R")
+  expect_match(refused$reason, "per-file limit", fixed = TRUE)
+
+  # again in the session: the file list is not asked again, the download is reused
+  asked <- character(0)
+  suppressMessages(suppressWarnings(
+    rbox_file_download(url, max_file_size = 2, max_download_size = 10)))
+  expect_equal(asked, character(0))
+
+  # a box within the limits is downloaded whole, as without limits
+  listed <- box$files
+  url2 <- "https://researchbox.org/99991"
+  asked <- character(0)
+  files <- rbox_file_download(url2, max_file_size = 2, max_download_size = 10)
+  expect_equal(sent$file_ids, "all")
+  expect_equal(nrow(attr(files, "limit_refused")), 0)
+})
+
+test_that("rbox_file_download without a key stops a box over the budget (#699)", {
+  d <- withr::local_tempdir()
+  box <- .rbox_test_box(d, toc = FALSE)
+  skip_if_not(file.exists(box$zip), "zip utility unavailable")
+  withr::local_options(metacheck.researchbox.token = "",
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.repo_cache.session_dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
+  limit <- NULL
+  over <- TRUE
+  local_mocked_bindings(
+    .rbox_info_page = function(rb_url) {
+      obj <- data.frame(rb_url = rb_url, box_id = "1", reference = "r")
+      obj$files <- list(data.frame(name = box$files$basename, file_id = as.character(1:3)))
+      obj
+    },
+    .download_capped = function(url, dest, max_bytes = Inf, ...) {
+      limit <<- max_bytes
+      if (over) return(structure("over the byte limit", over_cap = TRUE, bytes = 2e6))
+      file.copy(box$zip, dest, overwrite = TRUE)
+      NA_character_
+    })
+
+  expect_warning(files <- rbox_file_download("https://researchbox.org/99992",
+                                             max_download_size = 1),
+                 "larger than the 1 MB download budget")
+  expect_equal(limit, 1024^2)
+  expect_equal(nrow(files), 0)
+  expect_match(attr(files, "failed")$error, "larger than the 1 MB download budget (max_download_size)",
+               fixed = TRUE)
+
+  # within the budget: downloaded as before
+  over <- FALSE
+  files <- rbox_file_download("https://researchbox.org/99993", max_download_size = 1)
+  expect_equal(nrow(files), 3)
+})
