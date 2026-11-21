@@ -129,8 +129,9 @@ code_check <- function(paper, local_path = NULL,
   predl_gated <- NULL
   code_failed_files <- NULL
   # each repository's whole listing, before the expand steps below add
-  # archive members: the catch-up download counts with it too
-  listing_counts <- table(all_files$repo_url)
+  # archive members: the catch-up download counts with it too, and makes its
+  # choice of files for the budget from it (#699)
+  listing <- all_files
   if (isTRUE(download)) {
     all_files <- .code_predownload(all_files, max_file_size, max_download_size,
                                    cache, skip_on_api_limit, max_files_per_repo)
@@ -197,7 +198,8 @@ code_check <- function(paper, local_path = NULL,
   if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_zip(all_files, skip_on_api_limit, cache,
                                   max_download_size = max_download_size,
-                                  max_file_size = max_file_size)
+                                  max_file_size = max_file_size,
+                                  max_files_per_repo = max_files_per_repo)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -305,18 +307,17 @@ code_check <- function(paper, local_path = NULL,
                   !nzchar(checked_files$file_location %||% "")) &
       has_target
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing, not just the need_dl
+      # The FULL listing (its file count per repository), not just the need_dl
       # subset passed below -- see download_repo_files()'s own
-      # repo_file_counts roxygen (and data_check.R's identical wiring) for
+      # repo_file_counts roxygen, now worked out from repo_listing, (and data_check.R's identical wiring) for
       # why this matters: a filtered subset can undercount an oversized repo.
       # It counted the code files only, so a refused repository was reported
       # twice, with two counts (U88).
-      repo_file_counts <- listing_counts
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
                                 max_files_per_repo = max_files_per_repo,
-                                repo_file_counts = repo_file_counts,
+                                repo_listing = listing,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location

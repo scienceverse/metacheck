@@ -546,7 +546,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # runs: `keep_archive` must PROMOTE that FALSE to TRUE, not just survive an
     # AND against an already-TRUE `want` (an AND alone can never turn FALSE into
     # TRUE, which made this rescue a no-op for every unopened archive) (#456).
-    keep_archive <- .is_readable_archive(all_files$file_name)
+    # (not one in a renv folder: the source of an R package, not data, which
+    # the budget's choice of files leaves out as well, see .budget_counted())
+    keep_archive <- .is_readable_archive(all_files$file_name) & !.in_renv_folder(all_files)
     want <- (want & !(all_files$data_type %in% never_fetch)) | keep_archive
   }
   # When the code will run, every file the run could need is fetched too (see
@@ -598,18 +600,19 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
       has_target
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing, not just the need_dl
+      # The FULL listing (its file count per repository), not just the need_dl
       # subset passed below -- download_repo_files()'s max_files_per_repo
       # gate needs this to catch an oversized repo whose still-needed rows
       # happen to fall under the cap even though its real size does not (see
-      # download_repo_files()'s own repo_file_counts roxygen for the live
+      # download_repo_files()'s own repo_file_counts roxygen, now worked out from repo_listing, for the live
       # incident this closes).
-      repo_file_counts <- table(all_files$repo_url)
+      # The same listing also gives the choice of files for the budget, the
+      # same choice code_check makes (#699).
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
                                 max_files_per_repo = max_files_per_repo,
-                                repo_file_counts = repo_file_counts,
+                                repo_listing = all_files,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location
@@ -659,6 +662,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     on_disk <- !is.na(all_files$file_location) &
       nzchar(all_files$file_location %||% "") &
       file.exists(all_files$file_location %||% "")
+    # An archive in a renv folder is the source of an R package renv keeps,
+    # not data, and is not unpacked: mp20233958's renv_0.17.3.tar.gz, in
+    # renv/library/ inside a Zenodo zip, failed to unpack because its path
+    # passed the Windows limit of 260 characters.
+    on_disk <- on_disk & !.in_renv_folder(all_files)
     da_zip <- if (isTRUE(peek_zips))
       which(on_disk & .is_zip(all_files$file_name)) else integer(0)
     da_tar <- which(on_disk & .is_tar_archive(all_files$file_name))
@@ -673,13 +681,46 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # download.
       mfs <- max_file_size %||% Inf
       max_bytes <- if (is.finite(mfs)) mfs * 1024 * 1024 else Inf
+      # The files unpacked into a repository's download folder count for its
+      # budget too (#699): the budget saw only the archive's packed size, and
+      # osf.io/nugzb held 61 MB under a 50 MB budget. Each archive may use what
+      # is left after the repository's choice of files (.repo_budget()), the
+      # same choice download_repo_files() made above, so the files code_check
+      # still has to download keep their room. An archive of the user's own
+      # (not in a download folder) is unpacked elsewhere and not limited.
+      budgets <- new.env(parent = emptyenv())
       for (i in da) {
         row1 <- all_files[i, , drop = FALSE]
         loc  <- all_files$file_location[i]
         st   <- skip_types %||% "materials"
-        rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st, max_bytes = max_bytes)
-                else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st, max_bytes = max_bytes)
-                else .expand_compressed(loc, row1, skip_types = st, max_bytes = max_bytes)
+        repo <- row1$repo_url
+        bud <- NULL
+        if (.in_download_folder(loc) && !is.na(repo)) {
+          if (is.null(budgets[[repo]]))
+            budgets[[repo]] <- .repo_budget(repo, all_files, cache = cache,
+                                            max_file_size = mfs,
+                                            max_download_size = max_download_size %||% Inf)
+          bud <- budgets[[repo]]
+        }
+        left <- if (is.null(bud)) Inf else .budget_free(bud)
+        rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                               max_total = left)
+                else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                                    max_total = left)
+                else .expand_compressed(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                        max_total = left)
+        if (!is.null(bud)) bud$disk <- .repo_disk_bytes(.repo_cache_subdir(repo, cache))
+        nb <- attr(rows, "over_budget")
+        if (!is.null(nb) && nrow(nb) > 0) {
+          msg <- sprintf(
+            paste0("Repository %s exceeds the %s MB per-repository budget: ",
+                   "unpacked the smallest files from %s up to the cap, %d file%s ",
+                   "omitted. Raise `max_download_size` to include more."),
+            repo, .cap_num(max_download_size), row1$file_name, nrow(nb), plural(nrow(nb)))
+          .cap_report(msg)
+          gated_repos <- rbind(gated_repos, data.frame(repo_url = repo, message = msg,
+                                                       stringsAsFactors = FALSE))
+        }
         ov <- attr(rows, "oversize")
         if (!is.null(ov) && nrow(ov) > 0)
           oversize_files <- rbind(oversize_files, data.frame(

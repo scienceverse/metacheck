@@ -8,7 +8,7 @@
   url,
   dest,
   keep_types = c("data", "documentation"),
-  max_file_size = 10,
+  max_file_size = 100,
   size = NULL
 )
 }

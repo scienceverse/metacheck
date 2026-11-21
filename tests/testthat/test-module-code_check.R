@@ -485,8 +485,9 @@ test_that("code_check reports a refused repository once, with its whole listing 
                     file_url = paste0("https://osf.io/download/", 1:6),
                     file_location = NA_character_, file_size = 100)
   counts <- list()
-  local_mocked_bindings(download_repo_files = function(files, ..., repo_file_counts = NULL) {
-    n <- as.integer(repo_file_counts[["https://osf.io/abcde"]])
+  local_mocked_bindings(download_repo_files = function(files, ..., repo_listing = NULL) {
+    # the whole listing is passed, from which the counts are taken (#699)
+    n <- sum(repo_listing$repo_url == "https://osf.io/abcde")
     counts[[length(counts) + 1]] <<- n
     attr(files, "gated") <- data.frame(repo_url = "https://osf.io/abcde",
       message = sprintf("The repository holds %d files.", n))

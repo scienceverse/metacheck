@@ -10,6 +10,7 @@ download_repo_files(
   max_download_size = 500,
   max_files_per_repo = Inf,
   repo_file_counts = NULL,
+  repo_listing = NULL,
   zip_timeout_s = 120,
   cache = FALSE,
   skip_on_api_limit = FALSE,
@@ -22,11 +23,17 @@ download_repo_files(
 
 \item{max_file_size}{largest single file to download, in MB}
 
-\item{max_download_size}{largest total cached footprint per repository, in MB}
+\item{max_download_size}{largest total cached footprint per repository, in
+MB. A repository may be fetched as one archive of up to twice this size,
+to save requests; only the wanted files are kept from it, so what stays
+on disk is still held to this budget.}
 
 \item{max_files_per_repo}{largest file COUNT a single repository may have
 before it is refused outright (same \code{"gated"} reporting as the size caps
-above), default \code{Inf} (no cap). Unlike \code{max_file_size}/\code{max_download_size},
+above), default \code{Inf} (no cap). The count is the repository's full listing
+(\code{repo_file_counts}, else \code{repo_listing}), files repo_check found inside
+its archives included, and a refused repository has none of its files
+fetched, also none from inside its archives (#699). Unlike \code{max_file_size}/\code{max_download_size},
 this catches a repo whose FILE COUNT (not byte size) makes it impractical
 to process one file at a time -- confirmed live 2026-09-07 against a real
 Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
@@ -47,7 +54,15 @@ was, at the time, answering every one with a persistent (not transient)
 with no single wait long enough to look like the real problem. When a
 repo's URL is not a name in this vector (e.g. NULL, the default, for a
 caller that has not been updated to pass it), falls back to
-\code{length(idx)} exactly as before.}
+\code{length(idx)} exactly as before. Worked out from \code{repo_listing} when
+that is given and this is not.}
+
+\item{repo_listing}{optional data.frame, the caller's full listing of the
+repositories (\code{repo_check()}'s table, before it is filtered to the rows
+still to download), with \code{repo_url}, \code{file_name}, \code{file_path},
+\code{file_size}, \code{file_url} and, for files inside an archive, \code{archive_url}
+and \code{archive_member}. The choice of files for the budget is made from
+it (see Details). \code{NULL} (the default) makes the choice from \code{files}.}
 
 \item{zip_timeout_s}{timeout (seconds) for a whole-repo zip download attempt
 before falling back to file-by-file fetching}
@@ -117,12 +132,19 @@ falls back to file-by-file fetching automatically, as do all other hosts.
 \details{
 Two independent size gates apply: \code{max_file_size} skips oversize files
 individually (the rest of the repository still downloads); \code{max_download_size}
-is a budget per repository on the files in \code{files}, cached and new together
-— the cached ones among them count first, then the smallest still-missing
-files are added until the next one would exceed the budget. Only the rows
-passed in are counted: files of the same repository downloaded by an earlier
-call, and not passed again, do not count, so several calls can together
-download more than \code{max_download_size} for one repository (#699).
+is a budget per repository, for everything its download folder holds. From
+the repository's full listing (\code{repo_listing}, else the rows of \code{files}),
+the files of the kinds the checks download (code, tabular data, codebooks
+and readmes, text files, archives) are chosen smallest first, none over
+\code{max_file_size}, until the budget is reached. The same listing and limits
+give the same choice in every call, whichever check calls and in whatever
+order, so code files cannot be crowded out by data files fetched earlier.
+A requested file outside that choice (another kind, or one of unknown size)
+is downloaded only from what is left of the budget after the whole choice.
+Whatever the choice, nothing is downloaded once the folder holds
+\code{max_download_size}: files from earlier calls, earlier runs (with
+\code{cache = TRUE}), archive copies and the files unpacked from them all count,
+a file unpacked from an archive at its unpacked size (#699).
 }
 \examples{
 \donttest{
