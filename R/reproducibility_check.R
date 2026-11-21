@@ -1606,13 +1606,17 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   if (!any(rows)) return(structure_df)
   # downloaded under the path in the deposit, where the cache keeps it, not
   # where unpacking its archive puts it in the run (#648)
-  want <- structure_df[rows, , drop = FALSE]
-  if ("file_path_deposit" %in% names(want))
-    want$file_path <- dplyr::coalesce(as.character(want$file_path_deposit), as.character(want$file_path))
+  # The whole listing, under the same paths, gives the file counts and the
+  # choice of files for the budget (#699)
+  listing <- structure_df
+  if ("file_path_deposit" %in% names(listing))
+    listing$file_path <- dplyr::coalesce(as.character(listing$file_path_deposit),
+                                         as.character(listing$file_path))
+  want <- listing[rows, , drop = FALSE]
   dl <- tryCatch(download_repo_files(want,
                                      max_file_size = max_file_size,
                                      max_download_size = max_download_size,
-                                     repo_file_counts = table(structure_df$repo_url),
+                                     repo_listing = listing,
                                      cache = cache, skip_on_api_limit = skip_on_api_limit),
                  error = function(e) NULL)
   if (!is.null(dl)) structure_df$file_location[rows] <- dl$file_location

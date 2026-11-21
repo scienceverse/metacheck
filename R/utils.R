@@ -532,7 +532,11 @@ path_sanitize <- function(path, replacement = "_",
 # Returns the (possibly shortened) path. Callers should use the RETURNED path for
 # both dir.create and the write, and record it as the file's location, so the
 # on-disk name and the recorded name always agree.
-.safe_write_path <- function(path) {
+#
+# `root`, when given, is a folder whose names are kept (a repository's
+# download folder): only the part of the path below it is shortened, unless
+# that is not enough.
+.safe_write_path <- function(path, root = NULL) {
   if (is.null(path) || length(path) != 1 || is.na(path) || !nzchar(path))
     return(path)
 
@@ -582,19 +586,38 @@ path_sanitize <- function(path, replacement = "_",
   abs_len <- function() tryCatch(
     nchar(normalizePath(paste(parts, collapse = "/"), winslash = "/", mustWork = FALSE)),
     error = function(e) nchar(paste(parts, collapse = "/")))
-  if (abs_len() > .max_path_chars) {
-    for (j in seq_along(parts)) {
+  # The folders of `root` are kept as they are, when the path lies below it:
+  # a repository's folder shortened like any other put the files taken out of
+  # its archives in a second folder beside it (github.com_Lakens_metacheck-dow-
+  # 2eda7281 next to github.com_Lakens_metacheck-download-test), where the
+  # repository's download budget, which counts its own folder, did not see
+  # them (#699). Only when the path cannot be made short enough below `root`
+  # are the folders of `root` shortened as well.
+  n_fixed <- 0L
+  if (!is.null(root) && length(root) == 1 && !is.na(root) && nzchar(root)) {
+    rp <- strsplit(root, "[/\\\\]")[[1]]
+    rp_drive <- seq_along(rp) == 1L & grepl("^[A-Za-z]:$", rp)
+    rp[!rp_drive] <- .portable_name(rp[!rp_drive])
+    if (length(rp) < length(parts) && identical(parts[seq_along(rp)], rp))
+      n_fixed <- length(rp)
+  }
+  shorten <- function(free) {
+    for (j in which(free)) {
       if (nchar(parts[j]) > long_comp) {
-        parts[j] <- shorten_component(parts[j], long_comp); changed <- TRUE
+        parts[j] <<- shorten_component(parts[j], long_comp); changed <<- TRUE
       }
     }
     # Still over (very deep tree of moderate components): tighten the longest.
-    while (abs_len() > .max_path_chars) {
-      j <- which.max(nchar(parts))
+    while (abs_len() > .max_path_chars && any(free)) {
+      j <- which(free)[which.max(nchar(parts[free]))]
       if (nchar(parts[j]) <= min_comp) break
-      parts[j] <- shorten_component(parts[j], nchar(parts[j]) - 1L)
-      changed <- TRUE
+      parts[j] <<- shorten_component(parts[j], nchar(parts[j]) - 1L)
+      changed <<- TRUE
     }
+  }
+  if (abs_len() > .max_path_chars) {
+    shorten(seq_along(parts) > n_fixed)
+    if (abs_len() > .max_path_chars && n_fixed > 0L) shorten(rep(TRUE, length(parts)))
   }
   new_path <- paste(parts, collapse = "/")
 

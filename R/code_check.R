@@ -495,16 +495,15 @@ code_lang <- function(file_name) {
     has_target
   if (!any(need_dl)) return(all_files)
 
-  # TRUE per-repo row count in the FULL listing, not just the need_dl subset
-  # passed below -- see download_repo_files()'s own repo_file_counts roxygen
+  # The FULL listing (for the file count and the choice of files for the budget, #699), not just the need_dl subset
+  # passed below -- see download_repo_files()'s own repo_listing roxygen
   # for why an oversized repo can otherwise slip through max_files_per_repo.
-  repo_file_counts <- table(all_files$repo_url)
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
                         max_download_size = max_download_size,
                         max_files_per_repo = max_files_per_repo,
-                        repo_file_counts = repo_file_counts, cache = cache,
+                        repo_listing = all_files, cache = cache,
                         skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
@@ -538,15 +537,14 @@ code_lang <- function(file_name) {
   spv_files <- all_files[is_spv, , drop = FALSE]
   need_dl <- is.na(spv_files$file_location) | !nzchar(spv_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(spv_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # spv-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # spv-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(spv_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
@@ -602,15 +600,14 @@ code_lang <- function(file_name) {
   smcl_files <- all_files[is_smcl, , drop = FALSE]
   need_dl <- is.na(smcl_files$file_location) | !nzchar(smcl_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(smcl_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # smcl-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # smcl-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(smcl_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
@@ -663,15 +660,14 @@ code_lang <- function(file_name) {
   out_files <- all_files[is_out, , drop = FALSE]
   need_dl <- is.na(out_files$file_location) | !nzchar(out_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(out_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # out-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # out-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(out_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
@@ -733,15 +729,14 @@ code_lang <- function(file_name) {
   html_files <- all_files[is_html, , drop = FALSE]
   need_dl <- is.na(html_files$file_location) | !nzchar(html_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(html_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # html-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # html-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(html_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
@@ -802,9 +797,10 @@ code_lang <- function(file_name) {
 # For every UNEXPANDED ".zip" row in `all_files` (the archive still appears as
 # one row, never downloaded), peek inside it (zip_peek(), R/zip-peek.R -- the
 # same remote-range-request mechanism repo_check's own peek_zips uses) and
-# fetch ONLY the members code_lang() recognises as code, via
-# .zip_fetch_members()/.zip_member_fetch() -- a per-member byte-range fetch
-# that never downloads the rest of the archive. One new row is appended per
+# fetch ONLY the members code_lang() recognises as code, through
+# download_repo_files()'s archive members (a per-member byte-range fetch that
+# never downloads the rest of the archive, or one download of the whole zip
+# when that is cheaper), within the repository's budget (#699). One new row is appended per
 # recovered code file, exactly like .code_expand_spv()/_smcl()/_html(); the
 # original ".zip" row is left in place (code_lang(".zip") is NA, so it is
 # never itself checked as code).
@@ -835,7 +831,8 @@ code_lang <- function(file_name) {
 # which will fetch the whole archive and (if data_check expands it) recover
 # its contents that way instead.
 .code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE,
-                             max_download_size = 500, max_file_size = 100) {
+                             max_download_size = 500, max_file_size = 100,
+                             max_files_per_repo = Inf) {
   has_url <- !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
   # A zip already on disk (a ResearchBox box is downloaded and unpacked whole
   # by repo_check, so a zip inside it has file_location set and the box's web
@@ -847,7 +844,7 @@ code_lang <- function(file_name) {
   is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) & has_url
   if (!any(is_zip)) return(all_files)
 
-  new_rows <- list()
+  req <- list()
   for (i in which(is_zip)) {
     url <- if (!is.na(local_src[i])) local_src[i] else all_files$file_url[i]
     # The listing's own size, where it gave one, saves a HEAD request per
@@ -863,40 +860,44 @@ code_lang <- function(file_name) {
       !.in_renv_folder(data.frame(file_path = peek$name))
     if (!any(is_code)) next
 
-    dest <- .repo_cache_path(all_files$repo_url[i],
-                             paste0(all_files$file_path[i] %||% all_files$file_name[i],
-                                    ".contents"),
-                             cache = cache, storage = all_files$provider[i] %||% NA_character_)
-    # An archive within the download budget may be fetched whole, once,
-    # instead of by byte range, whenever that is cheaper (see
-    # .zip_fetch_members()) -- this used to be done for Dryad only. Dryad
-    # takes the archive whenever it fits the budget (`request_bytes = Inf`),
-    # because its strict daily request quota otherwise stalls the run (issue
-    # #471). Kept at the zip's own cache path, where the ordinary download
-    # would also put it, so it is not requested again. The archive is held to
-    # max_file_size as well (#699); a larger one is read by byte range.
-    whole_bytes <- min(max_download_size, max_file_size) * 1024 * 1024
-    request_bytes <- if (grepl("datadryad\\.org", url, ignore.case = TRUE)) Inf else 1048576
-    fetched <- tryCatch(
-      .zip_fetch_members(url, names = peek$name[is_code], dest = dest,
-                        cache = cache, skip_on_api_limit = skip_on_api_limit,
-                        max_whole_bytes = whole_bytes,
-                        archive_path = sub("\\.contents$", "", dest),
-                        request_bytes = request_bytes, size = zip_size),
-      error = function(e) NULL)
-    if (is.null(fetched) || !any(fetched$ok)) next
-
-    got <- fetched[fetched$ok, , drop = FALSE]
-    rows <- all_files[rep(i, nrow(got)), , drop = FALSE]
-    rows$file_name <- basename(got$name)
-    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i], got$name)
-    rows$file_location <- got$path
+    # One row per code file in the zip, as repo_check makes for the zips it
+    # opens (inst/modules/repo_check.R, "look inside .zip archives"), for
+    # download_repo_files() to fetch.
+    rows <- all_files[rep(i, sum(is_code)), , drop = FALSE]
+    rows$file_name <- basename(peek$name[is_code])
+    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i],
+                                peek$name[is_code])
     rows$file_url <- NA_character_   # a member has no download URL of its own
-    rows$file_size <- got$size
-    new_rows[[length(new_rows) + 1L]] <- rows
+    rows$file_size <- peek$size[is_code]
+    rows$file_location <- NA_character_
+    rows$archive_url <- url
+    rows$archive_member <- peek$name[is_code]
+    rows$archive_format <- "zip"
+    rows$archive_size <- if (is.null(zip_size)) NA_real_ else suppressWarnings(as.numeric(zip_size))
+    req[[length(req) + 1L]] <- rows
   }
-  if (!length(new_rows)) return(all_files)
-  dplyr::bind_rows(all_files, new_rows)
+  if (!length(req)) return(all_files)
+
+  # The code files are fetched by download_repo_files(), so that they share
+  # the repository's budget with every other download (#699): fetched here on
+  # their own, they were held to no budget, only a whole copy of the zip to
+  # max_file_size. download_repo_files() holds each to max_file_size, takes
+  # them smallest first from what is left after the repository's choice of
+  # files (they are not in the listing), and fetches a zip whole instead of
+  # by byte range when that is cheaper and the copy fits too.
+  req <- dplyr::bind_rows(req)
+  dl <- download_repo_files(req, max_file_size = max_file_size,
+                            max_download_size = max_download_size,
+                            max_files_per_repo = max_files_per_repo,
+                            repo_listing = all_files, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit)
+  got <- !is.na(dl$file_location)
+  if (!any(got)) return(all_files)
+  # Added in the shape they had before: no archive columns, so that later
+  # calls make the same choice of files from this listing as data_check
+  # makes from its own.
+  rows <- dl[got, intersect(names(all_files), names(dl)), drop = FALSE]
+  dplyr::bind_rows(all_files, rows)
 }
 
 #' Convert Rmd/qmd files to R code only
@@ -2395,16 +2396,15 @@ code_packages <- function(packages) {
     need_dl <- (is.na(renv_rows$file_location) | !nzchar(renv_rows$file_location %||% "")) &
       !is.na(renv_rows$file_url) & nzchar(renv_rows$file_url %||% "")
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing (all_files), not just this
-      # renv.lock-only subset -- see download_repo_files()'s repo_file_counts
+      # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+      # renv.lock-only subset -- see download_repo_files()'s repo_listing
       # roxygen.
-      repo_file_counts <- table(all_files$repo_url)
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
-                            repo_file_counts = repo_file_counts,
+                            repo_listing = all_files,
                             cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
@@ -2451,16 +2451,15 @@ code_packages <- function(packages) {
     need_dl <- (is.na(si_rows$file_location) | !nzchar(si_rows$file_location %||% "")) &
       !is.na(si_rows$file_url) & nzchar(si_rows$file_url %||% "")
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing (all_files), not just this
+      # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
       # sessionInfo/README-only subset -- see download_repo_files()'s
-      # repo_file_counts roxygen.
-      repo_file_counts <- table(all_files$repo_url)
+      # repo_listing roxygen.
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
-                            repo_file_counts = repo_file_counts,
+                            repo_listing = all_files,
                             cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)

@@ -232,6 +232,27 @@ test_that(".safe_write_path makes each part portable but keeps a drive (#557)", 
   expect_equal(.safe_write_path("x/a.txt"), "x/a.txt")
 })
 
+test_that(".safe_write_path keeps the folders of `root`, unless that is not enough (#699)", {
+  skip_on_os(c("mac", "linux", "solaris"))   # the 250-character limit is Windows' only
+  base <- file.path(gsub("\\\\", "/", tempdir()), strrep("b", 50))
+  root <- file.path(base, paste0("repo_", strrep("r", 50)))   # a folder name over 40
+  path <- file.path(root, strrep("m", 100), paste0(strrep("f", 80), ".csv"))
+  # without root, the repository's folder is shortened too
+  p0 <- suppressWarnings(.safe_write_path(path))
+  expect_false(startsWith(p0, paste0(root, "/")))
+  # with root, only the part below it
+  p1 <- suppressWarnings(.safe_write_path(path, root = root))
+  expect_true(startsWith(p1, paste0(root, "/")))
+  expect_lte(nchar(normalizePath(p1, winslash = "/", mustWork = FALSE)), .max_path_chars)
+  expect_match(p1, "[.]csv$")
+  # a root that alone is too long: shortened as before
+  long_root <- file.path(base, strrep("q", 250))
+  p2 <- suppressWarnings(.safe_write_path(file.path(long_root, "a.csv"), root = long_root))
+  expect_false(startsWith(p2, paste0(long_root, "/")))
+  # a path not below root: shortened as before
+  expect_equal(suppressWarnings(.safe_write_path(path, root = file.path(tempdir(), "other"))), p0)
+})
+
 test_that(".url_decode keeps a % that starts no code, where URLdecode dropped or stopped", {
   # utils::URLdecode() warned, made "50%" "50" and "a%2" "a", and stopped on
   # "bad%zz.png" and "%00"

@@ -1,5 +1,15 @@
 # metacheck 0.4.4
 
+* One choice of files per repository for the whole run, and the rest of #699:
+  * `download_repo_files()` chooses each repository's files once, from its full listing (`repo_listing`, which every check now passes): the kinds of files the checks download, smallest first, none over `max_file_size`, up to `max_download_size`. Every call makes the same choice, so data_check, code_check and reproducibility_check together, in any order and however often, keep a repository within one budget. Each call had a budget of its own, and code_check makes up to eight calls per paper. What the repository's folder already holds counts first, archive copies and the files unpacked from them included, at their unpacked size: on the Meta-Psychology papers, osf.io/nugzb held 61 MB under a 50 MB budget, 46.8 MB of it unpacked from zips.
+  * code_check's zips (`.code_expand_zip()`) are fetched through `download_repo_files()`, within the repository's budget, `max_file_size` and `max_files_per_repo`; each zip was allowed the whole budget.
+  * data_check unpacks a downloaded zip, tar or .gz only within what is left of its repository's budget, smallest files first (`max_total` in `.expand_zip()`, `.expand_tar()` and `.expand_compressed()`), and names the repository among the repositories over their budget.
+  * data_check leaves out archives in an renv folder, which hold installed R packages, not data; unpacking one stopped on paths too long for Windows.
+  * A long path is shortened only below its repository's folder (`.safe_write_path()` gains `root`). A repository folder whose name was over 40 characters was shortened as well, so the files taken out of its archives went to a second folder beside it, which the repository's budget did not count. A file cached at such a shortened place is downloaded once more.
+  * A repository refused for `max_files_per_repo` has no files fetched from its archives either. The refusal came after them, and a call given only the files inside archives counted those alone: Lakens/metacheck-download-test, 41 files under a limit of 20, was reported as skipped while 2 scripts from its zip and tar were fetched. Without `repo_file_counts`, the count comes from `repo_listing`.
+  * `zenodo_file_download()`, `dryad_file_download()`, `figshare_file_download()`, `dataverse_file_download()`, `reshare_file_download()` and `researchdata4tu_file_download()` default to 100 MB per file and 500 MB in total, as `download_repo_files()` does; they defaulted to 10 and 100. Under the same limits they keep the same files as `download_repo_files()`, the smallest that fit; their help now says so.
+  * The help of `max_download_size` in `download_repo_files()` says that a repository may be fetched as one archive of up to twice the budget, of which only the wanted files are kept.
+
 * `seq_archive_info()` records a GEO, ENA or ArrayExpress deposit whose archive did not answer (no connection, a time-out, too many requests or a server error) as "unreachable". It was recorded as "unfound", and repo_check then reported the deposit as one that does not exist.
 
 * Downloads that went past the download limits (first part of #699):

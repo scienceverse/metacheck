@@ -8,8 +8,8 @@ dataverse_file_download(
   host,
   doi,
   download_to,
-  max_file_size = 10,
-  max_download_size = 100,
+  max_file_size = 100,
+  max_download_size = 500,
   unzip_types = NULL,
   pb = NULL
 )
@@ -50,8 +50,9 @@ Creates a directory for the dataset and downloads all of its files. Returns
 }
 \details{
 You can limit downloads to only files under a specific size (defaults to
-10MB) and only a maximum download size (largest files will be omitted until
-total size is under the limit). Omitted files will be listed as messages in
+100 MB) and to a maximum download size (defaults to 500 MB): the smallest
+files are kept while they fit and the rest omitted, as in
+\code{\link[=download_repo_files]{download_repo_files()}}. Omitted files will be listed as messages in
 verbose mode, and included in the returned data frame with the \code{downloaded}
 column value set to FALSE.
 

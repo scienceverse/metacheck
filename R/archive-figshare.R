@@ -1091,8 +1091,9 @@ figshare_pat <- function(pat = NULL) {
 #' zip unless `unzip_types` asks for only specific members out of it.
 #'
 #' You can limit downloads to only files under a specific size (defaults to
-#' 10MB) and only a maximum download size (largest files will be omitted until
-#' total size is under the limit). Omitted files will be listed as messages in
+#' 100 MB) and to a maximum download size (defaults to 500 MB): the smallest
+#' files are kept while they fit and the rest omitted, as in
+#' [download_repo_files()]. Omitted files will be listed as messages in
 #' verbose mode, and included in the returned data frame with the `downloaded`
 #' column value set to FALSE.
 #'
@@ -1131,8 +1132,8 @@ figshare_pat <- function(pat = NULL) {
 #' }
 figshare_file_download <- function(figshare_id,
                                    download_to,
-                                   max_file_size = 10,
-                                   max_download_size = 100,
+                                   max_file_size = 100,
+                                   max_download_size = 500,
                                    unzip_types = NULL,
                                    host = "api.figshare.com",
                                    pb = NULL) {
@@ -1435,7 +1436,7 @@ figshare_file_download <- function(figshare_id,
 #' @keywords internal
 .figshare_zip_members <- function(url, dest,
                                   keep_types = c("data", "documentation"),
-                                  max_file_size = 10, size = NULL) {
+                                  max_file_size = 100, size = NULL) {
   listing <- tryCatch(zip_peek(url, size = size), error = \(e) NULL)
   if (is.null(listing) || nrow(listing) == 0) return(NULL)
 
