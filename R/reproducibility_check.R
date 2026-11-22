@@ -1998,6 +1998,56 @@ repro_run_order <- function(files, extra_edges = NULL) {
   character(0)
 }
 
+# The library() lines to add in a later run (#592): for each script that stopped
+# on "could not find function" for a function no other script defines, the
+# packages .repro_missing_fn_pkgs() gives that the script did not get yet. The
+# corrective run looks only at the first run's errors, so a script that it gave
+# library() lines and that then stopped on another missing function was left as
+# it was: 22 scripts in 14 papers in the BES run of 0.4.4.27. A named list,
+# script -> new packages; empty when there are none.
+.repro_more_library_lines <- function(run_results, code_text_list, candidates,
+                                      unavailable = character(0), injected = list()) {
+  fn_pat <- "could not find function ['\"]([^'\"]+)['\"]"
+  rows <- which(run_results$outcome %in% "errored" & grepl(fn_pat, run_results$error %||% "", perl = TRUE))
+  if (!length(rows)) return(list())
+  defs <- repro_defined_vars(code_text_list)
+  out <- list()
+  for (i in rows) {
+    user <- run_results$file_name[i]
+    if (!user %in% names(code_text_list)) next
+    v <- sub(paste0(".*", fn_pat, ".*"), "\\1",
+             regmatches(run_results$error[i], regexpr(fn_pat, run_results$error[i], perl = TRUE)), perl = TRUE)
+    # defined in another script: loading that one first is the corrective run's
+    # task, and a package is no answer
+    other <- defs$file_name != user
+    if (any(vapply(defs$defines[other], function(d) v %in% d, logical(1)))) next
+    new <- setdiff(.repro_missing_fn_pkgs(v, user, code_text_list, candidates, unavailable),
+                   c(injected[[user]], out[[user]]))
+    if (length(new)) out[[user]] <- c(out[[user]], new)
+  }
+  out
+}
+
+# The package an R error says is missing, one per text (NA when none): R's own
+# "there is no package called 'B'", insight's "Package `B` required" (performance,
+# see, parameters and the rest of the easystats family), rlang's and broom.helpers'
+# "The package \"B\" is required", and "The B package needs to be installed"
+# (rnaturalearth). A package that another package needs only for one function is
+# in neither script's library() calls, so it was never installed (#587).
+.repro_missing_pkg_names <- function(txt) {
+  pats <- c("there is no package called .([A-Za-z][A-Za-z0-9.]*[A-Za-z0-9])",
+            "[Pp]ackage .([A-Za-z][A-Za-z0-9.]*[A-Za-z0-9]). (is )?required",
+            "The ([A-Za-z][A-Za-z0-9.]*[A-Za-z0-9]) package needs to be installed")
+  out <- rep(NA_character_, length(txt))
+  txt <- ifelse(is.na(txt), "", txt)
+  for (p in pats) {
+    hit <- is.na(out) & grepl(p, txt, perl = TRUE)
+    if (any(hit))
+      out[hit] <- sub(paste0("(?s).*?", p, ".*"), "\\1", txt[hit], perl = TRUE)
+  }
+  out
+}
+
 # Normalise a basename for FUZZY source()-target matching (repro_run_order()'s
 # own use, see issue #392) — lowercase (caller already lowercases, done again
 # here so this helper is safe standalone too), strip the extension, strip a
@@ -4661,7 +4711,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   n <- length(pkgs)
   sprintf(paste0("**%d package%s the code loads %s not on CRAN or Bioconductor, and the code ",
                  "does not say where %s from**: %s. We also looked in the CRAN Archive, on ",
-                 "R-universe and in a list of known places. Saying where to install %s from, ",
+                 "R-Forge, on R-universe and in a list of known places. Saying where to install %s from, ",
                  "such as with `remotes::install_github()` or in the README, solves this."),
           n, plural(n), plural(n, "is", "are"), plural(n, "it comes", "they come"),
           paste(sprintf("`%s`", pkgs), collapse = ", "), plural(n, "it", "them"))
@@ -6729,7 +6779,7 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #'   column for one failed row)
 #'
 #' A package that Docker's second pass found in none of the places it looks
-#' (Bioconductor, the CRAN Archive, the list of known places, R-universe) is
+#' (Bioconductor, the CRAN Archive, the list of known places, R-Forge, R-universe) is
 #' `"source_unknown"`: the code loads it without saying where it comes from.
 #'
 #' @returns a single category string: `"source_unknown"`, `"cran_unavailable"`,
