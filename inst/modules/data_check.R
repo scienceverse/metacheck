@@ -118,11 +118,14 @@
 #' @param max_download_size largest total download per repository, in MB
 #'   (default 500), used as a budget: files already in the cache count first,
 #'   then the smallest missing files are added until the next one would not
-#'   fit. A file whose size cannot be found out is skipped on its own. Skipped
+#'   fit. A file whose size cannot be found out is downloaded only up to
+#'   `max_file_size` or what is left of the budget, whichever is smaller, and
+#'   left out if it is larger. Skipped
 #'   files are named in the summary text, with the size to lift the limit. Set
 #'   `Inf` for no cap.
 #' @param max_files_per_repo largest file COUNT a single repository may have
-#'   before it is refused outright (default `Inf`, no cap). Unlike the size
+#'   before it is refused outright (default 100,000; `Inf` for no cap),
+#'   before data_check looks at its files one by one (#702). Unlike the size
 #'   caps above, this catches a repo whose sheer file COUNT (not byte size)
 #'   makes per-file classification and full-content reading impractical for
 #'   one paper's repository -- confirmed live 2026-09-07 against a real
@@ -170,7 +173,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = TRUE,
                        max_file_size = 100,
                        max_download_size = 500,
-                       max_files_per_repo = Inf,
+                       max_files_per_repo = 100000,
                        osf_max_requests = 50,
                        cache = FALSE,
                        skip_on_api_limit = FALSE,
@@ -296,11 +299,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       mo <- module_run(paper, "repo_check", local_path = local_path,
                        local_only = local_only, cache = cache,
                        osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
                        osf_max_requests = osf_max_requests,
-                       skip_on_api_limit = skip_on_api_limit)
+                       skip_on_api_limit = skip_on_api_limit,
+                       max_file_size = max_file_size,
+                       max_download_size = max_download_size)
     }
     all_files <- mo$table %||% data.frame(
       file_name = character(0), repo_url = character(0),
@@ -310,6 +317,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     tree_naming_issues <- mo$naming_issues
     tree_useless <- mo$useless_files
     listing_partial <- mo$partial_repos
+  }
+  # Repositories with more files than max_files_per_repo are refused here,
+  # before the steps below that take time for every file (#702)
+  count_refused <- .repos_over_count(all_files, max_files_per_repo)
+  if (nrow(count_refused)) {
+    for (m in count_refused$message) .cap_report(m)
+    all_files <- all_files[!all_files$repo_url %in% count_refused$repo_url, , drop = FALSE]
   }
   if (download != "none" && nrow(all_files) > 0)
     .cap_report_partial(listing_partial, all_files$repo_url)
@@ -347,9 +361,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       structure = all_files,
       # yellow when a repository was not listed in full: its data may exist
       # unseen (#681)
-      traffic_light = if (is.null(not_listed$summary)) "na" else "yellow",
-      summary_text = if (is.null(not_listed$summary)) "We found no files to analyse." else
-        paste("\n- ", c("We found no files to analyse.", not_listed$summary), collapse = ""),
+      # (and when a repository was refused for its number of files, #702)
+      traffic_light = if (is.null(not_listed$summary) && !nrow(count_refused)) "na" else "yellow",
+      summary_text = if (is.null(not_listed$summary) && !nrow(count_refused))
+        "We found no files to analyse." else
+        paste("\n- ", c("We found no files to analyse.", not_listed$summary,
+                        count_refused$message), collapse = ""),
       report = not_listed$report,
       gated_repos = listing_gated,
       manifest_path = if (!is.null(manifest)) manifest_path else NULL,
@@ -453,10 +470,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # whole deposit, never one per study), so it is excluded from per-study
   # grouping the same way — see the "license" doc_role in .data_doc_role() and
   # its root placement in psychds_check.R's target_of().
+  # (the path is read only for the readme and licence rows: for every file it
+  # took 14 minutes in a repository of 369,548 files, #702)
   is_root_readme <- !is.na(all_files$doc_role) &
-    all_files$doc_role %in% c("readme", "license") &
-    is.na(.data_group_from_path(path_for_group)) &
-    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group))
+    all_files$doc_role %in% c("readme", "license")
+  is_root_readme[is_root_readme] <-
+    is.na(.data_group_from_path(path_for_group[is_root_readme])) &
+    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group[is_root_readme]))
   is_root_readme[is.na(is_root_readme)] <- FALSE
 
   grp <- data_group_llm(all_files[!is_root_readme, , drop = FALSE],
@@ -481,7 +501,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # building a complete data archive. The size caps skip files one by one (over
   # max_file_size, or of unknown size), and fill max_download_size as a
   # budget with the smallest files first (see download_repo_files()).
-  gated_repos <- NULL
+  # (the repositories refused above for their number of files first)
+  gated_repos <- if (nrow(count_refused)) count_refused[c("repo_url", "message")]
   oversize_files <- NULL
   failed_files   <- NULL
   # members of zips that could not be unpacked (.expand_zip(), #680)
@@ -540,7 +561,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # runs: `keep_archive` must PROMOTE that FALSE to TRUE, not just survive an
     # AND against an already-TRUE `want` (an AND alone can never turn FALSE into
     # TRUE, which made this rescue a no-op for every unopened archive) (#456).
-    keep_archive <- .is_readable_archive(all_files$file_name)
+    # (not one in a renv folder: the source of an R package, not data, which
+    # the budget's choice of files leaves out as well, see .budget_counted())
+    keep_archive <- .is_readable_archive(all_files$file_name) & !.in_renv_folder(all_files)
     want <- (want & !(all_files$data_type %in% never_fetch)) | keep_archive
   }
   # When the code will run, every file the run could need is fetched too (see
@@ -592,25 +615,26 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
       has_target
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing, not just the need_dl
+      # The FULL listing (its file count per repository), not just the need_dl
       # subset passed below -- download_repo_files()'s max_files_per_repo
       # gate needs this to catch an oversized repo whose still-needed rows
       # happen to fall under the cap even though its real size does not (see
-      # download_repo_files()'s own repo_file_counts roxygen for the live
+      # download_repo_files()'s own repo_file_counts roxygen, now worked out from repo_listing, for the live
       # incident this closes).
-      repo_file_counts <- table(all_files$repo_url)
+      # The same listing also gives the choice of files for the budget, the
+      # same choice code_check makes (#699).
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
                                 max_files_per_repo = max_files_per_repo,
-                                repo_file_counts = repo_file_counts,
+                                repo_listing = all_files,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
       # inline (and warned) by .cap_report inside download_repo_files.
-      gated_repos <- attr(dl, "gated")
+      gated_repos <- rbind(gated_repos, attr(dl, "gated"))
       # Kept for the manifest: which files the per-file cap skipped
       # (intentional) and which downloads failed after retries (unintentional —
       # the re-run signal).
@@ -650,63 +674,108 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Zip expansion is gated on peek_zips (its pre-download peek is the paired
     # optimisation); tar/gz have no peek, so they always expand when downloaded.
     # .7z/.rar are NOT here — base R cannot read them (repo_check warns instead).
-    on_disk <- !is.na(all_files$file_location) &
-      nzchar(all_files$file_location %||% "") &
-      file.exists(all_files$file_location %||% "")
-    da_zip <- if (isTRUE(peek_zips))
-      which(on_disk & .is_zip(all_files$file_name)) else integer(0)
-    da_tar <- which(on_disk & .is_tar_archive(all_files$file_name))
-    da_gz  <- which(on_disk & .is_single_compress(all_files$file_name))
-    da <- c(da_zip, da_tar, da_gz)
-    if (length(da) > 0) {
-      extracted <- list()
-      # The per-file limit also holds for a file inside an archive (#472):
-      # the download limits saw only the archive's own, compressed size, so a
-      # 74 MB .gz could become a 1.2 GB copy in the cache. An inner file over
-      # the limit is not unpacked, and is listed with the files too large to
-      # download.
-      mfs <- max_file_size %||% Inf
-      max_bytes <- if (is.finite(mfs)) mfs * 1024 * 1024 else Inf
-      for (i in da) {
-        row1 <- all_files[i, , drop = FALSE]
-        loc  <- all_files$file_location[i]
-        st   <- skip_types %||% "materials"
-        rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st, max_bytes = max_bytes)
-                else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st, max_bytes = max_bytes)
-                else .expand_compressed(loc, row1, skip_types = st, max_bytes = max_bytes)
-        ov <- attr(rows, "oversize")
-        if (!is.null(ov) && nrow(ov) > 0)
-          oversize_files <- rbind(oversize_files, data.frame(
-            repo_url = row1$repo_url, file_name = ov$file_name, file_size = ov$file_size))
-        uf <- attr(rows, "unpack_failed")
-        if (!is.null(uf) && nrow(uf) > 0) unpack_failed <- rbind(unpack_failed, uf)
-        if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
-      }
-      # Drop the consumed container rows (see comment above); `want` is kept
-      # aligned by dropping the same positions.
-      all_files <- all_files[-da, , drop = FALSE]
-      want <- want[-da]
-      # the zip-peek reasons follow the rows too: left as they were, the
-      # manifest gave reasons to the wrong files (U99)
-      zip_peek_reason <- zip_peek_reason[-da]
-      if (length(extracted) > 0) {
-        added <- dplyr::bind_rows(extracted)
-        all_files <- dplyr::bind_rows(all_files, added)
-        # Keep `want` aligned with `all_files`: inner files from accepted archives
-        # are part of the mirrored data/documentation payload.
-        want <- c(want, rep(TRUE, nrow(added)))
-        zip_peek_reason <- c(zip_peek_reason, rep(NA_character_, nrow(added)))
-      }
-      # Files that do not belong in a repository (__MACOSX/, "._" files,
-      # .DS_Store, .Rproj.user/, ...; see .useless_file_kind()) are left out,
-      # as repo_check does for the zips it opens: a "._" copy of a .csv would
-      # otherwise be read as data.
-      sys <- .is_useless_file(dplyr::coalesce(all_files$file_path %||% all_files$file_name,
-                                              all_files$file_name))
-      if (any(sys)) {
-        all_files <- all_files[!sys, , drop = FALSE]
-        want <- want[!sys]
-        zip_peek_reason <- zip_peek_reason[!sys]
+    # Archives inside an unpacked archive are opened in turn, up to three
+    # levels deep, within the same limits: zips inside zips were not
+    # opened (#700). Each pass opens only the archives the pass before
+    # unpacked, as the archives it opens leave the file list.
+    for (archive_level in 1:3) {
+      on_disk <- !is.na(all_files$file_location) &
+        nzchar(all_files$file_location %||% "") &
+        file.exists(all_files$file_location %||% "")
+      # An archive in a renv folder is the source of an R package renv keeps,
+      # not data, and is not unpacked: mp20233958's renv_0.17.3.tar.gz, in
+      # renv/library/ inside a Zenodo zip, failed to unpack because its path
+      # passed the Windows limit of 260 characters.
+      on_disk <- on_disk & !.in_renv_folder(all_files)
+      da_zip <- if (isTRUE(peek_zips))
+        which(on_disk & .is_zip(all_files$file_name)) else integer(0)
+      da_tar <- which(on_disk & .is_tar_archive(all_files$file_name))
+      da_gz  <- which(on_disk & .is_single_compress(all_files$file_name))
+      da <- c(da_zip, da_tar, da_gz)
+      if (!length(da)) break
+      if (length(da) > 0) {
+        extracted <- list()
+        # The per-file limit also holds for a file inside an archive (#472):
+        # the download limits saw only the archive's own, compressed size, so a
+        # 74 MB .gz could become a 1.2 GB copy in the cache. An inner file over
+        # the limit is not unpacked, and is listed with the files too large to
+        # download.
+        mfs <- max_file_size %||% Inf
+        max_bytes <- if (is.finite(mfs)) mfs * 1024 * 1024 else Inf
+        # The files unpacked into a repository's download folder count for its
+        # budget too (#699): the budget saw only the archive's packed size, and
+        # osf.io/nugzb held 61 MB under a 50 MB budget. Each archive may use what
+        # is left after the repository's choice of files (.repo_budget()), the
+        # same choice download_repo_files() made above, so the files code_check
+        # still has to download keep their room. An archive of the user's own
+        # (not in a download folder) is unpacked elsewhere and not limited.
+        budgets <- new.env(parent = emptyenv())
+        for (i in da) {
+          row1 <- all_files[i, , drop = FALSE]
+          loc  <- all_files$file_location[i]
+          st   <- skip_types %||% "materials"
+          repo <- row1$repo_url
+          bud <- NULL
+          if (.in_download_folder(loc) && !is.na(repo)) {
+            if (is.null(budgets[[repo]]))
+              budgets[[repo]] <- .repo_budget(repo, all_files, cache = cache,
+                                              max_file_size = mfs,
+                                              max_download_size = max_download_size %||% Inf)
+            bud <- budgets[[repo]]
+          }
+          left <- if (is.null(bud)) Inf else .budget_free(bud)
+          rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                                 max_total = left)
+                  else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                                      max_total = left)
+                  else .expand_compressed(loc, row1, skip_types = st, max_bytes = max_bytes,
+                                          max_total = left)
+          if (!is.null(bud)) bud$disk <- .repo_disk_bytes(.repo_cache_subdir(repo, cache))
+          nb <- attr(rows, "over_budget")
+          if (!is.null(nb) && nrow(nb) > 0) {
+            msg <- sprintf(
+              paste0("Repository %s exceeds the %s MB per-repository budget: ",
+                     "unpacked the smallest files from %s up to the cap, %d file%s ",
+                     "omitted. Raise `max_download_size` to include more."),
+              repo, .cap_num(max_download_size), row1$file_name, nrow(nb), plural(nrow(nb)))
+            .cap_report(msg)
+            gated_repos <- rbind(gated_repos, data.frame(repo_url = repo, message = msg,
+                                                         stringsAsFactors = FALSE))
+          }
+          ov <- attr(rows, "oversize")
+          if (!is.null(ov) && nrow(ov) > 0)
+            oversize_files <- rbind(oversize_files, data.frame(
+              repo_url = row1$repo_url, file_name = ov$file_name, file_size = ov$file_size))
+          uf <- attr(rows, "unpack_failed")
+          if (!is.null(uf) && nrow(uf) > 0) unpack_failed <- rbind(unpack_failed, uf)
+          if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
+        }
+        # Drop the consumed container rows (see comment above); `want` is kept
+        # aligned by dropping the same positions.
+        all_files <- all_files[-da, , drop = FALSE]
+        want <- want[-da]
+        # the zip-peek reasons follow the rows too: left as they were, the
+        # manifest gave reasons to the wrong files (U99)
+        zip_peek_reason <- zip_peek_reason[-da]
+        if (length(extracted) > 0) {
+          added <- dplyr::bind_rows(extracted)
+          all_files <- dplyr::bind_rows(all_files, added)
+          # Keep `want` aligned with `all_files`: inner files from accepted archives
+          # are part of the mirrored data/documentation payload.
+          want <- c(want, rep(TRUE, nrow(added)))
+          zip_peek_reason <- c(zip_peek_reason, rep(NA_character_, nrow(added)))
+        }
+        # Files that do not belong in a repository (__MACOSX/, "._" files,
+        # .DS_Store, .Rproj.user/, ...; see .useless_file_kind()) are left out,
+        # as repo_check does for the zips it opens: a "._" copy of a .csv would
+        # otherwise be read as data.
+        sys <- .is_useless_file(dplyr::coalesce(all_files$file_path %||% all_files$file_name,
+                                                all_files$file_name))
+        if (any(sys)) {
+          all_files <- all_files[!sys, , drop = FALSE]
+          want <- want[!sys]
+          zip_peek_reason <- zip_peek_reason[!sys]
+        }
       }
     }
     # Reclassify downloaded .txt files from their CONTENT. The name-based
@@ -755,6 +824,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   has_local <- !is.na(all_files$file_location) &
     nzchar(all_files$file_location) &
     file.exists(all_files$file_location %||% "")
+  # A Git LFS pointer stands in for a file that was not deposited: it is not
+  # read as data (a 134-byte text read as the CSV it names), and the report
+  # names it (#700)
+  lfs_size <- rep(NA_real_, nrow(all_files))
+  lfs_size[has_local] <- .lfs_pointer_size(all_files$file_location[has_local])
+  is_lfs <- !is.na(lfs_size)
+  has_local <- has_local & !is_lfs
+  lfs_text <- .lfs_pointer_text(
+    dplyr::coalesce(all_files$file_path %||% all_files$file_name, all_files$file_name)[is_lfs], lfs_size[is_lfs])
 
   # Hold trial-level files (E-Prime / Inquisit / jsPsych / native Behaverse) OUT
   # of the per-file tabular extractor. These formats publish one file PER
@@ -788,7 +866,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                           drop = FALSE]
 
   n_tabular_all <- sum(is_tabular_data & !is_trial_level)
-  n_no_local <- sum(is_tabular_data & !has_local)
+  n_no_local <- sum(is_tabular_data & !has_local & !is_lfs)
 
   # File names detected as manifests (a table-of-contents listing other repo
   # files) rather than real data; demoted to documentation (doc_role
@@ -1171,8 +1249,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # inspect these for formatting but add a "not a rectangular dataset" note.
   # The column always exists (default TRUE) so consumers can rely on it.
   # non_tabular_files is source_file -> reason.
-  all_files$tabular_usable <- TRUE
-  all_files$non_tabular_reason <- NA_character_
+  # rep(): the table has no rows when every file was an archive that could not
+  # be opened, and a single value cannot be assigned to it (#703)
+  all_files$tabular_usable <- rep(TRUE, nrow(all_files))
+  all_files$non_tabular_reason <- rep(NA_character_, nrow(all_files))
   if (length(non_tabular_files) > 0) {
     nt <- all_files$source_file %in% names(non_tabular_files)
     all_files$tabular_usable[nt] <- FALSE
@@ -1183,7 +1263,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 5. Reporting ─────────────────────────────────────────────────────────────
   type_counts <- table(factor(all_files$data_type, levels = .data_check_types))
 
-  summary_files <- sprintf(
+  # no files left: every file was an archive that could not be opened (#703)
+  summary_files <- if (!nrow(all_files)) "We found no files to analyse." else sprintf(
     "We classified %d file%s: %s.",
     nrow(all_files), plural(nrow(all_files)),
     paste(sprintf("%d %s", type_counts[type_counts > 0],
@@ -1196,7 +1277,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_extracted <- if (!is.null(columns_df) && "source_file" %in% names(columns_df))
     n_files_read else
     nrow(data_files) - length(manifest_files) - length(non_tabular_files)
-  summary_data <- sprintf(
+  summary_data <- if (nrow(all_files)) sprintf(
     "We found %d tabular data file%s and extracted %d column%s from %d of them.",
     n_tabular_all, plural(n_tabular_all),
     n_columns, plural(n_columns), n_extracted
@@ -1308,7 +1389,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   failed_text <- .download_failed_text(failed_files)
   report <- c(report, failed_text$report, not_listed$report)
   unpack_text <- .unzip_failed_text(unpack_failed)
-  report <- c(report, unpack_text$report)
+  report <- c(report, unpack_text$report, lfs_text$report)
 
   # The data tree replaces the former "File Types" count table: it lists every
   # file with the same classification, so a separate per-type tally was a less
@@ -1512,7 +1593,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     data.frame(paper_id = character(0), empty_col_n = integer(0))
   }
 
-  summary_table <- data.frame(paper_id = unique(all_files$paper_id) %||% .pid(all_files)) |>
+  summary_table <- data.frame(paper_id = unique(all_files$paper_id) %empty_or% .pids_all(all_files)) |>
     dplyr::left_join(data_file_n_by_paper, by = "paper_id") |>
     dplyr::left_join(column_n_by_paper, by = "paper_id") |>
     dplyr::left_join(empty_col_n_by_paper, by = "paper_id") |>
@@ -1550,7 +1631,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_studies <- NULL
     summary_ungrouped <- NULL
   }
-  summary_text <- c(failed_text$summary, not_listed$summary, unpack_text$summary, summary_keys, summary_files,
+  summary_text <- c(failed_text$summary, not_listed$summary, unpack_text$summary, lfs_text$summary,
+                    summary_keys, summary_files,
                      summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
                      summary_workspace, summary_nontabular, summary_trial_level) |>
@@ -1690,8 +1772,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       names(rank)[which(rank == max(rank[both]))[1]]
     # at least yellow when a repository was listed only in part or not at all:
     # files went unchecked, so neither "no issues" nor "nothing to check" holds
-    # (#681)
-    if (!is.null(not_listed$summary) && empty_tl %in% c("na", "green")) empty_tl <- "yellow"
+    # (#681); also when an archive, or files in one, could not be unpacked (#703), or a file is a Git LFS pointer (#700)
+    if ((!is.null(not_listed$summary) || !is.null(unpack_text$summary) ||
+       !is.null(lfs_text$summary)) &&
+        empty_tl %in% c("na", "green")) empty_tl <- "yellow"
     dv_summary_table <- summary_table["paper_id"] |>
       dplyr::left_join(n_spreadsheet_files_by_paper, by = "paper_id") |>
       dplyr::left_join(n_flagged_files_spreadsheet_by_paper, by = "paper_id")
@@ -2433,8 +2517,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   # at least yellow when a repository was listed only in part or not at all:
   # files went unchecked, so neither "no issues" nor "nothing to check" holds
-  # (#681)
-  if (!is.null(not_listed$summary) && tl %in% c("na", "green")) tl <- "yellow"
+  # (#681); also when an archive, or files in one, could not be unpacked (#703), or a file is a Git LFS pointer (#700)
+  if ((!is.null(not_listed$summary) || !is.null(unpack_text$summary) ||
+       !is.null(lfs_text$summary)) &&
+      tl %in% c("na", "green")) tl <- "yellow"
 
   list(
     # One row per COLUMN: what each column is (representation, level, concept,

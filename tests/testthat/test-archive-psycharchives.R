@@ -27,6 +27,36 @@ test_that("psycharchives_links", {
   expect_equal(nrow(psycharchives_links(paper2)), 1)
 })
 
+test_that("a PsychArchives DOI is found by the address it is registered with (#695)", {
+  # 10.23668/psycharchives.12959 leads to handle 20.500.12034/8459 (DataCite,
+  # 2026-11-19): the number in the DOI is not the handle. Mocked, so the test
+  # needs no connection.
+  addr <- "https://www.psycharchives.org/jspui/handle/20.500.12034/8459"
+  reg <- function(doi) {
+    url <- if (grepl("^10\\.23668/psycharchives\\.12959$", doi, ignore.case = TRUE)) addr else "https://example.org/x"
+    list(url = url, ok = TRUE, publication = FALSE)
+  }
+  paper <- test_paper(c("Data are at https://doi.org/10.23668/psycharchives.12959.",
+                        "Another DOI 10.23668/other.1 leads elsewhere."))
+  links <- testthat::with_mocked_bindings(
+    list(ds = dspace_links(paper), pa = psycharchives_links(paper)),
+    .repo_doi_url = reg, .package = "metacheck")
+  expect_equal(links$ds$href, addr)
+  expect_equal(links$pa$href, addr)
+
+  # also as a hyperlink
+  paper <- test_paper(url = "https://doi.org/10.23668/psycharchives.12959")
+  links <- testthat::with_mocked_bindings(dspace_links(paper), .repo_doi_url = reg, .package = "metacheck")
+  expect_equal(unique(links$href), addr)
+
+  # a DOI that could not be looked up gives no row
+  links <- testthat::with_mocked_bindings(
+    dspace_links(paper),
+    .repo_doi_url = function(doi) list(url = NA_character_, ok = FALSE, publication = FALSE),
+    .package = "metacheck")
+  expect_equal(nrow(links), 0)
+})
+
 test_that(".psycharchives_info", {
   url <- "https://hdl.handle.net/20.500.12034/17526"
   info <- .psycharchives_info(url)

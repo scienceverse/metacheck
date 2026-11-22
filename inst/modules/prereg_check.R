@@ -81,9 +81,14 @@ prereg_check <- function(paper, cache = FALSE) {
   # distinction instead of letting both fall through link_types != "registrations"
   # and reading identically as "no registration was linked".
   inaccessible_ids <- osf_ids[link_types == "inaccessible" & !is.na(link_types)]
+  # A link the OSF did not answer for (no connection, a server error, too
+  # many requests) could not be checked at all: it may be a registration, and
+  # it is not known to be private or withdrawn (#541)
+  unreachable_ids <- osf_ids[link_types == "unreachable" & !is.na(link_types)]
 
   ## no registrations ----
-  if (length(reg_ids) == 0 & length(inaccessible_ids) == 0 & nrow(table_ap) == 0) {
+  if (length(reg_ids) == 0 & length(inaccessible_ids) == 0 &
+      length(unreachable_ids) == 0 & nrow(table_ap) == 0) {
     resp <- list(
       traffic_light = "na",
       summary_text = sprintf(
@@ -109,6 +114,7 @@ prereg_check <- function(paper, cache = FALSE) {
   # there but still fails to fetch (osf_get_all_pages() tags that with an
   # osf_error attribute rather than returning empty-for-no-reason).
   inaccessible_regs <- links_osf$href[osf_check_id(links_osf$href) %in% inaccessible_ids]
+  unreachable_regs <- links_osf$href[osf_check_id(links_osf$href) %in% unreachable_ids]
 
   # have to iterate, process then merge
   # because pagination > 10 usually returns unmergeable dfs
@@ -117,9 +123,16 @@ prereg_check <- function(paper, cache = FALSE) {
 
     if (length(reg_info) == 0) {
       # named by the paper's own link, not the API address (U110)
-      if (!is.null(attr(reg_info, "osf_error"))) {
+      err <- attr(reg_info, "osf_error")
+      if (!is.null(err)) {
         own <- links_osf$href[osf_check_id(links_osf$href) %in% reg_ids[i]][1]
-        inaccessible_regs <<- c(inaccessible_regs, if (is.na(own)) urls[i] else own)
+        own <- if (is.na(own)) urls[i] else own
+        # a failed request is not a refusal (#541)
+        if (identical(err, "request_failed")) {
+          unreachable_regs <<- c(unreachable_regs, own)
+        } else {
+          inaccessible_regs <<- c(inaccessible_regs, own)
+        }
       }
       return(NULL)
     }
@@ -153,6 +166,10 @@ prereg_check <- function(paper, cache = FALSE) {
       "%d registration link%s could not be accessed (private, embargoed, or withdrawn).",
       length(inaccessible_regs), length(inaccessible_regs) |> plural()
     ),
+    if (length(unreachable_regs) > 0) sprintf(
+      "%d OSF link%s could not be checked, because the OSF did not answer.",
+      length(unreachable_regs), length(unreachable_regs) |> plural()
+    ),
     if (length(inaccessible_ap) > 0) sprintf(
       "%d AsPredicted link%s could not be read.",
       length(inaccessible_ap), length(inaccessible_ap) |> plural()
@@ -163,6 +180,13 @@ prereg_check <- function(paper, cache = FALSE) {
       "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
       length(inaccessible_regs) |> plural(),
       paste(inaccessible_regs, collapse = ", ")
+    ),
+    if (length(unreachable_regs) > 0) sprintf(
+      "The OSF did not answer for the following link%s (no connection, a server error, or too many requests), so %s could not be checked; it may be a registration. Run the check again later, or open the link%s: %s.",
+      length(unreachable_regs) |> plural(),
+      plural(length(unreachable_regs), "it", "they"),
+      length(unreachable_regs) |> plural(),
+      paste(unreachable_regs, collapse = ", ")
     ),
     if (length(inaccessible_ap) > 0) sprintf(
       "The following AsPredicted link%s could not be read, for the reason given: %s.",
@@ -189,7 +213,8 @@ prereg_check <- function(paper, cache = FALSE) {
   }
 
   if (nrow(prereg_info) == 0 &&
-      (length(inaccessible_regs) > 0 || length(inaccessible_ap) > 0)) {
+      (length(inaccessible_regs) > 0 || length(unreachable_regs) > 0 ||
+       length(inaccessible_ap) > 0)) {
     n_links <- nrow(links_osf) + nrow(links_ap)
     resp <- list(
       traffic_light = "na",

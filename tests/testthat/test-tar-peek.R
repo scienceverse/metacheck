@@ -207,7 +207,7 @@ test_that(".tar_fetch_members takes members from the session copy, a local tar o
   got <- .tar_fetch_members(url, want, withr::local_tempdir(),
                             size = file.size(fx$path), max_whole_bytes = 10)
   expect_false(any(got$ok))
-  expect_equal(unique(got$error), "the archive is larger than the download budget")
+  expect_equal(unique(got$error), "the archive is larger than the download limits (max_file_size or max_download_size)")
   expect_equal(calls, 1)
 }))
 

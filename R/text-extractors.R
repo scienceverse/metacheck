@@ -48,6 +48,11 @@ extract_urls <- function(paper) {
   "\u03c7\u00b2?2?|lrt|wald|log.?rank|t.?test|welch|dunn|games.?howell|",
   "spearman|pearson)(?![\\w])")
 
+# The sides of a test, written after the p, in brackets or not: "p one-sided
+# = .014", "p (two-tailed) = .048" (#695). extract_p_values() gave no row for
+# them, and the statistics reader took "one-sided = .014" for a statistic.
+.p_sides <- "(?:\\(?\\s*(?i:one|two|1|2)[\\s-]?(?i:sided|tailed)\\s*\\)?\\s*)"
+
 # The correction or test name after the p of each p-value, as
 # extract_p_values() matched it ("FWE" in "pFWE < .05", "adj" in "p adj =
 # .03"); NA for a plain p (#642)
@@ -171,6 +176,7 @@ extract_p_values <- function(paper) {
     "(?:", .eta_p_prefix, "|", .p_symbol_prefix, ")?",
     "\\b[pP](?:-?values?|s|['\u2019]s)?", # ways to write p (or P)
     "(?:[\\s_-]?", .p_subscripts, ")?\\s*", # pFWE, p adj
+    .p_sides, "?", # "p one-sided", "p (two-tailed)" (#695)
     "[", operators, "]{1,2}\\s*", # 1-2 operators
     "(", number, ")", # ns or valid numbers
     if (!negative) paste0(
@@ -366,6 +372,9 @@ extract_eq <- function(paper) {
   # statistic: the name was "adj" (#642)
   bare_subscript <- paste0(bare_subscript, "|\\b[pP]s?[\\s_-]", .p_subscripts,
                            "(?=\\s*[", op, "])")
+  # and a p with the sides of its test, "p one-sided = .014" (#695)
+  bare_subscript <- paste0(bare_subscript, "|\\b[pP]s?\\s*", .p_sides,
+                           "(?=[", op, "])")
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "(?:", bare_subscript, "|",

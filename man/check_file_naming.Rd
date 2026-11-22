@@ -4,7 +4,12 @@
 \alias{check_file_naming}
 \title{Check repository files against the FAIR file-naming conventions}
 \usage{
-check_file_naming(file_name, file_path = file_name, data_type = NA_character_)
+check_file_naming(
+  file_name,
+  file_path = file_name,
+  data_type = NA_character_,
+  repo = NULL
+)
 }
 \arguments{
 \item{file_name}{a character vector of file basenames}
@@ -15,6 +20,10 @@ everything else only needs the basename)}
 
 \item{data_type}{not used any more: it was only used for a rule that made
 a file of an unknown type a naming problem, which was removed (#648)}
+
+\item{repo}{optional repository of each file: paths that differ only in
+capital letters are looked for within each repository (default: all files
+are one repository)}
 }
 \value{
 a data.frame with one row per naming violation: \code{file_name},
@@ -30,7 +39,8 @@ does not know is not a naming problem (#648).
 }
 \details{
 Rules split into two severities. \code{"bad"}: spaces, special characters,
-diacritics, and exceeding the hard 255-character path limit — these break
+diacritics, exceeding the hard 255-character path limit, and a path that
+differs only in capital letters from another in the same repository — these break
 something real. \code{"suggestion"}: unpadded sibling numbering and the softer
 228/100/50 path-length budgets — real conventions worth following, but nothing in
 metacheck's own classification or ordering logic actually depends on them

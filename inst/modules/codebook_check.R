@@ -987,7 +987,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   # a larger restructuring (making scale_groups itself paper_id-aware) to
   # split correctly per paper. Tracked as a known remaining gap, not silently
   # different from this module's behaviour before this fix.
-  summary_table <- data.frame(paper_id = unique(labels_df$paper_id) %||% .pid(labels_df, columns_df, structure_df)) |>
+  summary_table <- data.frame(paper_id = unique(labels_df$paper_id) %empty_or% .pid(labels_df, columns_df, structure_df)) |>
     dplyr::left_join(coverage_by_paper, by = "paper_id") |>
     dplyr::left_join(n_codebook_vars_by_paper, by = "paper_id") |>
     dplyr::left_join(n_unused_by_paper, by = "paper_id")

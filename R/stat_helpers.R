@@ -541,7 +541,8 @@
   test_stat <- .test_stat_pattern
   # a p with a correction name is a p-value too ("pFWE < .05", #642)
   p_value <- paste0("(?<![\\w])[pP]s?\\s*(?:-?values?)?(?:[\\s_-]?", .p_subscripts, ")?",
-                    "\\s*(?:=|<|>|\u2264|\u2265|\u00bc)")
+                    "\\s*", .p_sides, "?",   # "p one-sided =" (#695)
+                    "(?:=|<|>|\u2264|\u2265|\u00bc)")
   symbol <- .p_note_symbol
   marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
   # a marker in brackets, before the p-value ("(*) p < .05", "(**) = p < .01")

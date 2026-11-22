@@ -11,9 +11,11 @@ osf_type(guid)
 }
 \value{
 the type, or \code{"inaccessible"} when the GUID is a validly-formed
-OSF ID but the resource itself could not be reached (private, embargoed,
-withdrawn, or deleted) -- distinct from \code{NA}, which means the input was
-not a valid OSF ID at all
+OSF ID but the OSF refused it or does not have it (private, embargoed,
+withdrawn, or deleted), or \code{"unreachable"} when the request itself failed
+(no connection, a server error, or too many requests), so nothing is
+known about the link -- both distinct from \code{NA}, which means the input
+was not a valid OSF ID at all
 }
 \description{
 Get OSF GUID Type

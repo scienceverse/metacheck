@@ -547,6 +547,13 @@ github_tree_files <- function(repo) {
       files  = NULL, default_branch = default_branch, license = license, info = info))
 
   blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
+  # Symbolic links (mode 120000) are stored as a small text file holding the
+  # path they point to, and their raw address serves that text: a check read
+  # "../data/small.csv" as the file's content (#700). They are left out of the
+  # files and returned as `links`, with their targets (.repo_links()).
+  is_link <- vapply(blobs, \(x) identical(x$mode, "120000"), logical(1))
+  link_paths <- vapply(blobs[is_link], \(x) x$path %empty_or% "", character(1))
+  blobs   <- blobs[!is_link]
   n_files <- length(blobs)
 
   # ── 3. Build file data.frame ─────────────────────────────────────────────────
@@ -585,8 +592,52 @@ github_tree_files <- function(repo) {
     files_df$ext  <- NULL
   }
 
+  links <- if (length(link_paths)) {
+    enc_links <- vapply(strsplit(link_paths, "/", fixed = TRUE),
+                        \(p) paste(utils::URLencode(p, reserved = TRUE), collapse = "/"), character(1))
+    .repo_links(link_paths,
+                all_paths = vapply(tree$tree, \(x) x$path %empty_or% "", character(1)),
+                raw_urls = sprintf("https://raw.githubusercontent.com/%s/%s/%s",
+                                   clean_repo, default_branch, enc_links))
+  }
+
   list(gated = FALSE, reason = NA_character_,
-       files = files_df, default_branch = default_branch, license = license, info = info)
+       files = files_df, default_branch = default_branch, license = license, info = info,
+       links = links)
+}
+
+# The symbolic links of a repository listing, as a data frame: path, target
+# (the path the link holds, NA when it could not be read) and broken (TRUE
+# when the target is not in the repository, NA when unknown). `link_paths` are
+# the links' paths, `all_paths` every path of the listing (files and folders),
+# `raw_urls` the addresses that serve each link's text. At most `max_links`
+# targets are read, one request each (#700); `targets` gives them instead.
+.repo_links <- function(link_paths, all_paths, raw_urls, max_links = 50L, targets = NULL) {
+  n <- length(link_paths)
+  target <- targets %||% rep(NA_character_, n)
+  if (is.null(targets)) for (i in seq_len(min(n, max_links))) {
+    target[i] <- tryCatch({
+      resp <- httr2::request(raw_urls[i]) |> httr2::req_timeout(20) |> httr2::req_perform()
+      trimws(httr2::resp_body_string(resp))
+    }, error = function(e) NA_character_)
+  }
+  # the target from the link's own folder; NA when it leaves the repository
+  resolved <- vapply(seq_len(n), function(i) {
+    if (is.na(target[i]) || startsWith(target[i], "/")) return(NA_character_)
+    parts <- c(strsplit(dirname(link_paths[i]), "/", fixed = TRUE)[[1]],
+               strsplit(target[i], "/", fixed = TRUE)[[1]])
+    out <- character(0)
+    for (p in parts) {
+      if (p %in% c("", ".")) next
+      if (p == "..") {
+        if (!length(out)) return(NA_character_)
+        out <- out[-length(out)]
+      } else out <- c(out, p)
+    }
+    paste(out, collapse = "/")
+  }, character(1))
+  data.frame(path = link_paths, target = target,
+             broken = ifelse(is.na(target), NA, !resolved %in% all_paths))
 }
 
 

@@ -1042,6 +1042,14 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # using evidence, never removes the text-only fallback when there is none.
   if (length(by_site) > 0) tests <- .regroup_by_evidence(tests, by_site, val_in)
   tests <- drop_weak(tests)
+  # every test weak: the empty result, as above. bind_rows() of no rows gave a
+  # data frame without columns, and the summary stopped on `!out$found` ("invalid
+  # argument type"): 80 of the 223 BES papers whose code printed statistics (#707)
+  if (!length(tests)) {
+    attr(empty, "summary") <- list(n_tests = 0L, n_found = 0L, n_full = 0L, n_partial = 0L,
+                                   n_missing = 0L, pct_found = 0)
+    return(empty)
+  }
 
   rows <- lapply(tests, function(tst) {
     comps <- tst$components; nc <- length(comps)

@@ -126,6 +126,90 @@ test_that("max_files_per_repo gates a repository by file COUNT, not size", {
   expect_equal(sum(!is.na(dl2$file_location)), 2)
 })
 
+test_that(".omit_for_size() keeps the smallest files that fit, as download_repo_files() does (#699)", {
+  pb <- list(tick = function(...) invisible(NULL))
+  mb <- 1024 * 1024
+  size <- c(4, 1, 3, 2, NA, 30) * mb
+  name <- c("d", "a", "c", "b", "unknown", "big")
+  exempt <- c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE)
+  # budget 6 MB: a (1) + b (2) + c (3) fit, d (4) does not
+  omit <- metacheck:::.omit_for_size(size, name, exempt, max_file_size = 10,
+                                     max_download_size = 6, pb = pb)
+  expect_equal(name[omit], "d")
+  # budget 4.5 MB: a + b; the unknown size and the exempt zip are kept
+  omit <- metacheck:::.omit_for_size(size, name, exempt, max_file_size = 10,
+                                     max_download_size = 4.5, pb = pb)
+  expect_equal(sort(name[omit]), c("c", "d"))
+  # over max_file_size: left out whatever the budget; exempt and unknown sizes kept
+  omit <- metacheck:::.omit_for_size(size, name, exempt, max_file_size = 3.5,
+                                     max_download_size = Inf, pb = pb)
+  expect_equal(name[omit], "d")
+})
+
+test_that("a long path is shortened below the repository's folder, so the budget counts it (#699)", {
+  # Under a long folder, a path over the length limit had every folder name
+  # over 40 characters shortened, the repository's own folder included: the
+  # files of an archive went to a second folder beside it, which the
+  # repository's budget (counting its own folder) did not see.
+  skip_on_os(c("mac", "linux", "solaris"))   # the 250-character limit is Windows' only
+  root <- file.path(withr::local_tempdir(), strrep("d", 40))
+  withr::local_options(metacheck.repo_cache.session_dir = root)
+  repo <- "https://github.com/someone/a-repository-name-of-more-than-forty-characters"
+  sub <- gsub("\\\\", "/", metacheck:::.repo_cache_subdir(repo, cache = FALSE))
+  expect_gt(nchar(basename(sub)), 40)
+  p <- suppressWarnings(metacheck:::.archive_member_paths(
+    paste0("https://raw.githubusercontent.com/someone/", strrep("x", 60), "/main/archives/bundle.zip"),
+    repo, cache = FALSE))
+  expect_true(startsWith(p$arc_path, paste0(sub, "/")))
+  expect_true(startsWith(p$member_dest, paste0(sub, "/")))
+  expect_lte(nchar(normalizePath(p$member_dest, winslash = "/", mustWork = FALSE)),
+             metacheck:::.max_path_chars)
+})
+
+test_that("each file left out by a limit is named with its reason (#699)", {
+  withr::local_options(
+    metacheck.repo_cache.dir = withr::local_tempdir(),
+    metacheck.repo_cache.session_dir = withr::local_tempdir())
+
+  # over max_file_size
+  files <- make_dl_files(sizes = c(50, 5000))
+  cap_mb <- files$file_size[2] / (1024 * 1024) * 0.5
+  dl <- suppressMessages(download_repo_files(files, max_file_size = cap_mb,
+                                             max_download_size = 100))
+  refused <- attr(dl, "limit_refused")
+  expect_length(refused, 2)
+  expect_true(is.na(refused[1]))
+  expect_match(refused[2], "per-file limit (max_file_size)", fixed = TRUE)
+
+  # over the budget
+  files <- make_dl_files(sizes = c(1000, 3000))
+  cap <- (files$file_size[1] + sum(files$file_size)) / 2 / (1024 * 1024)
+  dl <- suppressWarnings(download_repo_files(files, max_file_size = 100,
+                                             max_download_size = cap))
+  refused <- attr(dl, "limit_refused")
+  expect_true(is.na(refused[1]))
+  expect_match(refused[2], "budget for its repository was spent", fixed = TRUE)
+
+  # over max_files_per_repo
+  files <- make_dl_files(sizes = c(100, 100, 100))
+  dl <- suppressMessages(suppressWarnings(
+    download_repo_files(files, max_files_per_repo = 2)))
+  expect_match(attr(dl, "limit_refused"), "more than max_files_per_repo (2)",
+               fixed = TRUE)
+
+  # of unknown size and over its limit while downloading
+  local_mocked_bindings(.remote_size = function(...) NA_real_)
+  files <- make_dl_files(c(5000))
+  files$file_size <- NA_real_
+  dl <- suppressMessages(download_repo_files(files, max_file_size = 0.001))
+  expect_match(attr(dl, "limit_refused"), "per-file limit", fixed = TRUE)
+
+  # a file that is downloaded is not named
+  files <- make_dl_files(c(100, 200))
+  dl <- download_repo_files(files)
+  expect_equal(attr(dl, "limit_refused"), c(NA_character_, NA_character_))
+})
+
 test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
@@ -208,6 +292,37 @@ make_archive_member_files <- function() {
     stringsAsFactors = FALSE
   )
 }
+
+test_that("a repository over max_files_per_repo has no files fetched from its archives either (#699)", {
+  # On Lakens/metacheck-download-test (41 files, max_files_per_repo = 20) the
+  # repository was reported as "skipped entirely" while the scripts in its zip
+  # and tar were fetched: a call given only the archive rows counted 2 files.
+  withr::local_options(
+    metacheck.repo_cache.dir = withr::local_tempdir(),
+    metacheck.repo_cache.session_dir = withr::local_tempdir())
+  files <- make_archive_member_files()
+  listing <- rbind(files, make_dl_files(sizes = c(100, 100, 100))[, names(files)[1:6]] |>
+                     transform(repo_url = files$repo_url, archive_url = NA_character_,
+                               archive_member = NA_character_, paper_id = "p.1"))
+  called <- FALSE
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) { called <<- TRUE; stop("must not be called") }
+  )
+  expect_message(expect_warning(
+    dl <- download_repo_files(files, repo_listing = listing, max_files_per_repo = 3),
+    "holds 4 files, exceeding the 3-file cap"))
+  expect_false(called)
+  expect_true(is.na(dl$file_location[1]))
+  expect_match(attr(dl, "limit_refused")[1], "more than max_files_per_repo (3)", fixed = TRUE)
+  expect_equal(nrow(attr(dl, "gated")), 1)
+
+  # within the limit, the member is fetched as before
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) { called <<- TRUE; NULL }
+  )
+  suppressWarnings(download_repo_files(files, repo_listing = listing, max_files_per_repo = 4))
+  expect_true(called)
+})
 
 test_that("a failed archive-member fetch is recorded in `failed`, not silently dropped (#429)", {
   # Regression test: download_repo_files()'s archive-member block used to wrap
@@ -314,6 +429,144 @@ test_that("an archive member saved by an earlier run is not fetched again (#561)
   writeBin(raw(10), first$file_location)
   third <- download_repo_files(files)
   expect_match(attr(third, "failed")$error, "fetched again")
+})
+
+test_that("archive members share one budget per repository with its other files (#698)", {
+  # three archives of three 300,000-byte members under a 1 MB budget: each
+  # archive had its own budget, so all 9 members were fetched
+  repo <- paste0("https://example.org/repo-698-", paste(sample(c(letters, 0:9), 10, TRUE), collapse = ""))
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+  g <- expand.grid(a = 1:3, m = 1:3)
+  files <- data.frame(
+    repo_url = repo, file_name = sprintf("m%d_%d.csv", g$a, g$m),
+    file_path = sprintf("arc%d.zip/m%d_%d.csv", g$a, g$a, g$m),
+    file_url = NA_character_, file_size = 300000, file_location = NA_character_,
+    archive_url = sprintf("%s/arc%d.zip", repo, g$a),
+    archive_member = sprintf("m%d_%d.csv", g$a, g$m), paper_id = "p", stringsAsFactors = FALSE)
+  fetched <- character(0)
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) {
+      fetched <<- c(fetched, names)
+      path <- file.path(dest, names)
+      for (p in path) writeBin(raw(300000), p)
+      data.frame(name = names, path = path, size = 300000, ok = TRUE, error = NA_character_)
+    }
+  )
+  expect_message(suppressWarnings(first <- download_repo_files(files, max_download_size = 1)),
+                 "Repository .* exceeds the 1 MB per-repository budget: fetched the smallest archive members up to the cap, 6 members omitted")
+  expect_length(fetched, 3)
+  expect_equal(sum(!is.na(first$file_location)), 3)
+
+  # a second call counts the saved members first and fetches nothing new
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) stop("fetched again")
+  )
+  second <- suppressWarnings(suppressMessages(download_repo_files(files, max_download_size = 1)))
+  expect_equal(nrow(attr(second, "failed")), 0)
+  expect_equal(second$file_location, first$file_location)
+
+  # a file with its own address shares the budget: the members kept
+  # (900,000 bytes) leave no room for 200,000 bytes more
+  own <- data.frame(repo_url = repo, file_name = "own.csv", file_path = "own.csv",
+                    file_url = paste0(repo, "/own.csv"), file_size = 200000,
+                    file_location = NA_character_, archive_url = NA_character_,
+                    archive_member = NA_character_, paper_id = "p", stringsAsFactors = FALSE)
+  expect_message(suppressWarnings(third <- download_repo_files(rbind(files, own), max_download_size = 1)),
+                 "downloaded the smallest files up to the cap, 1 file omitted")
+  expect_true(is.na(third$file_location[10]))
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+})
+
+test_that("one choice of files per repository holds across calls, in any order (#699)", {
+  withr::local_options(metacheck.repo_cache.session_dir = withr::local_tempdir())
+  mb <- 1024 * 1024
+  files <- make_dl_files(sizes = c(3000, 3000, 3000, 500))
+  files$file_name <- c("d1.csv", "d2.csv", "d3.csv", "analysis.R")
+  files$file_path <- paste0("x/", files$file_name)
+  # the three data files fit the budget, but not with the script as well
+  budget <- (sum(files$file_size[1:3]) + 10) / mb
+  dir <- metacheck:::.repo_cache_subdir(files$repo_url[1], cache = FALSE)
+
+  # data_check first, asking for the data files only: the script's place is
+  # kept, so the largest data file is left out
+  dl1 <- suppressMessages(suppressWarnings(
+    download_repo_files(files[1:3, ], max_download_size = budget, repo_listing = files)))
+  expect_equal(is.na(dl1$file_location), c(FALSE, FALSE, TRUE))
+  expect_match(attr(dl1, "limit_refused")[3], "budget for its repository", fixed = TRUE)
+
+  # code_check next: the script still fits
+  dl2 <- download_repo_files(files[4, ], max_download_size = budget, repo_listing = files)
+  expect_false(is.na(dl2$file_location))
+
+  # asking again for everything adds nothing; the folder stays within the budget
+  dl3 <- suppressMessages(suppressWarnings(
+    download_repo_files(files, max_download_size = budget, repo_listing = files)))
+  expect_true(is.na(dl3$file_location[3]))
+  expect_lte(metacheck:::.repo_disk_bytes(dir), budget * mb)
+
+  # without the listing, the first call took all three data files, and the
+  # script did not fit afterwards
+  files2 <- make_dl_files(sizes = c(3000, 3000, 3000, 500))
+  files2$file_name <- files$file_name
+  files2$file_path <- files$file_path
+  dl4 <- download_repo_files(files2[1:3, ], max_download_size = budget)
+  expect_true(all(!is.na(dl4$file_location)))
+  dl5 <- suppressMessages(suppressWarnings(
+    download_repo_files(files2[4, ], max_download_size = budget)))
+  expect_true(is.na(dl5$file_location))
+})
+
+test_that("what a repository's folder already holds counts for its budget (#699)", {
+  withr::local_options(metacheck.repo_cache.session_dir = withr::local_tempdir())
+  files <- make_dl_files(sizes = c(1000))
+  dir <- metacheck:::.repo_cache_subdir(files$repo_url[1], cache = FALSE)
+  dir.create(dir, recursive = TRUE)
+  writeBin(raw(5000), file.path(dir, "from_an_earlier_call.bin"))
+  dl <- suppressMessages(suppressWarnings(
+    download_repo_files(files, max_download_size = 5500 / 1024^2)))
+  expect_true(is.na(dl$file_location))
+  dl <- download_repo_files(files, max_download_size = 7000 / 1024^2)
+  expect_false(is.na(dl$file_location))
+})
+
+test_that(".repo_disk_bytes() counts an archive and the files unpacked from it (#699)", {
+  dir <- withr::local_tempdir()
+  # both are on disk: osf.io/nugzb held 61 MB under a 50 MB budget when the
+  # files unpacked from a 7.1 MB zip were left out
+  writeBin(raw(100), file.path(dir, "a.zip"))
+  dir.create(file.path(dir, "a.zip.contents", "sub"), recursive = TRUE)
+  writeBin(raw(1000), file.path(dir, "a.zip.contents", "sub", "x.csv"))
+  # members fetched one by one, without a copy of their archive, count
+  dir.create(file.path(dir, ".archive_members", "b.zip.contents"), recursive = TRUE)
+  writeBin(raw(50), file.path(dir, ".archive_members", "b.zip.contents", "y.csv"))
+  expect_equal(metacheck:::.repo_disk_bytes(dir), 1150)
+  expect_equal(metacheck:::.repo_disk_bytes(file.path(dir, "absent")), 0)
+})
+
+test_that("files of unknown size together stay within what is left of the budget (#699)", {
+  withr::local_options(metacheck.repo_cache.session_dir = withr::local_tempdir())
+  local_mocked_bindings(.remote_size = function(...) NA_real_)
+  files <- make_dl_files(sizes = c(3000, 3000))
+  files$file_size <- NA_real_
+  # each one alone fits the budget, both together do not
+  dl <- suppressMessages(download_repo_files(files, max_download_size = 4000 / 1024^2))
+  expect_equal(sum(!is.na(dl$file_location)), 1)
+  expect_match(stats::na.omit(attr(dl, "limit_refused")), "budget for its repository",
+               fixed = TRUE)
+})
+
+test_that(".budget_counted() counts the kinds of files the checks download (#699)", {
+  listing <- data.frame(
+    repo_url = "r",
+    file_name = c("a.R", "b.csv", "c.sav", "README.md", "codebook.pdf", "notes.txt",
+                  "run.iqdat", "out.spv", "report.html", "data.zip", "photo.png",
+                  "paper.pdf", "talk.mp4", "lib.R"),
+    file_path = c("a.R", "b.csv", "c.sav", "README.md", "codebook.pdf", "notes.txt",
+                  "run.iqdat", "out.spv", "report.html", "data.zip", "photo.png",
+                  "paper.pdf", "talk.mp4", "renv/library/lib.R"))
+  expect_equal(metacheck:::.budget_counted(listing),
+               c(rep(TRUE, 10), FALSE, FALSE, FALSE, FALSE))
+  expect_equal(metacheck:::.budget_counted(listing[0, ]), logical(0))
 })
 
 test_that("a successful archive-member fetch still populates file_location (#429)", {
@@ -1189,14 +1442,63 @@ test_that("archive members on any host may use whole-archive mode; Dryad counts 
   for (r in files$repo_url) unlink(metacheck:::.repo_cache_subdir(r), recursive = TRUE)
   suppressMessages(download_repo_files(files, max_download_size = 10))
 
+  # a whole copy may use what is left of the repository's budget (#698) after
+  # its 100-byte member: the member unpacked from the copy stays on disk
+  # beside it, so both count (#699)
   other <- seen[[files$archive_url[1]]]
-  expect_equal(other$max_whole_bytes, 10 * 1024 * 1024)
+  expect_equal(other$max_whole_bytes, 10 * 1024 * 1024 - 100)
   expect_equal(other$request_bytes, 1048576)
   expect_equal(other$size, 5000)   # carried from repo_check's listing
   dryad <- seen[[files$archive_url[2]]]
-  expect_equal(dryad$max_whole_bytes, 10 * 1024 * 1024)
+  expect_equal(dryad$max_whole_bytes, 10 * 1024 * 1024 - 100)
   expect_true(is.infinite(dryad$request_bytes))
   expect_equal(dryad$size, 6000)
+
+  # the whole copy is a file like any other: held to max_file_size too (#699)
+  seen <- list()
+  for (r in files$repo_url) unlink(metacheck:::.repo_cache_subdir(r), recursive = TRUE)
+  suppressMessages(download_repo_files(files, max_file_size = 2, max_download_size = 10))
+  expect_equal(seen[[files$archive_url[1]]]$max_whole_bytes, 2 * 1024 * 1024)
+  expect_equal(seen[[files$archive_url[2]]]$max_whole_bytes, 2 * 1024 * 1024)
+})
+
+test_that(".code_expand_zip() fetches code files within the repository's budget (#699)", {
+  seen <- NULL
+  local_mocked_bindings(
+    zip_peek = function(...) data.frame(name = c("a.R", "big.R"),
+                                        size = c(10, 3 * 1024 * 1024)),
+    .zip_fetch_members = function(url, names, dest, ..., max_whole_bytes = 0) {
+      seen <<- list(names = names, max_whole_bytes = max_whole_bytes)
+      data.frame(name = names, path = NA_character_, size = 10, ok = FALSE,
+                 error = "not fetched in this test", stringsAsFactors = FALSE)
+    }
+  )
+  repo <- paste0("https://osf.io/zip", paste(sample(letters, 8, TRUE), collapse = ""))
+  dir <- metacheck:::.repo_cache_subdir(repo, FALSE)
+  unlink(dir, recursive = TRUE)
+  files <- data.frame(repo_url = repo, file_name = "code.zip",
+                      file_path = "code.zip", file_url = "https://osf.io/download/zzzzz",
+                      file_size = 5000, stringsAsFactors = FALSE)
+  # a whole copy of the zip is held to max_file_size
+  suppressMessages(metacheck:::.code_expand_zip(files, max_download_size = 50,
+                                                max_file_size = 20))
+  expect_setequal(seen$names, c("a.R", "big.R"))
+  expect_equal(seen$max_whole_bytes, 20 * 1024 * 1024)
+  # a code file over max_file_size is left out
+  seen <- NULL
+  suppressMessages(metacheck:::.code_expand_zip(files, max_download_size = 50,
+                                                max_file_size = 2))
+  expect_equal(seen$names, "a.R")
+  # what the repository's folder holds counts: a full folder leaves no room,
+  # where the code files were fetched with no budget at all before
+  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  writeBin(raw(1024 * 1024), file.path(dir, "full.bin"))
+  seen <- NULL
+  out <- suppressMessages(metacheck:::.code_expand_zip(files, max_download_size = 1,
+                                                       max_file_size = 2))
+  expect_null(seen)
+  expect_equal(nrow(out), 1)
+  unlink(dir, recursive = TRUE)
 })
 
 assignInNamespace(".zip_fetch_members", .real_zip_fetch_members, ns = "metacheck")
@@ -1278,6 +1580,78 @@ test_that(".osf_storage_totals counts each OSF storage once per file (#675)", {
                    data.frame(repo_name = character(0)))
 })
 
+test_that(".osf_storage_totals counts only listings of whole storages, and the archive needs them (#679)", {
+  # a project listed in full (rows 1-3) and two single files linked from
+  # another storage (rows 4-5); row 6 is row 1's file, linked on its own too
+  f <- data.frame(
+    osf_node = c("n1", "n1", "n1", "n2", "n2", "n1"),
+    provider = "osfstorage",
+    file_path = c("a.csv", "b.csv", "c.R", "x.R", "y.R", "a.csv"),
+    file_size = c(100, 50, 10, 20, 30, 100))
+  t <- metacheck:::.osf_storage_totals(f, complete = c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE))
+  expect_equal(t$storage_size, c(160, 160, 160, NA, NA, 160))
+  expect_equal(t$storage_n, c(3L, 3L, 3L, NA, NA, 3L))
+  # the counted copy is kept when a file not counted comes first
+  t2 <- metacheck:::.osf_storage_totals(f[c(6, 1:3), ], complete = c(FALSE, TRUE, TRUE, TRUE))
+  expect_equal(t2$storage_size, rep(160, 4))
+  # unknown totals: no archive, whatever the wanted files would suggest
+  why <- metacheck:::.storage_archive_skip(t, 4:5, max_download_size = 500, mb = 1024^2)
+  expect_match(why, "not listed in full", fixed = TRUE)
+  expect_true(is.na(metacheck:::.storage_archive_skip(t, 1:3, max_download_size = 500, mb = 1024^2)))
+})
+
+test_that("files of an OSF project's GitHub storage and its OSF Storage under the same path are kept apart (#679)", {
+  rel <- metacheck:::.repo_cache_rel
+  expect_equal(rel("https://osf.io/haz6u", "Data/a.csv", "github"), "osf.io_haz6u/_storage_github/Data/a.csv")
+  expect_equal(rel("https://osf.io/haz6u", "Data/a.csv", "osfstorage"), "osf.io_haz6u/Data/a.csv")
+  expect_equal(rel("https://osf.io/haz6u", "Data/a.csv"), "osf.io_haz6u/Data/a.csv")
+  expect_equal(rel("https://github.com/o/r", c("x.R", "y.R"), NA), c("github.com_o_r/x.R", "github.com_o_r/y.R"))
+
+  # osf.io/haz6u: the same path in its GitHub storage and in its OSF Storage,
+  # two different files
+  repo <- "https://osf.io/haz6u-679"
+  files <- data.frame(
+    repo_url = repo, file_name = "a.csv", file_path = "Data/a.csv",
+    file_url = c("https://raw.githubusercontent.com/o/r/master/Data/a.csv", "https://osf.io/download/zz1/"),
+    file_size = c(1, 2), provider = c("github", "osfstorage"), osf_node = "haz6u",
+    storage_size = NA_real_, storage_n = NA_integer_, file_location = NA_character_)
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+  local_mocked_bindings(
+    .download_many_parallel = function(urls, dests, ...) {
+      for (k in seq_along(dests)) {
+        dir.create(dirname(dests[k]), FALSE, TRUE)
+        writeLines(if (grepl("github", urls[k])) "from github" else "from osf", dests[k])
+      }
+      rep(NA_character_, length(urls))
+    },
+    # a GitHub file is fetched on its own (.download_one())
+    .download_one = function(url, dest, ...) {
+      dir.create(dirname(dest), FALSE, TRUE)
+      writeLines(if (grepl("github", url)) "from github" else "from osf", dest)
+      NA_character_
+    },
+    .package = "metacheck"
+  )
+  dl <- suppressMessages(download_repo_files(files, max_file_size = 10, max_download_size = 100))
+  expect_false(anyNA(dl$file_location))
+  expect_false(identical(dl$file_location[1], dl$file_location[2]))
+  expect_equal(readLines(dl$file_location[1]), "from github")
+  expect_equal(readLines(dl$file_location[2]), "from osf")
+  expect_match(dl$file_location[1], "_storage_github", fixed = TRUE)
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+})
+
+test_that(".zip_timeout_for_size also allows time for each file in the archive (#679)", {
+  fn <- metacheck:::.zip_timeout_for_size
+  # 612 files, 8.5 MB, as the OSF zip of osf.io/xe9v7 that took 178 s
+  t <- fn(120, 8463365, expected_files = 612)
+  expect_gt(t, 178)
+  expect_equal(t, 8463365 / (200 * 1024) + 612 * 0.4)
+  expect_equal(fn(120, NA_real_, expected_files = 10), 120)   # the floor
+  expect_equal(fn(120, NA_real_, expected_files = 1000), 400)
+  expect_equal(fn(120, 1024), 120)                             # as before without files
+})
+
 test_that(".archive_worth_it needs enough files and not much more data than they hold (#675)", {
   w <- metacheck:::.archive_worth_it
   expect_true(w(n_wanted = 3, record_n = 3, wanted_bytes = 100, archive_bytes = 100))
@@ -1333,6 +1707,18 @@ test_that("download_repo_files fetches a GitHub repository behind an OSF project
   expect_length(calls, 2)
   # component kid12: 1 file wanted of 400, so not its archive
   expect_equal(one_by_one, "https://osf.io/download/f5/")
+
+  # files whose storage was not listed in full (single files linked, #679)
+  # go file by file, though the 2 wanted would make the archive look worth it
+  calls <- list(); one_by_one <- character(0)
+  single <- files[3:4, ]
+  single$repo_url <- "https://osf.io/abcde-679"
+  single$file_url <- sprintf("https://osf.io/download/s%d/", 3:4)
+  single$storage_size <- NA_real_; single$storage_n <- NA_integer_
+  unlink(metacheck:::.repo_cache_subdir(single$repo_url[1]), recursive = TRUE)
+  dl <- suppressMessages(download_repo_files(single, max_file_size = 10, max_download_size = 100))
+  expect_length(calls, 0)
+  expect_length(one_by_one, 2)
 
   # a listing made before the component was recorded goes file by file
   calls <- list(); one_by_one <- character(0)
@@ -1482,4 +1868,45 @@ test_that("a file of unknown size is downloaded with a limit, not left out (#583
   dl <- suppressWarnings(suppressMessages(download_repo_files(files, max_download_size = 0)))
   expect_true(is.na(dl$file_location))
   expect_match(attr(dl, "gated")$message, "unknown size not downloaded")
+})
+
+test_that("paths that differ only in capital letters get names of their own on disk (#700)", {
+  rel <- c("names/case/Data.csv", "names/case/data.csv", "names/case/DATA.CSV", "a.R", "Dir/x", "dir/x")
+  expect_equal(.case_clash_rename(rep("r", 6), rel),
+               c("names/case/Data~2.csv", "names/case/data~3.csv", "names/case/DATA.CSV",
+                 "a.R", "Dir/x", "dir/x~2"))
+  # the same name in every call: chosen from the full listing
+  listing <- data.frame(repo_url = "r", file_path = rel, file_name = basename(rel))
+  expect_equal(.case_clash_rename("r", "names/case/data.csv", listing), "names/case/data~3.csv")
+  # paths of different repositories do not clash
+  expect_equal(.case_clash_rename(c("r", "s"), c("a.csv", "A.csv")), c("a.csv", "A.csv"))
+  expect_equal(.case_clash_rename(character(0), character(0)), character(0))
+})
+
+test_that("download_repo_files() stores files that differ only in capital letters apart (#700)", {
+  src <- file.path(tempdir(), "dl_case_src"); unlink(src, recursive = TRUE); dir.create(src)
+  withr::defer(unlink(src, recursive = TRUE))
+  writeLines("upper", file.path(src, "u.csv")); writeLines("lower", file.path(src, "l.csv"))
+  files <- data.frame(repo_url = "https://example.org/case700", file_name = c("Data.csv", "data.csv"),
+                      file_path = c("Data.csv", "data.csv"),
+                      file_size = file.size(file.path(src, c("u.csv", "l.csv"))),
+                      file_url = c("https://example.org/u.csv", "https://example.org/l.csv"),
+                      file_location = NA_character_)
+  local_mocked_bindings(.download_one = function(url, dest, ...) {
+    dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+    file.copy(file.path(src, basename(url)), dest, overwrite = TRUE)
+    NA_character_
+  })
+  dl <- suppressMessages(download_repo_files(files))
+  expect_false(dl$file_location[1] == dl$file_location[2])
+  expect_equal(readLines(dl$file_location[1]), "upper")
+  expect_equal(readLines(dl$file_location[2]), "lower")
+})
+
+test_that(".repo_links() reads a link's target from its folder and marks broken links (#700)", {
+  l <- .repo_links(c("links/to_small.csv", "links/broken.R", "top.R", "links/up.R"),
+                   all_paths = c("data/small.csv", "links", "data"),
+                   raw_urls = NA, targets = c("../data/small.csv", "missing.R", NA, "../../x.R"))
+  expect_equal(l$broken, c(FALSE, TRUE, NA, TRUE))
+  expect_equal(l$target[1], "../data/small.csv")
 })

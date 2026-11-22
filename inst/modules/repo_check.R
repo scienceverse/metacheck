@@ -152,6 +152,12 @@
 #'   whose listing the OSF refused, also when asked again, is named there too
 #'   (`reason` "refused by the OSF" in `partial_repos`, `listing_short` TRUE
 #'   in `ownership`).
+#' @param max_file_size,max_download_size the download limits, in MB, for
+#'   ResearchBox boxes, which are listed by downloading them (defaults 100 and
+#'   500, as in data_check and code_check). With a ResearchBox API key only
+#'   the smallest files up to `max_download_size` are downloaded, none over
+#'   `max_file_size`; without a key a box larger than `max_download_size` is
+#'   not downloaded. See [rbox_file_download()].
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -162,7 +168,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        model = llm_model(),
                        params = list(),
                        skip_on_api_limit = FALSE,
-                       references = TRUE) {
+                       references = TRUE,
+                       max_file_size = 100,
+                       max_download_size = 500) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -557,6 +565,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # OSF projects part of whose listing the OSF refused, also when asked
   # again (`listing_short`, see osf_info(); #681)
   osf_short_urls <- character(0)
+  # The links whose listing holds whole storages: the linked item is a
+  # project, component or registration (not a single file or folder), listed
+  # with its contents and in full. Only their files count towards a storage's
+  # size and number of files, which decide whether its archive is fetched
+  # (.osf_storage_totals(), #679).
+  osf_full_listings <- function(info, cut) {
+    if (records_only || !all(c("osf_url", "osf_type", "repo_name") %in% names(info))) return(character(0))
+    top <- !is.na(info$osf_url) & info$osf_url == info$repo_name &
+      info$osf_type %in% c("nodes", "registrations")
+    setdiff(unique(info$repo_name[top]), cut)
+  }
   # private projects read through a view-only link in the paper (see below)
   osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
                               project = character(0))
@@ -574,6 +593,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         osf_cut_urls <- unique(osf_info$repo_name[osf_info$listing_cut %in% TRUE])
       if ("listing_short" %in% names(osf_info))
         osf_short_urls <- unique(osf_info$repo_name[osf_info$listing_short %in% TRUE])
+      osf_full_urls <- osf_full_listings(osf_info, c(osf_cut_urls, osf_short_urls))
 
       # A registration is never itself the place files "live": either it
       # mirrors files into its own storage (in which case those files really
@@ -646,7 +666,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           provider = .col_chr(osf_file_list, "provider"),
           # the component the file is stored in: its storage is downloaded as
           # one zip per component (#675)
-          osf_node = .col_chr(osf_file_list, "project")
+          osf_node = .col_chr(osf_file_list, "project"),
+          # whether the file comes from a listing of whole storages (#679);
+          # dropped after .osf_storage_totals()
+          storage_listed = osf_file_list$repo_name %in% osf_full_urls
         )
       }
 
@@ -774,6 +797,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         if ("listing_short" %in% names(parent_info))
           osf_short_urls <- unique(c(osf_short_urls,
                                      parent_info$repo_name[parent_info$listing_short %in% TRUE]))
+        parent_full_urls <- osf_full_listings(parent_info, c(osf_cut_urls, osf_short_urls))
 
         # public parent: its files belong under the PARENT's real URL (the
         # place a reader would actually need to look). Any file also reached
@@ -794,7 +818,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                 file_size = parent_file_list$size,
                 file_type = parent_file_list$filetype,
                 provider = .col_chr(parent_file_list, "provider"),
-                osf_node = .col_chr(parent_file_list, "project")
+                osf_node = .col_chr(parent_file_list, "project"),
+                storage_listed = parent_file_list$repo_name %in% parent_full_urls
               )
             )
           }
@@ -969,6 +994,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   github_files_df <- data.frame(repo_name = character(0))
+  # symbolic links of GitHub repositories, left out of the files (#700)
+  symlinks <- NULL
   if (length(github_urls) > 0) {
     # github_tree_files() fetches repo metadata + full tree in 2 API requests
     # (vs. N recursive /contents/ calls), so a repository is listed in full
@@ -1026,6 +1053,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
 
+    symlinks <- dplyr::bind_rows(lapply(names(gh_results), function(u) {
+      l <- gh_results[[u]]$links
+      if (NROW(l)) data.frame(repo_url = u, l)
+    }))
+    if (!NROW(symlinks)) symlinks <- NULL
     good_files <- Filter(Negate(is.null),
                          lapply(gh_results, \(r) if (!isTRUE(r$gated)) r$files else NULL))
     if (length(good_files) > 0) {
@@ -1202,7 +1234,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                              project = character(0))
   if (length(rb_urls) > 0) {
     tryCatch({
-      rb_file_list <- rbox_file_download(rb_urls, pb = pb, cache = cache)
+      # the download limits apply to the boxes too (#699)
+      rb_file_list <- rbox_file_download(rb_urls, pb = pb, cache = cache,
+                                         max_file_size = max_file_size,
+                                         max_download_size = max_download_size)
       # Each box that could not be retrieved (refused, removed, ResearchBox's
       # hourly limit) gets its own reason. Only a failure of every box was
       # reported before; one failed box among several lost its files silently.
@@ -1212,8 +1247,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (nrow(rb_failed) > 0) {
         hit <- match(repos$repo_url, rb_failed$rb_url)
         fill <- !is.na(hit) & is.na(repos$repo_error)
-        repos$repo_error[fill] <- paste("ResearchBox did not serve the box:",
-                                         rb_failed$error[hit[fill]])
+        # a box the download limits left out was served, but not downloaded
+        why <- rb_failed$error[hit[fill]]
+        over <- grepl("download budget|download limits", why)
+        repos$repo_error[fill] <- ifelse(over,
+          paste("The box was not downloaded:", why),
+          paste("ResearchBox did not serve the box:", why))
         # the API answers "does not exist or is not public"; the web page asks
         # for a captcha (.rbox_info_page()). A link with its passcode that
         # fails this way is not a box readers were meant to open without it.
@@ -2336,7 +2375,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # each OSF storage's listed size and number of files, which decide whether
   # it is downloaded as one archive: the checks pass download_repo_files()
   # only the files they want, so it cannot count the storage itself (#675)
-  osf_files_df <- .osf_storage_totals(osf_files_df)
+  # (only from listings of whole storages, #679)
+  osf_files_df <- .osf_storage_totals(osf_files_df, complete = osf_files_df$storage_listed %in% TRUE)
+  osf_files_df$storage_listed <- NULL
   all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
@@ -2642,6 +2683,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       kinds_of(useless_files$kind[!is_problem]),
       plural(n_useless_suggestion, "it", "them"), plural(n_useless_suggestion, "it", "them"))
   )
+  # Symbolic links, left out of the files (#700)
+  n_links <- NROW(symlinks)
+  summary_symlinks <- if (n_links) sprintf(
+    "We left out %d symbolic link%s: a link is stored as a small text file holding the path of the file it points to, so the checks would read that path as the file's content.",
+    n_links, plural(n_links))
+  report_symlinks <- if (n_links) c(
+    "#### Symbolic links",
+    paste(summary_symlinks, "Put the file itself in the repository instead of a link to it."),
+    "",
+    sprintf("- `%s` (%s) %s", symlinks$path, symlinks$repo_url,
+            ifelse(is.na(symlinks$target), "points to a file we could not read",
+                   sprintf("points to `%s`%s", symlinks$target,
+                           ifelse(symlinks$broken %in% TRUE, ", which is not in the repository", "")))))
   report_useless <- if (n_useless > 0) c(
     "#### Files that do not belong in the repository",
     sprintf(paste(
@@ -2694,10 +2748,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A LICENSE is collection-level exactly like the readme (one licence for the
   # whole deposit, never one per study), so it is excluded from per-study
   # grouping the same way — see the "license" doc_role in .data_doc_role().
+  # (the path is read only for the readme and licence rows: for every file it
+  # took 14 minutes in a repository of 369,548 files, #702)
   is_root_readme <- !is.na(all_files$doc_role) &
-    all_files$doc_role %in% c("readme", "license") &
-    is.na(.data_group_from_path(path_for_group)) &
-    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group))
+    all_files$doc_role %in% c("readme", "license")
+  is_root_readme[is_root_readme] <-
+    is.na(.data_group_from_path(path_for_group[is_root_readme])) &
+    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group[is_root_readme]))
   is_root_readme[is.na(is_root_readme)] <- FALSE
 
   all_files$group <- rep(NA_character_, nrow(all_files))
@@ -3287,7 +3344,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   naming_issues <- check_file_naming(
     all_files$file_name,
     file_path = all_files$file_path %||% all_files$file_name,
-    data_type = all_files$data_type)
+    data_type = all_files$data_type, repo = all_files$repo_url)
   naming_bad <- naming_issues[naming_issues$severity == "bad", , drop = FALSE]
   naming_suggest <- naming_issues[naming_issues$severity == "suggestion", , drop = FALSE]
   n_naming_bad <- nrow(naming_bad)
@@ -3318,7 +3375,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       lapply(function(df) {
         pf <- check_file_naming(
           df$file_name, file_path = df$file_path %||% df$file_name,
-          data_type = df$data_type)
+          data_type = df$data_type, repo = df$repo_url)
         if (nrow(pf) > 0) pf$paper_id <- df$paper_id[[1]]
         pf
       })
@@ -3466,6 +3523,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_roster,
     report_naming,
     report_useless,
+    report_symlinks,
     report_classification
   )
 
@@ -3567,7 +3625,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_unknown,
     summary_roster,
     summary_naming,
-    summary_useless
+    summary_useless,
+    summary_symlinks
   ) |>
     paste("\n- ", x = _, collapse = "")
 
@@ -3620,6 +3679,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Files that do not belong in a repository, left out of `table`: paper_id,
     # repo_url, file_path, kind and severity ("problem" or "suggestion").
     useless_files = useless_files,
+    # Symbolic links of GitHub repositories, left out of `table` (#700):
+    # repo_url, path, target (NA when it could not be read) and broken.
+    symlinks = symlinks,
     # Private OSF projects and ResearchBox boxes whose files were read through
     # a view-only or peer-review link in the paper: paper_id, repo_url (the
     # link) and project (its plain address).

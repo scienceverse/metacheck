@@ -106,9 +106,11 @@ Everything is downloaded by default: no size limits apply, because this
 function exists to retrieve a repository in full and someone archiving their
 own work wants their own files whatever size they are. Limits are available
 for when that is not what you want -- looking at somebody else's repository,
-say. In the default \code{mode = "files"}, files over \code{max_file_size} are omitted
-individually, while \code{max_download_size} is an all-or-nothing gate for the
-remaining repository total. Omitted files are reported as messages and
+say. They apply in \code{mode = "select"} and \code{mode = "zip"}, not in the default
+\code{mode = "all"} (see \code{mode} below). In \code{mode = "select"}, files over
+\code{max_file_size} are omitted individually, while \code{max_download_size} is an
+all-or-nothing gate for the remaining repository total. Omitted files are
+reported as messages and
 appear in the returned data frame with \code{downloaded = FALSE} and
 \code{attempted = FALSE}.
 
@@ -154,7 +156,7 @@ were attempted but did not arrive raise a warning naming them.
 \donttest{
 if (online("api.osf.io")) {
   dl <- osf_file_download("6nt4v", download_to = file.path(tempdir(), "osf"),
-                          max_download_size = 10)
+                          max_download_size = 10, mode = "select")
 }
 }
 \dontrun{

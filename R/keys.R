@@ -27,6 +27,33 @@
   .key_env$rules
 }
 
+# tolower() of each text, the long ones a line at a time: on a text with any
+# letter outside ASCII, tolower() takes time in the square of the text's length
+# (1 MB 7 seconds, 2 MB 27 seconds; split into lines, a fraction of a second),
+# and the texts searched for keys include file contents and a file tree of
+# 369,548 lines (#702). A line over `max_chars` is lowercased in pieces of
+# that many characters. The result is the same as tolower()'s.
+.tolower_long <- function(texts, max_chars = 10000L) {
+  long <- !is.na(texts) & nchar(texts, type = "bytes") > max_chars
+  low <- texts
+  low[!long] <- tolower(texts[!long])
+  for (i in which(long)) {
+    s <- texts[[i]]
+    lines <- strsplit(s, "\n", fixed = TRUE)[[1]]
+    big <- nchar(lines, type = "bytes") > max_chars
+    lines[!big] <- tolower(lines[!big])
+    for (j in which(big)) {
+      n <- nchar(lines[[j]])
+      at <- seq(1L, n, by = max_chars)
+      lines[[j]] <- paste(tolower(substring(lines[[j]], at, pmin(at + max_chars - 1L, n))),
+                          collapse = "")
+    }
+    # strsplit() drops the empty text after a last "\n"
+    low[[i]] <- paste0(paste(lines, collapse = "\n"), if (endsWith(s, "\n")) "\n" else "")
+  }
+  low
+}
+
 # The keywords that may be in `texts` (in lower case). The texts are split at
 # every character that is in no keyword, and each keyword is looked for once in
 # their unique pieces, joined: a keyword can only be inside one piece, and text
@@ -144,7 +171,7 @@
     is.na(pats$path) | vapply(pats$path, function(rx) is.na(rx) || grepl(rx, path, perl = TRUE), logical(1))
   pats <- pats[for_path, , drop = FALSE]
   if (!nrow(pats)) return(none)
-  low <- tolower(text)
+  low <- .tolower_long(text)
   # only the rules with a keyword in the text
   if (!checked) {
     present <- .key_present(low)
@@ -223,7 +250,7 @@
   collect(x)
   texts <- unique(unlist(texts, use.names = FALSE))
   if (!length(texts)) return(x)
-  low <- tolower(texts)
+  low <- .tolower_long(texts)
   present <- .key_present(low)
   if (!length(present)) return(x)
   pats <- .key_rules()$patterns
@@ -373,7 +400,7 @@
     keep <- !is.na(txt) & nzchar(txt)
     txt <- txt[keep]; row <- row[keep]
     if (!length(txt)) next
-    lt <- tolower(txt)
+    lt <- .tolower_long(txt)
     present <- .key_present(lt)
     if (!length(present)) next
     # each value with only the rules whose keywords are in it
@@ -414,10 +441,11 @@
   shown_name <- col("file_path")
   shown_name[is.na(shown_name) | !nzchar(shown_name)] <- col("file_name")[is.na(shown_name) | !nzchar(shown_name)]
   repo <- col("repo_url")
+  storage <- col("provider")
   on_disk <- !is.na(loc) & nzchar(loc) & file.exists(loc)
   look <- which(!on_disk & !is.na(repo) & nzchar(repo) & !is.na(shown_name) & nzchar(shown_name))
   for (i in look) {
-    p <- .repo_cache_path(repo[[i]], shown_name[[i]], cache = cache)
+    p <- .repo_cache_path(repo[[i]], shown_name[[i]], cache = cache, storage = storage[[i]])
     if (file.exists(p) && !dir.exists(p)) loc[[i]] <- p
   }
   pid <- col("paper_id")

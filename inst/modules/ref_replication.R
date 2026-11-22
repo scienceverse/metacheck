@@ -68,6 +68,16 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
     paste(bib$paper_id, tolower(bib$doi))
   table <- table[!already_cited, ]
 
+  ## remove rows whose replication is the citing paper itself: a replication
+  ## report cites the original it replicates, and was told to cite itself
+  ## (#695: 6 rows in 5 of 149 Meta-Psychology papers)
+  bare_doi <- \(x) sub("^https?://(dx\\.)?doi\\.org/", "", tolower(trimws(x)))
+  own <- paper_table(paper, "info", "doi")
+  own_doi <- bare_doi(own$doi[match(table$paper_id, own$paper_id)])
+  is_self <- !is.na(own_doi) & nzchar(own_doi) &
+    bare_doi(table$replication_doi) == own_doi
+  table <- table[!(is_self %in% TRUE), ]
+
   # Remove trailing URLs from reference text to avoid duplication with link
   table$replication_ref <- trimws(gsub(
     "https?://[^[:space:]]+$", "",

@@ -552,16 +552,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (mod == "data_check") {
       args$model <- model; args$params <- params
     }
+    # The size limits go to code_check too: it used its own defaults whatever
+    # this module was given (#699).
     if (mod %in% c("data_check", "code_check")) {
       args$cache <- cache
       args$skip_on_api_limit <- skip_on_api_limit
+      args$max_file_size <- max_file_size
+      args$max_download_size <- max_download_size
     }
     if (mod == "data_check") {
       args$download <- download
       args$skip_types <- skip_types
       args$peek_zips <- peek_zips
-      args$max_file_size <- max_file_size
-      args$max_download_size <- max_download_size
     }
 
     # This module's own execution/matching logic never depends on LLM-refined
@@ -1931,7 +1933,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                             recorded = !is.null(recorded))
       install_results <- if (sandbox == "docker") {
         repro_install_deps_docker(to_install, lib_dir, image = docker_image,
-                                  timeout = install_limit)
+                                  timeout = install_limit,
+                                  deposit_pkgs = .repro_deposit_packages(sandbox_root, to_install$package))
       } else {
         .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
         # as before, no limit unless one was asked for or versions are recorded
@@ -2297,6 +2300,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # A script whose write stopped on a folder the deposit does not have runs
     # once more after the folder is made (#591; see .repro_make_failed_write_folders())
     r_folders_made <- data.frame(script = character(0), folder = character(0))
+    # packages named in errors that were installed now, for the scripts that ran
+    # again with them (#587)
+    r_pkgs_tried <- character(0)
+    r_pkgs_installed <- data.frame(script = character(0), package = character(0))
     for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
@@ -2310,10 +2317,64 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       made <- .repro_make_failed_write_folders(run_results, run_tbl, sandbox_root,
                                                split(r_folders_made$folder, r_folders_made$script))
       r_folders_made <- rbind(r_folders_made, made)
-      redo <- unique(c(names(later), from_deposit$script, made$script))
+      # A script that now stops on a function no script defines gets library()
+      # lines for it, as the corrective run gives them for the first run's errors
+      # only (#592; see .repro_more_library_lines()).
+      more_libs <- .repro_more_library_lines(
+        run_results, code_text_list, unique(c(deps$package %||% character(0), .repro_common_pkgs())),
+        unavailable = if (!install_r && sandbox != "docker")
+          failed_deps[!nzchar(vapply(failed_deps, function(p) system.file(package = p), ""))]
+          else failed_deps,
+        injected = library_injections)
+      for (s in names(more_libs)) library_injections[[s]] <- c(library_injections[[s]], more_libs[[s]])
+      if (length(more_libs)) {
+        prepend_lines <- .repro_run_after_lines(run_after, run_tbl, sandbox_root)
+        for (f in names(old_defaults_used))
+          prepend_lines[[f]] <- c(.repro_old_default_lines(old_defaults_used[[f]]), prepend_lines[[f]])
+        run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
+                                       inject_libs = library_injections,
+                                       script_paths = r_script_places,
+                                       writes_in_place = TRUE,
+                                       replace_env_calls = replace_env_calls,
+                                       run_dirs = r_run_dirs,
+                                       prepend = prepend_lines)
+      }
+      # A script that stops on a package no script loads, which another package
+      # needs for one of its functions, gets it installed (#587; see
+      # .repro_missing_pkg_names()). Each package is tried once.
+      pkg_redo <- character(0)
+      if (install_r && !.repro_short_of_time(total_timeout, 120)) {
+        named <- .repro_missing_pkg_names(paste(run_results$error, run_results$stderr))
+        stopped_pkg <- run_results$outcome %in% "errored" & !is.na(named)
+        new_pkgs <- setdiff(unique(named[stopped_pkg]), c(install_results$package, r_pkgs_tried))
+        if (length(new_pkgs)) {
+          r_pkgs_tried <- c(r_pkgs_tried, new_pkgs)
+          .dbg("installing ", length(new_pkgs), " package(s) named in scripts' errors: ",
+               paste(new_pkgs, collapse = ", "))
+          more <- data.frame(package = new_pkgs, source = "cran", ref = NA_character_)
+          more_limit <- .repro_install_limit(install_timeout, timeout, total_timeout)
+          got <- if (sandbox == "docker")
+            repro_install_deps_docker(more, lib_dir, image = docker_image, timeout = more_limit,
+                                      deposit_pkgs = .repro_deposit_packages(sandbox_root, new_pkgs))
+            else repro_install_deps(more, lib_dir, cran_to_main_lib = cran_install_main,
+                                    deadline = if (inherits(total_timeout, "POSIXct")) Sys.time() + more_limit)
+          install_results <- dplyr::bind_rows(install_results, got)
+          failed_deps <- unique(c(failed_deps, got$package[!got$installed]))
+          ok <- stopped_pkg & named %in% got$package[got$installed]
+          pkg_redo <- run_results$file_name[ok]
+          r_pkgs_installed <- rbind(r_pkgs_installed,
+                                    data.frame(script = pkg_redo, package = named[ok]))
+          # a package that could not be installed: the script could not run here
+          no <- stopped_pkg & named %in% got$package[!got$installed]
+          run_results$outcome[no] <- "dependency_unavailable"
+          run_results$error_type[no] <- "dependency_unavailable"
+        }
+      }
+      redo <- unique(c(names(later), from_deposit$script, made$script, names(more_libs), pkg_redo))
       if (!length(redo)) break
       .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
-           "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
+           "the deposit holds elsewhere, a folder a write needed, a missing function or a ",
+           "package installed now: ", paste(redo, collapse = ", "))
       res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
                             c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
       ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
@@ -3202,6 +3263,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
       later_rows <- rbind(later_rows, data.frame(file_name = r_folders_made$script, change_type = "folder_made",
         detail = sprintf("made the folder %s, where the script writes, and ran it once more", r_folders_made$folder)))
+    if (exists("r_pkgs_installed", inherits = FALSE) && nrow(r_pkgs_installed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_pkgs_installed$script, change_type = "package_installed",
+        detail = sprintf("installed %s, which the error named and no script loads, and ran it once more",
+                         r_pkgs_installed$package)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, lib_loc_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      screen_rows_mod, slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
@@ -4779,7 +4844,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # default, which this worker was not given.
         err <- tryCatch(paste(.utf8_lines(readLines(err_files[[pid]], warn = FALSE)), collapse = "\n"),
                         error = function(e) "")
-        res <- list(traffic_light = "error",
+        # named as the module, or module_run()'s output names it by its
+        # position ("module_1", R/module.R) and the error lost its check (#695)
+        res <- list(module = "reproducibility_check",
+                    traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",
                                           if (nzchar(err)) err else "unknown error"),
                     table = data.frame(),

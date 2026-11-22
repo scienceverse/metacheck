@@ -24,7 +24,8 @@ a data frame with a row per address: \code{seq_url}, \code{accession},
 \code{organisation} (the submitting institute), \code{publication_date},
 \code{description}, \code{resource_type}, \code{related} (\verb{IsSupplementTo:<DOI>} for
 each paper the record belongs to), and \code{error} ("unfound" when the
-archive has no such record)
+archive has no such record, "unreachable" when the archive did not
+answer: no connection, a time-out, too many requests or a server error)
 }
 \description{
 Reads the record of each deposit \code{\link[=seq_archive_links]{seq_archive_links()}} finds: a GEO

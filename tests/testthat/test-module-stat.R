@@ -135,6 +135,16 @@ test_that("stat_check", {
   expect_equal(mod_output$table$paper_id, names(paper)[[2]])
 })
 
+test_that("stat_check reads a test as one-sided when its sentence says so (#695)", {
+  # p = .041 is half the two-sided p of t(28) = 1.80
+  mo <- module_run(test_paper("The effect was positive, t(28) = 1.80, p = .041 (one-tailed)."), "stat_check")
+  expect_equal(mo$traffic_light, "green")
+  expect_false(any(mo$table$error))
+  mo <- module_run(test_paper("The effect was positive, t(28) = 1.80, p = .041."), "stat_check")
+  expect_equal(mo$traffic_light, "red")
+  expect_true(all(mo$table$error))
+})
+
 
 
 test_that("stat_p_nonsig", {

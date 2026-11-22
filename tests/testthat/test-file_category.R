@@ -127,3 +127,15 @@ test_that("names that are not valid UTF-8 are classified, not refused (U76)", {
   cfn <- check_file_naming(bad)
   expect_true(bad[2] %in% cfn$file_name)  # returned as given, so callers can match
 })
+
+test_that("check_file_naming() names paths that differ only in capital letters, per repository (#700)", {
+  p <- c("names/case/Data.csv", "names/case/data.csv", "b.csv")
+  out <- check_file_naming(basename(p), p, repo = "r")
+  clash <- out[out$rule == "case-clash", ]
+  expect_equal(clash$file_name, p[1:2])
+  expect_equal(unique(clash$severity), "bad")
+  expect_match(clash$detail[1], "differs only in capital letters from names/case/data.csv")
+  # in two repositories they do not clash
+  out <- check_file_naming(c("a.csv", "A.csv"), repo = c("r", "s"))
+  expect_false("case-clash" %in% out$rule)
+})

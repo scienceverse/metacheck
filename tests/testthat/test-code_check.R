@@ -1434,6 +1434,13 @@ test_that("files a script writes or downloads are not missing, in any language, 
   expect_equal(out$loaded_files_missing_names[1], "gone.csv")
   expect_equal(out$loaded_files_missing, c(1L, 0L, 0L))
   expect_false("loaded_refs" %in% names(out))
+
+  # a file read from a web address is not missing from the repository (#695)
+  cf <- data.frame(paper_id = "p", repo_url = "r", file_name = "a.R",
+                   loaded_refs = paste("http://journal.sjdm.org/16/1234/study1.sav", "gone.csv", sep = "\u001f"),
+                   files_written = "")
+  out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
+  expect_equal(out$loaded_files_missing_names, "gone.csv")
 })
 
 test_that("text that is not a path on the authors' computer is not an absolute path (#648)", {
@@ -1489,4 +1496,81 @@ test_that("code is not recovered from a knitted .html whose .Rmd is in the depos
   out <- metacheck:::.code_expand_html(af, Inf, Inf, cache = FALSE)
   # only other.html, which has no source in the deposit, gives a code file
   expect_equal(setdiff(out$file_name, af$file_name), "other.R")
+})
+
+test_that(".code_fetch_capped() reads a web file only up to max_file_size (#699)", {
+  # not a web address: returned as it is
+  expect_equal(metacheck:::.code_fetch_capped("C:/a/b.R", "b.R"), "C:/a/b.R")
+  # no address at all (a file inside an archive): said at once, no request
+  expect_error(metacheck:::.code_fetch_capped(NA_character_, "b.R"),
+               "no web address of its own", fixed = TRUE)
+
+  limit <- NULL
+  local_mocked_bindings(.download_capped = function(url, dest, max_bytes = Inf, ...) {
+    limit <<- max_bytes
+    writeLines("x <- 1", dest)
+    NA_character_
+  })
+  p <- metacheck:::.code_fetch_capped("https://x.org/a.Rmd", "a.Rmd", max_file_size = 2)
+  expect_equal(limit, 2 * 1024 * 1024)
+  expect_equal(tools::file_ext(p), "Rmd")   # the readers of .Rmd files need it
+  expect_equal(readLines(p), "x <- 1")
+  metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R", max_file_size = Inf)
+  expect_equal(limit, Inf)
+
+  local_mocked_bindings(.download_capped = function(...)
+    structure("over the byte limit", over_cap = TRUE, bytes = 3e6))
+  expect_error(metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R", max_file_size = 2),
+               "larger than the 2 MB per-file limit (max_file_size)", fixed = TRUE)
+
+  # an error from the web reads as code_read()'s
+  local_mocked_bindings(.download_capped = function(...) "HTTP 404")
+  expect_error(metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R"),
+               "cannot open URL 'https://x.org/a.R': HTTP status was 404", fixed = TRUE)
+
+  # an empty file is no error
+  local_mocked_bindings(.download_capped = function(...) "empty response")
+  p <- metacheck:::.code_fetch_capped("https://x.org/a.R", "a.R")
+  expect_equal(file.size(p), 0)
+})
+
+test_that("code_lang() reads the extension of a name that ends in a space (#700)", {
+  expect_equal(unname(code_lang("trailing_space.R ")), "R")
+})
+
+test_that(".code_not_text() names files whose content is no code (#700)", {
+  d <- file.path(tempdir(), "nt700"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  saveRDS(1:10, file.path(d, "rdata_named.R"))
+  writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)), file.path(d, "png_named.R"))
+  writeLines(c("<!DOCTYPE html>", "<html></html>"), file.path(d, "html_named.py"))
+  writeLines("x <- 1", file.path(d, "ok.R"))
+  writeBin(c(as.raw(c(0xff, 0xfe)), iconv("x <- 1", "UTF-8", "UTF-16LE", toRaw = TRUE)[[1]]),
+           file.path(d, "utf16.R"))
+  r <- vapply(file.path(d, c("rdata_named.R", "png_named.R", "html_named.py", "ok.R", "utf16.R")),
+              .code_not_text, "", USE.NAMES = FALSE)
+  expect_match(r[1], "compressed file")
+  expect_match(r[2], "PNG image")
+  expect_match(r[3], "HTML page")
+  expect_true(all(is.na(r[4:5])))
+})
+
+test_that("code_check names the code files it did not check, with the reason (#700)", {
+  d <- file.path(tempdir(), "cc700"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines("x <- 1", file.path(d, "ok.R"))
+  writeLines(rep("y <- 2 # a comment", 20000), file.path(d, "big.R"))
+  saveRDS(1:10, file.path(d, "rdata_named.R"))
+  writeLines("x = 1", file.path(d, "analysis.jl"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:ab", "size 99"),
+             file.path(d, "pointer.R"))
+  cc <- suppressMessages(module_run(test_paper("x"), "code_check", local_path = d, local_only = TRUE,
+                                    max_code_size = 0.1))
+  expect_match(cc$summary_text, "4 code files were not checked")
+  rep_txt <- paste(cc$report, collapse = " ")
+  expect_match(rep_txt, "#### Code files not checked")
+  expect_match(rep_txt, "more than max_code_size")
+  expect_match(rep_txt, "compressed file")
+  expect_match(rep_txt, "Julia code is recognised, but not checked")
+  expect_match(rep_txt, "Git LFS pointer")
 })

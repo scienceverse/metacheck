@@ -492,6 +492,47 @@ path_sanitize <- function(path, replacement = "_",
 # a safe margin. On other platforms the effective limit is far higher (per-
 # component 255), so we only guard the total on Windows but still cap absurd
 # single components everywhere.
+# For each of `paths` (files on disk), the size a Git LFS pointer states (-1
+# when it states none), or NA when the file is no such pointer. A repository that keeps a file in Git
+# LFS holds a small text file in its place ("version
+# https://git-lfs.github.com/spec/v1", "oid sha256:...", "size 734003200"),
+# and so do GitHub's archives and a Zenodo copy made from one: the file itself
+# was never deposited. reproducibility_check, data_check and code_check tell
+# such a pointer from the file it stands for (#568, #700).
+.lfs_pointer_size <- function(paths) {
+  out <- rep(NA_real_, length(paths))
+  ok <- !is.na(paths) & file.exists(paths %||% "")
+  size <- rep(NA_real_, length(paths))
+  size[ok] <- file.size(paths[ok])
+  for (i in which(ok & !is.na(size) & size < 1024)) {
+    l <- tryCatch(.utf8_lines(readLines(paths[[i]], n = 3, warn = FALSE)),
+                  error = function(e) character(0))
+    if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) next
+    s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
+    # a pointer that states no size is still a pointer
+    out[i] <- if (is.na(s)) -1 else s
+  }
+  out
+}
+
+# The report section and summary sentence for files that are Git LFS pointers
+# (.lfs_pointer_size()), for data_check and code_check: `names` are the files'
+# paths in the repository, `sizes` the sizes their pointers state. Returns
+# list(report, summary), NULL when there are none.
+.lfs_pointer_text <- function(names, sizes) {
+  none <- list(report = NULL, summary = NULL)
+  if (!length(names)) return(none)
+  n <- length(names)
+  stated <- ifelse(is.na(sizes) | sizes < 0, "",
+                   sprintf(" (the file itself is %s)", vapply(sizes, .cap_size_str, "")))
+  sent <- sprintf(paste0("%d file%s %s a Git LFS pointer: the repository holds a small text file ",
+                         "in place of the file itself, which was not deposited, so the checks did not see %s"),
+                  n, plural(n), plural(n, "is", "are"), plural(n, "it", "them"))
+  list(report = c("#### Files kept in Git LFS", paste0(sent, ":"), "",
+                  sprintf("- `%s`%s", names, stated)),
+       summary = paste0(sent, "."))
+}
+
 .max_path_chars <- if (.Platform$OS.type == "windows") 250L else 4000L
 .max_component_chars <- 255L    # per-directory / filename limit on all platforms
 
@@ -532,7 +573,11 @@ path_sanitize <- function(path, replacement = "_",
 # Returns the (possibly shortened) path. Callers should use the RETURNED path for
 # both dir.create and the write, and record it as the file's location, so the
 # on-disk name and the recorded name always agree.
-.safe_write_path <- function(path) {
+#
+# `root`, when given, is a folder whose names are kept (a repository's
+# download folder): only the part of the path below it is shortened, unless
+# that is not enough.
+.safe_write_path <- function(path, root = NULL) {
   if (is.null(path) || length(path) != 1 || is.na(path) || !nzchar(path))
     return(path)
 
@@ -582,19 +627,38 @@ path_sanitize <- function(path, replacement = "_",
   abs_len <- function() tryCatch(
     nchar(normalizePath(paste(parts, collapse = "/"), winslash = "/", mustWork = FALSE)),
     error = function(e) nchar(paste(parts, collapse = "/")))
-  if (abs_len() > .max_path_chars) {
-    for (j in seq_along(parts)) {
+  # The folders of `root` are kept as they are, when the path lies below it:
+  # a repository's folder shortened like any other put the files taken out of
+  # its archives in a second folder beside it (github.com_Lakens_metacheck-dow-
+  # 2eda7281 next to github.com_Lakens_metacheck-download-test), where the
+  # repository's download budget, which counts its own folder, did not see
+  # them (#699). Only when the path cannot be made short enough below `root`
+  # are the folders of `root` shortened as well.
+  n_fixed <- 0L
+  if (!is.null(root) && length(root) == 1 && !is.na(root) && nzchar(root)) {
+    rp <- strsplit(root, "[/\\\\]")[[1]]
+    rp_drive <- seq_along(rp) == 1L & grepl("^[A-Za-z]:$", rp)
+    rp[!rp_drive] <- .portable_name(rp[!rp_drive])
+    if (length(rp) < length(parts) && identical(parts[seq_along(rp)], rp))
+      n_fixed <- length(rp)
+  }
+  shorten <- function(free) {
+    for (j in which(free)) {
       if (nchar(parts[j]) > long_comp) {
-        parts[j] <- shorten_component(parts[j], long_comp); changed <- TRUE
+        parts[j] <<- shorten_component(parts[j], long_comp); changed <<- TRUE
       }
     }
     # Still over (very deep tree of moderate components): tighten the longest.
-    while (abs_len() > .max_path_chars) {
-      j <- which.max(nchar(parts))
+    while (abs_len() > .max_path_chars && any(free)) {
+      j <- which(free)[which.max(nchar(parts[free]))]
       if (nchar(parts[j]) <= min_comp) break
-      parts[j] <- shorten_component(parts[j], nchar(parts[j]) - 1L)
-      changed <- TRUE
+      parts[j] <<- shorten_component(parts[j], nchar(parts[j]) - 1L)
+      changed <<- TRUE
     }
+  }
+  if (abs_len() > .max_path_chars) {
+    shorten(seq_along(parts) > n_fixed)
+    if (abs_len() > .max_path_chars && n_fixed > 0L) shorten(rep(TRUE, length(parts)))
   }
   new_path <- paste(parts, collapse = "/")
 

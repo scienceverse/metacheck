@@ -133,6 +133,17 @@ test_that("extract_p_values reads ps, p's, x 10 and the Unicode minus (U204, U20
   expect_equal(pv$p_value, c(.05, .10, .10, .001, 1.8e-6, 6.1e-5, 2.14e-213, .05))
 })
 
+test_that("extract_p_values reads a p with the sides of its test (#695)", {
+  txt <- c("the effect was significant, p one-sided = .014.", "t(20) = 2.1, p (two-tailed) = .048",
+           "t(20) = 2.1, p (one-sided) = .024", "t(20) = 2.1, p one-tailed < .05", "t(20) = 2.1, p 2-tailed = .03")
+  pv <- extract_p_values(txt)
+  expect_equal(pv$text_id, seq_along(txt))
+  expect_equal(pv$p_value, c(0.014, 0.048, 0.024, 0.05, 0.03))
+  # the statistics reader takes "p one-sided" as the p, not "one-sided" as a statistic
+  eq <- extract_eq(data.frame(text = txt[1], text_id = 1))
+  expect_equal(eq$lhs, "p one-sided")
+})
+
 test_that("extract_p_values reads numbers without a decimal point (#642)", {
   # scientific notation with a whole first number, a capital E, 10 to a
   # power with nothing before it, and GROBID's A-accent signs for the
