@@ -376,3 +376,10 @@ test_that("without a ResearchBox key, a message says so once per session", {
   msgs <- testthat::capture_messages(aspredicted_info(url, wait = 0))
   expect_false(any(grepl("No ResearchBox API key", msgs)))
 })
+
+test_that("aspredicted_links() reads AsPredicted links from the text, also broken by a line-end hyphen (#695, point 4)", {
+  p <- test_paper("Data collection and analyses plans were preregistered (see https://aspre-dicted.org/BUC_HUQ).")
+  expect_equal(aspredicted_links(p)$href, "https://aspredicted.org/BUC_HUQ")
+  # a link both marked and written in the text is listed once
+  expect_length(aspredicted_links(demopaper())$href, 1)
+})

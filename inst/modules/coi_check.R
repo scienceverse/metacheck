@@ -32,6 +32,18 @@ coi_check <- function(paper) {
     dplyr::select(paper_id, text) |>
     dplyr::summarise(text = rtransparent_coi(text), .by = paper_id) |>
     dplyr::filter(!is.na(text) & nzchar(text))
+  # A section whose heading names a conflict of interest is the statement, with
+  # its heading (see .coi_section_statement()): the words "conflict of
+  # interest" are often only in the heading, above "None." or "All three
+  # authors worked at Code Ocean", which the sentence search above cannot see
+  # (#695, point 19: 7 Meta-Psychology papers; in mp20202601 it took a sentence
+  # about "selective disclosure" from the body instead). A paper without such a
+  # section keeps the sentence search's statement.
+  from_section <- .coi_section_statement(paper)
+  if (nrow(from_section)) {
+    table <- dplyr::bind_rows(table[!table$paper_id %in% from_section$paper_id, , drop = FALSE],
+                              from_section)
+  }
 
   # summary_table ----
   summary_table <- table |>
@@ -45,7 +57,7 @@ coi_check <- function(paper) {
   if (tl == "green") {
     report <- c(
       "The following conflict of interest statement was detected.",
-      scroll_table(table$text)
+      scroll_table(.coi_short_text(table$text))
     )
     summary_text <- "A conflict of interest statement was detected."
   } else if (tl == "red") {
@@ -64,6 +76,75 @@ coi_check <- function(paper) {
   )
 }
 
+
+# The statement of each paper with a section whose heading names a conflict of
+# interest ("Conflict of Interest", "Competing interests", "Declaration of
+# conflicting interests", "Duality of interest", "Disclosure"): the heading and
+# the section's text, per paper (paper_id, text); no rows when there is none.
+# The heading is compared without its spaces, as the PDF reading often splits
+# its letters ("co n fli c t o f i nte r e s t"). The reading's own section type
+# "conflict" is not used: it also marks "Peer review", "Open practices",
+# "Acknowledgements" and "Author contributions" (#695, point 19).
+.coi_section_statement <- function(paper) {
+  none <- data.frame(paper_id = character(0), text = character(0))
+  sec <- tryCatch(paper_table(paper, "section"), error = function(e) NULL)
+  if (is.null(sec) || !nrow(sec) || !all(c("header", "section_id") %in% names(sec))) return(none)
+  head_flat <- gsub("[^a-z]", "", tolower(sec$header))
+  names_coi <- grepl(paste0("conflicts?of(?:competing)?interests?|competinginterests?|",
+                            "declarationsof(?:conflicting)?interests?|declarationof(?:conflicting)?interests?|",
+                            "dualit(?:y|ies)ofinterests?|^disclosures?(?:statement)?$"), head_flat, perl = TRUE) &
+    !grepl("financialdisclosure", head_flat, fixed = TRUE)
+  sec <- sec[names_coi, , drop = FALSE]
+  if (!nrow(sec)) return(none)
+  tx <- paper_table(paper, "text")
+  out <- lapply(seq_len(nrow(sec)), function(i) {
+    rows <- tx$paper_id == sec$paper_id[i] & tx$section_id %in% sec$section_id[i]
+    # the section's first paragraph only: the reading often lets the section run
+    # on into a publisher's notice or an appendix's tables (up to 8,592
+    # characters in Ecology and Evolution)
+    if ("paragraph_id" %in% names(tx) && any(rows)) {
+      first_par <- min(tx$paragraph_id[rows], na.rm = TRUE)
+      if (is.finite(first_par)) rows <- rows & tx$paragraph_id %in% first_par
+    }
+    body <- tx$text[rows]
+    head <- trimws(sec$header[i] %||% "")
+    # a heading of only "Disclosure(s)" holds other statements too ("Statement
+    # of Inclusion", "Benefit Sharing" in Ecology and Evolution): it counts only
+    # when its paragraph is about interests
+    if (grepl("^disclosures?(?:statement)?$", gsub("[^a-z]", "", tolower(head)), perl = TRUE) &&
+        !grepl("conflict|competing|interest|financial|funding|funded|honorari|consult|employ|shares|stock",
+               paste(body, collapse = " "), ignore.case = TRUE))
+      return(NULL)
+    txt <- trimws(paste(c(if (nzchar(head)) head, body[!is.na(body)]), collapse = " "))
+    data.frame(paper_id = sec$paper_id[i], text = txt)
+  })
+  if (!length(Filter(Negate(is.null), out))) return(none)
+  out <- do.call(rbind, out)
+  out <- out[nzchar(out$text), , drop = FALSE]
+  if (!nrow(out)) return(none)
+  stats::aggregate(text ~ paper_id, data = out, FUN = function(x) paste(x, collapse = " "))
+}
+
+# A statement as the report shows it: its first `max_sentences` sentences, and
+# at most `max_chars` characters, with an ellipsis where text was left out.
+# The table keeps the whole statement. The reading can let a statement run on
+# into an appendix's tables (8,592 characters in Ecology and Evolution, one
+# "sentence" of 5,977), while 96% of statements are at most three sentences
+# (#695, point 19).
+.coi_short_text <- function(x, max_sentences = 5, max_chars = 1000) {
+  vapply(x, function(s) {
+    if (is.na(s)) return(s)
+    parts <- strsplit(trimws(s), "(?<=[.!?])\\s+(?=\\S)", perl = TRUE)[[1]]
+    cut <- length(parts) > max_sentences
+    out <- paste(utils::head(parts, max_sentences), collapse = " ")
+    if (nchar(out) > max_chars) {
+      out <- substr(out, 1, max_chars - 1)
+      cut <- TRUE
+    }
+    if (cut) out <- paste0(trimws(out), "\u2026")
+    out
+  }, character(1), USE.NAMES = FALSE)
+}
 
 # function adapted from rtransparent
 rtransparent_coi <- function(splitted) {

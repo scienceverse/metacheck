@@ -559,6 +559,10 @@ paper_table <- function(paper, table, cols = NULL) {
   }
 
   merged_table <- dplyr::bind_rows(table_list)
+  # the names of known sites broken by a line-end hyphen, joined (see
+  # .known_host_unbroken())
+  if (identical(table, "text") && "text" %in% names(merged_table))
+    merged_table$text <- .known_host_unbroken(merged_table$text)
   if (!is.null(cols)) {
     cols <- c(cols, "paper_id")
     keep <- intersect(cols, names(merged_table))
@@ -568,6 +572,34 @@ paper_table <- function(paper, table, cols = NULL) {
   dplyr::as_tibble(merged_table)
 }
 
+
+# The sites whose links the checks look for: repositories, registries and
+# DOIs. None of their names holds a hyphen.
+.known_hosts <- c("aspredicted.org", "github.com", "gitlab.com", "bitbucket.org", "osf.io",
+                  "zenodo.org", "figshare.com", "datadryad.org", "researchbox.org",
+                  "dataverse.org", "psycharchives.org", "clinicaltrials.gov", "openicpsr.org",
+                  "codeocean.com", "huggingface.co", "kaggle.com", "doi.org")
+
+# A known site's name broken by a line-end hyphen in the text of a PDF, joined:
+# "aspre-dicted.org/BUC_HUQ" becomes "aspredicted.org/BUC_HUQ", which
+# prereg_check then finds (#695, point 4). These names hold no hyphen, so the
+# repair cannot make a link wrong; other words are left alone, since there a
+# hyphen at a line end can be the word's own ("baby-names").
+.known_host_unbroken <- function(x) {
+  if (!length(x)) return(x)
+  maybe <- !is.na(x) & grepl("-", x, fixed = TRUE) &
+    grepl("\\.(?:org|com|io|gov|co)", x, perl = TRUE, ignore.case = TRUE)
+  if (!any(maybe)) return(x)
+  for (h in .known_hosts) {
+    name <- sub("\\..*$", "", h)
+    tld <- sub("^[^.]*", "", h)
+    letters_hy <- paste(strsplit(name, "")[[1]], collapse = "-?")
+    pat <- paste0("(?<![\\w-])", letters_hy, "\\Q", tld, "\\E(?![a-z])")
+    hit <- maybe & grepl(pat, x, perl = TRUE, ignore.case = TRUE)
+    if (any(hit)) x[hit] <- gsub(pat, h, x[hit], perl = TRUE, ignore.case = TRUE)
+  }
+  x
+}
 
 #' Get Paper IDs
 #'
