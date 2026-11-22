@@ -109,7 +109,11 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   group_no_evidence <- isTRUE(group_no_evidence)
   labels_df <- get_prev_outputs("codebook_check", "table")
 
+  # repositories data_check refused for their number of files (#706)
+  count_refused <- get_prev_outputs("data_check", "count_refused") %||%
+    if (exists("mo", inherits = FALSE)) mo$count_refused
   empty <- function(text, pid = .pid(structure_df, columns_df)) {
+    refused_note <- .count_refused_note(text, count_refused)
     list(
       table = data.frame(),
       summary_table = data.frame(
@@ -121,8 +125,8 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       na_replace = c(required_met = 0, required_missing = 0,
                      recommended_met = 0, recommended_missing = 0,
                      misplaced_n = 0),
-      traffic_light = "na",
-      summary_text = text
+      traffic_light = refused_note$traffic_light %||% "na",
+      summary_text = refused_note$summary_text %||% text
     )
   }
 

@@ -1,5 +1,14 @@
 # metacheck 0.4.4
 
+* A repository data_check refused for its number of files (`max_files_per_repo`, #702) is named by the checks after it (#706). data_check returns it as `count_refused`, and code_check, codebook_check, psychds_check and reproducibility_check name it and are yellow; code_check reported "We found 0 R, 0 Python, ... code files", with no light, for 10.1111/2041-210X.13428 (369,548 files), because data_check's `structure` no longer has that repository's rows.
+
+* Faults from the Meta-Psychology run (#695) and #593, #590:
+  * reproducibility_check no longer stops with "non-character argument" on a paper whose only code file is a JASP file (#695, point 41, mp20202538): code_check's `files_written` held only NA there, which R stores as logical.
+  * codebook_check's model step no longer matches a column to a codebook variable without a label, as the match by name already did not: such a column counted as documented while it got no label, 2,403 of the 2,533 columns this step matched in the Meta-Psychology run (#695, point 32).
+  * A script that stopped at its own check of how many command-line arguments it got (`if (length(args) != 3) stop(...)`), whatever its message, or that indexes `args` it never assigns ("object of type 'closure' is not subsettable"), needs a person (`needs_a_person`), as other scripts that need arguments; 4 BES scripts were `errored`, and none of the 94 errored R scripts of the Meta-Psychology run is affected (#593, point 1).
+  * Code run with Python 2 gets the packages of the local modules it imports, and of the modules those import (`.repro_py_with_imports()`): numpy, imported only by `genomics.py`, was installed for Python 3 alone (10.1111/2041-210X.13324; #593, point 3).
+  * Of several different files of one name in the deposit, the one whose folders match the path the script asked for is copied to where it looked, when one matches more folders than every other (`.repro_path_tail_match()`): placement refused all of them, 10 scripts in 4 BES papers such as `output/ADMIXTURE/popmap/popmap_Cm.txt` in 10.1111/1365-2745.14340 (#590).
+
 * `match_reported_output()` returns its empty result, with its summary, when every reported test of a paper is too weak to take part (#707). It stopped with "invalid argument type", and reproducibility_check, which calls it inside `tryCatch()`, then had no `match_table`: 80 of the 223 BES papers whose code printed statistics.
 
 * reproducibility_check installs more of a paper's packages and repairs more scripts, from the BES run of 0.4.4.27 (#587, #588, #592, #593):

@@ -4083,6 +4083,29 @@ test_that(".repro_needs_arguments: programs that stopped for want of their argum
            "Error in read.csv(\"x.csv\") : cannot open file",
            "Error in args[1] : object of type 'closure' is not subsettable")
   expect_equal(.repro_needs_arguments(r, err, "R"), c(TRUE, FALSE, FALSE))
+  # stopped at its own check of the number of arguments, whatever the message (#593)
+  own <- list(a = c("args = commandArgs(trailingOnly = T)", "if(length(args)!=3) {",
+                    "  stop(\"Provide (only) signal strength for the analysis\", call.=F)", "}"),
+              b = c("args = commandArgs(trailingOnly = T)", "x <- 1", "stop(\"Something else broke\")"))
+  err <- c("Error: Provide (only) signal strength for the analysis\nExecution halted",
+           "Error: Something else broke\nExecution halted")
+  expect_equal(.repro_needs_arguments(own, err, "R"), c(TRUE, FALSE))
+  # indexes `args` it never assigns, as a file a driver sources after setting it (#593)
+  un <- list(a = c("#args=\"\" #init", "if(dir.exists(args[1])) x <- 1"),
+             b = c("args <- c('a', 'b')", "f(args[3])"))
+  err <- rep("Error in args[1] : object of type 'closure' is not subsettable", 2)
+  expect_equal(.repro_needs_arguments(un, err, "R"), c(TRUE, FALSE))
+})
+
+test_that("the packages of a Python 2 script include those of the local modules it imports (#593)", {
+  ctl <- list(calculate_FST.py = c("import genomics", "print(genomics.f())"),
+              genomics.py = c("import numpy as np", "import helper", "def f(): return np.mean([1, 2])"),
+              helper.py = "import scipy", other.py = "import pandas")
+  files <- .repro_py_with_imports("calculate_FST.py", ctl, names(ctl))
+  expect_setequal(files, c("calculate_FST.py", "genomics.py", "helper.py"))
+  d <- repro_dependencies_py(ctl[files])
+  expect_true(all(c("numpy", "scipy") %in% d$package))
+  expect_false("pandas" %in% d$package)
 })
 
 test_that("a file written during the run is found, and copied to where a script looked (#568)", {
@@ -4317,6 +4340,25 @@ test_that("a file the deposit holds elsewhere is copied to where a script looked
   # placed once: the second time there is nothing left to copy
   expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
   expect_equal(.repro_placed_text(placed[0, ]), "")
+})
+
+test_that("of several different files of one name, the one in the folders the path names is placed (#590)", {
+  root <- withr::local_tempdir()
+  for (d in c("zip/output/ADMIXTURE/popmap", "zip/output/RAxML", "code")) dir.create(file.path(root, d), recursive = TRUE)
+  writeLines("A", file.path(root, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt"))
+  writeLines("B", file.path(root, "zip/output/RAxML/popmap_Cm.txt"))
+  before <- .repro_sandbox_names(root)
+  res <- data.frame(file_name = "plot.R", outcome = "errored", stderr = "",
+                    error = "cannot open file 'output/ADMIXTURE/popmap/popmap_Cm.txt': No such file or directory")
+  run_tbl <- data.frame(file_name = "plot.R", run_dir = file.path(root, "code"))
+  placed <- .repro_place_from_deposit(res, run_tbl, root, before)
+  expect_equal(placed$from, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt")
+  expect_equal(readLines(file.path(root, "code/output/ADMIXTURE/popmap/popmap_Cm.txt")), "A")
+  # only the file name in common with both: no choice
+  res$error <- "cannot open file 'other/popmap_Cm.txt': No such file or directory"
+  expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
+  expect_equal(.repro_path_tail_match("output/RAxML/popmap_HC.txt",
+                                      c("x/output/RAxML/popmap_HC.txt", "y/popmap_HC.txt")), c(3L, 1L))
 })
 
 test_that("the files sf and terra could not open are read from their errors (#575, item 2)", {

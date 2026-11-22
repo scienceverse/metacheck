@@ -116,7 +116,11 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     doc_sheets   <- mo$doc_sheets
   }
 
+  # repositories data_check refused for their number of files (#706)
+  count_refused <- get_prev_outputs("data_check", "count_refused") %||%
+    if (exists("mo", inherits = FALSE)) mo$count_refused
   empty_summary <- function(text) {
+    refused_note <- .count_refused_note(text, count_refused)
     # One row per paper still in play (from structure_df, since columns_df is
     # what's empty here) -- .pid()'s single collapsed id would under-report a
     # corpus where every paper genuinely has zero tabular data, showing one
@@ -148,8 +152,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       ),
       na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
                      conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0),
-      traffic_light = "na",
-      summary_text = text,
+      traffic_light = refused_note$traffic_light %||% "na",
+      summary_text = refused_note$summary_text %||% text,
       report = character(0)
     )
   }
@@ -3457,6 +3461,12 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
     cbk_paper_idx[!normalize_varname(codebook_vars_df$codebook_variable[cbk_paper_idx]) %in% matched_norm],
     , drop = FALSE
   ]
+  # A codebook variable without a label does not label a column, as in the
+  # match by name (match_column_labels()): 2,403 of the 2,533 columns this step
+  # matched in the Meta-Psychology run got no label and still counted as
+  # documented (#695, point 32)
+  unmatched_vars <- unmatched_vars[!is.na(unmatched_vars$label) &
+                                     nzchar(trimws(as.character(unmatched_vars$label))), , drop = FALSE]
 
   if (length(unlabelled_idx) > 0 && nrow(unmatched_vars) > 0) {
     unlab_cols <- unique(labels_df$column_name[unlabelled_idx])

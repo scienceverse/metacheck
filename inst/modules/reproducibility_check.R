@@ -583,10 +583,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     do.call(module_run, args)
   }
-  if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
+  # repositories data_check or code_check refused for their number of files: a
+  # paper with no code left says so, not only "no code files" (#706)
+  count_refused <- .count_refused_add(get_prev_outputs("code_check", "count_refused"),
+                                      get_prev_outputs("data_check", "count_refused"))
+  if (is.null(structure_df)) {
+    dc <- run_missing("data_check"); structure_df <- dc$structure
+    count_refused <- .count_refused_add(count_refused, dc$count_refused)
+  }
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
+    count_refused <- .count_refused_add(count_refused, cc$count_refused)
   }
   # Deposits linked in the paper that hold other people's work or the authors'
   # earlier work are not checked (repo_check's `table_not_checked`, #648), but
@@ -602,8 +610,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # by its path in the deposit (`file_path_deposit`) (#648)
   # the files any code file of the paper writes or downloads, in any language
   # (code_check's files_written), so a file a script makes is not missing (#648)
-  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl))
-    unique(unlist(strsplit(code_tbl$files_written[!is.na(code_tbl$files_written)], ",[[:space:]]*"))) else character(0)
+  # as.character(): a column of NA only, when no code file was read (a paper with
+  # only a JASP file), is logical, and strsplit() stopped on it with "non-character
+  # argument" (#695, point 41, mp20202538)
+  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl)) {
+    fw <- as.character(code_tbl$files_written)
+    unique(unlist(strsplit(fw[!is.na(fw)], ",[[:space:]]*")))
+  } else character(0)
   up <- .repro_unpack_archives(structure_df, code_tbl)
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
@@ -1277,9 +1290,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # return, same as before Python support existed.
   if (is.null(code_tbl) || nrow(code_tbl) == 0 ||
       !"language" %in% names(code_tbl))
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.", non_r_note),
-      tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   r_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "R", ,
                       drop = FALSE]
@@ -1303,9 +1316,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # runs. ───────────────────────────────────────────────────────────────────
   .dbg <- function(...) message("[repro] ", ...)
   if (!has_r && !has_py)
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.",
-      non_r_note), tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   if (has_r && isTRUE(execute) && sandbox == "process" &&
       !requireNamespace("callr", quietly = TRUE))
@@ -3858,7 +3871,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!isTRUE(keep_sandbox)) on.exit(.repro_docker_lib_remove(py2_lib_dir), add = TRUE)
         py2_failed_deps <- character(0)
         if (isTRUE(install_missing)) {
-          py2_deps <- repro_dependencies_py(py_code_text_list[py2_names], manifest_text = py_manifest_text)
+          # the packages of the local modules these scripts import as well, and of
+          # the modules those import: numpy, imported only by genomics.py, was
+          # installed for Python 3 alone, and calculate_FST.py stopped on "No
+          # module named numpy" (10.1111/2041-210X.13324; #593)
+          py2_code <- .repro_py_with_imports(py2_names, py_code_text_list, py_files$file_path)
+          py2_deps <- repro_dependencies_py(py_code_text_list[py2_code], manifest_text = py_manifest_text)
           py2_deps <- py2_deps[!py2_deps$base & !py2_deps$package %in% py_local_modules, , drop = FALSE]
           .dbg("[repro/py] installing ", nrow(py2_deps), " Python 2 dependenc(y/ies): ",
                paste(py2_deps$package, collapse = ", "))
