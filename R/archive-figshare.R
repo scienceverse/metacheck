@@ -881,6 +881,17 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
     obj$error <- "parse_error"
     return(obj)
   }
+  # A 200 answer without the record's title, DOI and files is a failed lookup,
+  # not an empty record: 4TU answered so for 10.4121/14199176 on 2026-11-20,
+  # the empty listing was saved in the cache, and the paper had no data or code
+  # in every later run, while the record has 6 files (#711)
+  if (!nzchar(rec$title %empty_or% "") && !nzchar(rec$doi %empty_or% "") &&
+      !length(rec$files %||% list())) {
+    warning(figshare_id, ": ", host, " answered without the record's title, DOI or files",
+            call. = FALSE)
+    obj$error <- "empty_response"
+    return(obj)
+  }
 
   authors_field <- rec$authors
   authors <- if (is.list(authors_field)) {

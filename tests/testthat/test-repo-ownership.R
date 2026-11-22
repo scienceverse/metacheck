@@ -385,3 +385,35 @@ test_that(".own_facts keeps the OSF's family names and number of contributors (#
   expect_equal(x$dep_creator_families, "van Smith")
   expect_equal(x$dep_n_creators, "12")
 })
+
+test_that("a repository named in the paper's title is the paper's own code (#710)", {
+  t <- function(h, title) .own_title_names_repo(h, "github", title)
+  expect_true(t("https://github.com/vixen-project/vixen", "ViXeN: An open-source package for managing multimedia data"))
+  expect_true(t("https://github.com/duke-malaria-collaboratory/bistro_pipeline", "bistro: An R package for vector bloodmeal identification"))
+  expect_true(t("https://github.com/OpenFeeder/mechanics", "The OpenFeeder: A flexible automated RFID feeder"))
+  expect_false(t("https://github.com/faircloth-lab/phyluce", "Phylogenomics of birds"))
+  expect_false(t("https://github.com/someone/data-analysis", "Data analysis of a bird study"))
+  expect_false(.own_title_names_repo("https://doi.org/10.5281/zenodo.1", "zenodo", "Zenodo data"))
+  pf <- list(title = "ViXeN: An open-source package for managing multimedia data", doi = "10.1111/2041-210X.12892",
+             family = "Ramachandran", full = "Prabhu Ramachandran", orcids = character(0), affiliations = character(0),
+             year = 2018, date = as.Date("2018-01-01"), abstract = "")
+  o <- .repo_ownership(data.frame(source = "text", repo_url = "https://github.com/vixen-project/vixen", repo_type = "github",
+                                  context = "ViXeN is a tool available at https://github.com/vixen-project/vixen.",
+                                  dep_date = "2012-01-01", stringsAsFactors = FALSE), pf)
+  expect_equal(o$ownership, "own_this")
+})
+
+test_that("the authors' repository is judged by its last change, not its creation (#710)", {
+  pf <- list(title = "Trait variation across a lineage of plants", doi = "10.1111/1365-2745.12759",
+             family = c("Bentlage", "Smith"), full = c("Bastian Bentlage", "Jo Smith"), orcids = character(0),
+             affiliations = character(0), year = 2017, date = as.Date("2017-05-01"), abstract = "")
+  own <- function(updated) .repo_ownership(data.frame(
+    source = "text", repo_url = "https://github.com/bastodian/Dimensions", repo_type = "github",
+    context = "The data and pipelines supporting the transcriptomics results are on Github.",
+    dep_date = "2012-11-28", dep_updated = updated, gh_owner_name = "Bastian Bentlage", stringsAsFactors = FALSE), pf)
+  # changed until October 2016, before the 2017 paper: not earlier work
+  expect_equal(own("2016-10-05")$ownership, "own_this")
+  # last changed long before the paper, or no last change known: earlier work
+  expect_equal(own("2013-01-05")$ownership, "own_earlier_code")
+  expect_equal(own(NA)$ownership, "own_earlier_code")
+})

@@ -103,8 +103,18 @@ repo_info_cache_clear <- function() {
 # again. Only a result with no (or all-NA) `error` column is worth caching.
 .repo_info_ok <- function(value) {
   if (is.null(value) || !is.data.frame(value)) return(FALSE)
-  if (!"error" %in% names(value)) return(TRUE)
-  all(is.na(value$error))
+  if ("error" %in% names(value) && !all(is.na(value$error))) return(FALSE)
+  # A listing without a title, a DOI and any file is not kept either: a
+  # platform's answer without the record's fields was saved as an empty
+  # repository, and every later run read it so (#711). Such an answer is asked
+  # again next time; a real record has at least one of them.
+  if (nrow(value) == 1 && all(c("title", "doi", "files") %in% names(value))) {
+    no_text <- function(x) is.null(x) || !length(x) || all(is.na(x) | !nzchar(as.character(x)))
+    files <- value$files[[1]]
+    no_files <- is.null(files) || (is.data.frame(files) && !nrow(files)) || (!is.data.frame(files) && !length(files))
+    if (no_text(value$title) && no_text(value$doi) && no_files) return(FALSE)
+  }
+  TRUE
 }
 
 # github_tree_files() and gitlab_tree_files() report a failed listing
