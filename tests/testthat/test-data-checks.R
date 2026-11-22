@@ -1956,3 +1956,18 @@ test_that("data_check names Git LFS pointers and opens zips inside zips (#700)",
   expect_equal(dc$traffic_light, "yellow")
   expect_true(all(c("level1.csv", "level2.csv") %in% dc$structure$file_name))
 })
+
+test_that("unnamed, empty columns at the right end of a table are left out (#695, point 31)", {
+  d <- data.frame(a = 1:3, b = c("x", NA, ""), V3 = NA, V4 = c("", " ", NA))
+  out <- .drop_trailing_blank_cols(d)
+  expect_equal(names(out), c("a", "b"))
+  expect_equal(attr(out, "blank_cols_dropped"), 2)
+  # one with a name or a value stops it; so does a column in the middle
+  expect_equal(names(.drop_trailing_blank_cols(data.frame(a = 1:3, V2 = NA, keep = 1:3, V4 = NA))),
+               c("a", "V2", "keep"))
+  expect_equal(names(.drop_trailing_blank_cols(data.frame(a = 1:3, named_empty = NA))), c("a", "named_empty"))
+  # read from a file, as a spreadsheet export with every column gives it
+  f <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c(paste0("id,score", strrep(",", 50)), paste0("1,3", strrep(",", 50)), paste0("2,4", strrep(",", 50))), f)
+  expect_equal(ncol(data_read_head(f, n_rows = Inf)), 2)
+})

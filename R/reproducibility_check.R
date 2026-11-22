@@ -1453,6 +1453,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     substring(p, nchar(root_n) + 2)
   }
   rows <- list()
+  # folders made here, for this or another script, now or in a pass before
+  made_by_us <- unique(unlist(seen, use.names = FALSE))
   for (s in results$file_name[results$outcome %in% "errored"]) {
     i <- match(s, results$file_name); k <- match(s, run_tbl$file_name)
     if (is.na(i) || is.na(k)) next
@@ -1464,9 +1466,18 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
             else .repro_norm_rel(if (run_dir == ".") d else file.path(run_dir, d))
       if (is.na(to) || !nzchar(to) || to == "." || to %in% seen[[s]]) next
       dest <- file.path(root, .portable_path(to))
-      if (dir.exists(dest)) next
-      if (isTRUE(dir.create(dest, recursive = TRUE, showWarnings = FALSE)))
+      # A folder made for another script that stopped on it too: this script
+      # runs once more as well. In 10.1111/1365-2664.14445 four figure scripts
+      # stopped on "Figures/", which was made for the first, and the other
+      # three were not run again (#590)
+      if (dir.exists(dest)) {
+        if (to %in% made_by_us) rows[[length(rows) + 1]] <- data.frame(script = s, folder = to)
+        next
+      }
+      if (isTRUE(dir.create(dest, recursive = TRUE, showWarnings = FALSE))) {
         rows[[length(rows) + 1]] <- data.frame(script = s, folder = to)
+        made_by_us <- c(made_by_us, to)
+      }
     }
   }
   if (length(rows)) do.call(rbind, rows) else none
@@ -1476,7 +1487,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # them (see .repro_make_failed_write_folders()).
 .repro_folders_made_text <- function(made) {
   if (is.null(made) || !nrow(made)) return("")
-  n_s <- length(unique(made$script)); n <- nrow(made)
+  # one folder made for several scripts counts once (#590)
+  n_s <- length(unique(made$script)); n <- length(unique(made$folder))
   sprintf(paste0(" **%s wrote into %s that the deposit does not have**, so we made %s and ran %s once more: %s. ",
                  "Keeping the (empty) output folders in the deposit, or making them in the code with ",
                  "`dir.create()`, solves this."),
@@ -4720,6 +4732,17 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
                  "win32clipboard", "pywintypes", "pythoncom", "winreg", "_winreg", "msvcrt")] <- "Windows"
   out[top %in% c("ehrql", "cohortextractor")] <- "OpenSAFELY"
   out
+}
+
+# Which of the files `fnames` the code names: the file's name in quotes, alone or
+# at the end of a path ("../data/rawdata.sav"), without regard to capitals
+# (#695, point 42). `code_text` is the lines of all the code.
+.repro_named_in_code <- function(fnames, code_text) {
+  if (!length(fnames)) return(logical(0))
+  txt <- tolower(paste(code_text, collapse = "\n"))
+  vapply(tolower(basename(gsub("\\\\", "/", fnames))), function(b)
+    grepl(paste0("[\"'/\\\\]\\Q", b, "\\E[\"']"), txt, perl = TRUE),
+    logical(1), USE.NAMES = FALSE)
 }
 
 # The summary of a paper with no R or Python code to run, which names the

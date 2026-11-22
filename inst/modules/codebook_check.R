@@ -707,10 +707,10 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 6. Traffic light ─────────────────────────────────────────────────────────
   # Coverage (unmatched columns) and label quality (conflicts) are separate
   # concerns; either can lower the light.
-  tl <- if (n_codebook_vars == 0) "red"           # no codebook at all
+  # yellow, not red, until a validation shows people agree with most of its red findings (#695, point 2)
+  tl <- if (n_codebook_vars == 0) "yellow"        # no codebook at all
         else if (n_unmatched == 0 && n_conflicted == 0) "green"  # all matched, all clean
-        else if (pct_matched >= 80) "yellow"      # mostly matched, or only conflicts
-        else "red"                                # substantial coverage gaps
+        else "yellow"                             # coverage gaps or conflicts
   # A value the codebook itself does not allow is a documented-vs-actual
   # discrepancy, so a repository with a complete, cleanly-matched codebook is
   # not "green" while its data contradicts that codebook.

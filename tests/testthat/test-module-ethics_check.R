@@ -28,7 +28,7 @@ test_that("not approved but needs ethics", {
   mo <- module_run(paper, module)
   expect_equal(mo$summary_table$ethics_approved, FALSE)
   expect_equal(mo$summary_table$needs_ethics, TRUE)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
 
   live_statements <- mo$summary_table$live_data_statements[[1]]
   expect_true(grepl("Participants were recruited", live_statements))
