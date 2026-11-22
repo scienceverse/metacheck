@@ -340,6 +340,9 @@
   x$dep_org <- col(meta, "organisation", k)
   x$dep_related <- col(meta, "related", k)
   x$dep_date <- substr(pick("published"), 1, 10)
+  # its last change (GitHub's pushed_at, the OSF's date_modified), for the age
+  # rule of the authors' own repositories (#710)
+  x$dep_updated <- substr(pick("updated"), 1, 10)
   x$dep_year <- substr(x$dep_date, 1, 4)
   x$osf_type <- ifelse(links$repo_type %in% "osf", col(od, "osf_type", ko), NA_character_)
   x$osf_category <- ifelse(links$repo_type %in% "osf", col(od, "category", ko), NA_character_)
@@ -653,10 +656,39 @@
 
 # ---- the classification ----------------------------------------------------
 
+# Whether the paper's title names a GitHub or GitLab repository: its whole name,
+# the first part of its name (before "-" or "_", at least 4 letters), or its
+# account's name is a word of the title, not counting common words (#710).
+.own_title_names_repo <- function(href, repo_type, title) {
+  n <- length(href)
+  if (!n || is.null(title) || is.na(title) || !nzchar(title)) return(rep(FALSE, n))
+  tw <- unique(unlist(strsplit(.own_ascii(title), "[^a-z0-9]+")))
+  common <- c("data", "code", "codes", "analysis", "analyses", "script", "scripts", "project", "projects",
+              "paper", "study", "model", "models", "package", "pipeline", "pipelines", "tool", "tools",
+              "software", "supplement", "supplementary", "materials", "method", "methods", "workflow",
+              "the", "and", "for", "with", "from", "open", "source", "new", "lab", "group", "team",
+              "github", "gitlab", "repository", "online", "toolbox", "app", "shiny")
+  vapply(seq_len(n), function(i) {
+    if (!repo_type[[i]] %in% c("github", "gitlab")) return(FALSE)
+    parts <- strsplit(sub("^(?:https?://)?(?:www\\.)?(?:github|gitlab)\\.com/", "", href[[i]], perl = TRUE, ignore.case = TRUE),
+                      "/", fixed = TRUE)[[1]]
+    if (length(parts) < 2) return(FALSE)
+    owner <- tolower(parts[1]); repo <- tolower(sub("\\.git$", "", parts[2]))
+    whole <- gsub("[^a-z0-9]", "", repo)
+    first <- strsplit(repo, "[-_.]")[[1]][1]
+    if (is.na(first)) first <- ""
+    cand <- c(if (nchar(whole) >= 3) whole, if (nchar(first) >= 4) first,
+              if (nchar(gsub("[^a-z0-9]", "", owner)) >= 4) gsub("[^a-z0-9]", "", owner))
+    cand <- setdiff(unique(cand), common)
+    length(cand) > 0 && any(cand %in% tw)
+  }, logical(1))
+}
+
 # Columns .repo_ownership() reads; any it is not given are NA
 .own_columns <- c("source", "repo_url", "repo_type", "context", "sections", "ref_text", "ref_authors",
   "ref_year", "ref_title", "citing", "citing_sections", "cites_others", "cites_own", "dep_title",
   "dep_description", "dep_creators", "dep_orcids", "dep_type", "dep_related", "dep_year", "dep_date",
+  "dep_updated",
   "listed", "n_files", "has_data", "has_code", "pkg_layout", "file_paper_words", "readme", "osf_type",
   "osf_category", "osf_contributors", "gh_owner_name", "gh_stars", "gh_forks", "cff_dois", "dep_org",
   "dep_creator_families", "dep_n_creators")
@@ -698,6 +730,12 @@
            ifelse(dep_type %in% c("Software", "Workflow", "ComputationalNotebook"), "software", "data")))
   dep_date <- as.Date(substr(chr(x$dep_date), 1, 10), optional = TRUE)
   gap_years <- as.numeric(dep_date - pf$date) / 365.25
+  # from its last change when known: a repository of the authors that was still
+  # changing until shortly before the paper is not earlier work.
+  # bastodian/Dimensions was made in 2012 and changed until October 2016, and
+  # its 2017 paper says it holds that paper's pipelines (#710)
+  dep_updated <- as.Date(substr(chr(x$dep_updated), 1, 10), optional = TRUE)
+  gap_years_last <- as.numeric(dplyr::coalesce(dep_updated, dep_date) - pf$date) / 365.25
   dc_year_gap <- num(x$dep_year) - pf$year
   ref_year_gap <- num(x$ref_year) - pf$year
   creators <- chr(x$dep_creators)
@@ -830,6 +868,7 @@
     F_(owner_author)
   reused <- reuse_wording | T_(x$cites_others)
   old <- T_(gap_years < -3) & !osf_project
+  old_last <- T_(gap_years_last < -3) & !osf_project
   recent <- T_(gap_years >= -1.5) | (is.na(gap_years) & (T_(dc_year_gap >= -1) | T_(ref_year_gap >= -1)))
   presented <- own_wording | avail_section
   shares_words <- T_(num(x$file_paper_words) > 0) | T_(readme_paper_words > 0)
@@ -923,6 +962,12 @@
                          txt, perl = TRUE)
   }, logical(1))
   names_paper <- names_paper | this_paper
+  # A software paper's own repository: its name is a word of the paper's title
+  # ("ViXeN: An open-source package ..." for vixen-project/vixen, "rKIN: ..."
+  # for salbeke/rKIN, "The OpenFeeder: ..." for OpenFeeder/mechanics). Such
+  # repositories were called the authors' earlier work ("a tool by the
+  # authors") or others' work, and data_check and code_check skipped them (#710).
+  title_names_repo <- .own_title_names_repo(href, x$repo_type, pf$title)
   old_osf_others <- x$repo_type %in% "osf" & T_(gap_years < -5) & !author
   # a plan or protocol is not a publication
   plan <- grepl("analysis plan|protocol|pre-?registration|registered report", paste(x$dep_title), ignore.case = TRUE)
@@ -1001,6 +1046,7 @@
     list(cran & author, "own_earlier_code", "an R package on CRAN by the paper's authors, used in the paper"),
     list(statement_ref, "own_this", "the reference is the paper's own data statement"),
     list(names_paper, "own_this", "the deposit names this paper (its DOI, its title, or a link to it)"),
+    list(title_names_repo, "own_this", "the paper's title names the repository: a tool the paper presents"),
     list(archived_by, "own_this", "eLife's archived copy is credited to a paper author"),
     list(elife_copy, "own_this", "eLife archived it as this paper's code"),
     list(made_here & !other_paper, "own_this", "the paper says it was made for this study"),
@@ -1014,8 +1060,9 @@
     list(popular, "others_code", "a widely used tool by others"),
     list(tool & author, "own_earlier_code", "a tool by the authors"),
     list(tool, "others_code", "a tool by others"),
-    list(old & author, e, "the authors' deposit is more than 3 years older than the paper"),
-    list(old, o, "a deposit more than 3 years older than the paper, by others"),
+    list(old_last & author, e, "the authors' deposit last changed more than 3 years before the paper"),
+    # not the authors' own: theirs is judged by its last change, above (#710)
+    list(old & !(author %in% TRUE), o, "a deposit more than 3 years older than the paper, by others"),
     list(ref & author & recent, "own_this", "a reference by the authors, from about the paper's time"),
     list(ref & author, e, "an older reference by the authors"),
     list(ref, o, "a reference by others"),
