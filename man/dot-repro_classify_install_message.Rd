@@ -11,7 +11,7 @@
 column for one failed row)
 
 A package that Docker's second pass found in none of the places it looks
-(Bioconductor, the CRAN Archive, the list of known places, R-universe) is
+(Bioconductor, the CRAN Archive, the list of known places, R-Forge, R-universe) is
 \code{"source_unknown"}: the code loads it without saying where it comes from.}
 }
 \value{
