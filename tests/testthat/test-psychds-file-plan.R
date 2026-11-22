@@ -100,8 +100,29 @@ test_that("psychds_check gives each paper of a list its own row and report secti
                          structure = structure_df),
                     class = "metacheck_module_output")
   mo <- module_run(fake, "psychds_check")
-  expect_equal(mo$summary_table$required_missing, c(1, 0))
+  # A misses dataset_description.json and a data file under data/ (raw.csv is at
+  # the top: any data file met that item before #695, point 33)
+  expect_equal(mo$summary_table$required_missing, c(2, 0))
   expect_equal(sum(grepl("^#### Paper ", unlist(mo$report))), 2)
+})
+
+test_that("psychds_check's data/ item needs a data file under data/ (#695, point 33)", {
+  llm_use(FALSE)
+  p <- test_paper("a")
+  run <- function(paths) {
+    s <- data.frame(paper_id = p$paper_id, file_name = basename(paths), file_path = paths,
+                    data_type = "data", doc_role = NA_character_, group = NA_character_)
+    fake <- structure(list(module = "data_check", paper = p, structure = s,
+                           table = data.frame(paper_id = p$paper_id, source_file = paths[1], column_name = "x"),
+                           summary_table = data.frame(paper_id = p$paper_id)),
+                      class = "metacheck_module_output")
+    # dataset_description.json is missing in each, so 1 is all items but that
+    module_run(fake, "psychds_check")$summary_table$required_missing
+  }
+  expect_equal(run("raw.csv"), 2)
+  expect_equal(run("data/raw.csv"), 1)
+  expect_equal(run("project-v1/data/raw.csv"), 1)
+  expect_equal(run("a/b/data/raw.csv"), 2)
 })
 
 test_that("psychds_file_plan gives targets every operating system can write (#557)", {

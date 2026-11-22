@@ -165,6 +165,13 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   file_names_lc <- tolower(basename(current_path))
   has_dataset_desc <- any(file_names_lc == "dataset_description.json")
   has_data_files   <- any(is_data)
+  # The standard's data/ folder: a data file under "data/" at the top of the
+  # dataset, which may sit in one folder (a study's folder, or the folder a zip
+  # of the deposit unpacks into). Any data file anywhere met it, so 56 of 64
+  # Meta-Psychology papers with data files met it with none under data/ (#695,
+  # point 33).
+  in_data_dir <- grepl("^(?:[^/]+/)?data/", tolower(gsub("\\\\", "/", current_path %||% "")))
+  has_data_dir     <- any(is_data & in_data_dir)
   has_readme       <- any(!is.na(doc_role) & doc_role == "readme")
   has_changes      <- any(grepl("^changes(\\.|$)", file_names_lc))
 
@@ -181,7 +188,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       met = has_dataset_desc,
       detail = "Root metadata file describing the dataset (required)."),
     c(item = "data/ directory with data files",
-      met = has_data_files,
+      met = has_data_dir,
       detail = "At least one machine-readable data file under data/ (required)."),
     c(item = "describable variables (variableMeasured)",
       met = describable,

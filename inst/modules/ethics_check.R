@@ -246,7 +246,8 @@ ethics_check <- function(paper) {
   } else if (n_missing == 0) {
     "green"
   } else {
-    "red"
+    # yellow, not red, until a validation shows people agree with most of its red findings (#695, point 2)
+    "yellow"
   }
   summary_text <- if (n_missing > 0) {
     sprintf(

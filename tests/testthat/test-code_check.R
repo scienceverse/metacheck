@@ -1574,3 +1574,15 @@ test_that("code_check names the code files it did not check, with the reason (#7
   expect_match(rep_txt, "Julia code is recognised, but not checked")
   expect_match(rep_txt, "Git LFS pointer")
 })
+
+test_that("code_check lists a JAGS model saved as .R as not checked, not as R that does not parse (#695, point 29)", {
+  d <- file.path(tempdir(), "cc695"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines(c("model{", "  for (i in 1:N) { y[i] ~ dnorm(mu, tau) }", "  mu ~ dnorm(0, 0.001)", "}"),
+             file.path(d, "bglmm.R"))
+  writeLines("x <- 1", file.path(d, "ok.R"))
+  cc <- suppressMessages(module_run(test_paper("x"), "code_check", local_path = d, local_only = TRUE))
+  rep_txt <- paste(cc$report, collapse = " ")
+  expect_match(rep_txt, "JAGS or BUGS model", fixed = TRUE)
+  expect_false(any(cc$table$parse_error %in% TRUE))
+})

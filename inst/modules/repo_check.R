@@ -630,6 +630,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (nrow(reg_rows) > 0) {
           reg_url_to_parent <- stats::setNames(
             sprintf("https://osf.io/%s", reg_rows$parent), reg_rows$osf_url)
+          # the project as the paper links it, when it does, in whatever form:
+          # mp20233960 linked 10.17605/OSF.IO/62NXB and its registration 9NZQG,
+          # whose files went under "https://osf.io/62nxb", so the project was
+          # listed twice (#695, point 27)
+          linked_at <- match(.repo_link_same_key(reg_url_to_parent), .repo_link_same_key(osf_urls))
+          reg_url_to_parent[!is.na(linked_at)] <- osf_urls[linked_at[!is.na(linked_at)]]
         }
       }
 
@@ -669,7 +675,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           osf_node = .col_chr(osf_file_list, "project"),
           # whether the file comes from a listing of whole storages (#679);
           # dropped after .osf_storage_totals()
-          storage_listed = osf_file_list$repo_name %in% osf_full_urls
+          storage_listed = osf_file_list$repo_name %in% osf_full_urls,
+          # the registration a file was listed from, when it was put under the
+          # project (see the choice between the two below, #695 point 27)
+          reg_source = ifelse(has_parent, osf_file_list$repo_name, NA_character_)
         )
       }
 
@@ -838,6 +847,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         closed_parent_urls <- union(closed_parent_urls,
           setdiff(parent_urls_new, parent_info$osf_url))
       }
+
+      # A project and a registration made from it, both with files under the
+      # project's address: a registration is a frozen copy of the project, and
+      # listing both repeated their files. Of the project's own files and each
+      # registration's, the group with the most files is kept; on a tie the
+      # project, which is the later state (#695, point 27).
+      if (length(reg_url_to_parent) && nrow(osf_files_df) && "reg_source" %in% names(osf_files_df)) {
+        drop <- logical(nrow(osf_files_df))
+        for (p in unique(reg_url_to_parent)) {
+          rows <- which(osf_files_df$repo_url == p)
+          if (!length(rows)) next
+          group <- ifelse(is.na(osf_files_df$reg_source[rows]), "", osf_files_df$reg_source[rows])
+          n <- table(group)
+          if (length(n) < 2) next
+          keep <- names(n)[n == max(n)]
+          keep <- if ("" %in% keep) "" else keep[1]
+          drop[rows[group != keep]] <- TRUE
+        }
+        osf_files_df <- osf_files_df[!drop, , drop = FALSE]
+      }
+      if ("reg_source" %in% names(osf_files_df)) osf_files_df$reg_source <- NULL
 
       # Every parent needs exactly one repos row: closed ones flagged, public
       # ones plain (their files were just added above, or already existed if

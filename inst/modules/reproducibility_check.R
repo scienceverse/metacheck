@@ -689,7 +689,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   has_sav <- any(grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE))
   has_sps <- any(grepl("\\.sps$", c(fnames_all, code_fnames), ignore.case = TRUE))
   has_selfcontained <- any(grepl("\\.(omv|jasp|spv)$", fnames_all, ignore.case = TRUE))
-  spss_red <- has_sav && !has_sps
+  # An SPSS or Stata data file the deposit's own code reads (read_sav(),
+  # read.dta(), rio::import(), ...) is data for that code, not a sign that the
+  # analysis was left out: three Meta-Psychology papers were red although every
+  # script ran, because their R code read a .sav (#695, point 42).
+  read_code_txt <- if (!is.null(code_tbl) && "file_location" %in% names(code_tbl)) {
+    locs <- as.character(code_tbl$file_location)
+    locs <- locs[!is.na(locs) & file.exists(locs)]
+    unlist(lapply(locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
+  } else character(0)
+  sav_files <- fnames_all[grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE)]
+  sav_unread <- length(sav_files) > 0 && !all(.repro_named_in_code(sav_files, read_code_txt))
+  spss_red <- sav_unread && !has_sps
   spss_report <- if (has_sav) {
     rec <- if (!has_selfcontained)
       paste0(" Consider depositing the analysis in **jamovi** (`.omv`) or ",
@@ -698,7 +709,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "the file itself.") else
       paste0(" (A jamovi/JASP/SPSS-Viewer file is also present, which is ",
              "self-reproducible.)")
-    if (!has_sps) c("#### SPSS data without syntax", paste0(
+    if (!has_sps && !sav_unread) c("#### SPSS data", paste0(
+      "The SPSS data file", plural(length(sav_files)), " (`.sav`/`.por`) ",
+      plural(length(sav_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in SPSS syntax."))
+    else if (!has_sps) c("#### SPSS data without syntax", paste0(
       "An SPSS data file (`.sav`/`.por`) is present but **no SPSS syntax file ",
       "(`.sps`) was found**, so the analysis that produced the results cannot be ",
       "reproduced from the deposit. This is treated as a reproducibility failure ",
@@ -719,9 +734,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # only "deposit the .do file (or the .smcl log it can be recovered from)".
   has_dta <- any(grepl("\\.dta$", fnames_all, ignore.case = TRUE))
   has_do  <- any(grepl("\\.(do|ado)$", c(fnames_all, code_fnames), ignore.case = TRUE))
-  stata_red <- has_dta && !has_do
+  dta_files <- fnames_all[grepl("\\.dta$", fnames_all, ignore.case = TRUE)]
+  dta_unread <- length(dta_files) > 0 && !all(.repro_named_in_code(dta_files, read_code_txt))
+  stata_red <- dta_unread && !has_do
   stata_report <- if (has_dta) {
-    if (!has_do) c("#### Stata data without syntax", paste0(
+    if (!has_do && !dta_unread) c("#### Stata data", paste0(
+      "The Stata data file", plural(length(dta_files)), " (`.dta`) ",
+      plural(length(dta_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in a Stata do-file."))
+    else if (!has_do) c("#### Stata data without syntax", paste0(
       "A Stata data file (`.dta`) is present but **no Stata syntax file (`.do`) ",
       "or output log (`.smcl`) was found**, so the analysis that produced the ",
       "results cannot be reproduced from the deposit. This is treated as a ",

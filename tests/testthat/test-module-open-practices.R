@@ -36,7 +36,7 @@ test_that("open_practices paperlist", {
   paper <- test_paper("Data are available at https://osf.io/hk4yq/; raw data on request.")
   mo <- module_run(paper, module)
   expect_equal(mo$summary_table$data_open, TRUE)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
 })
 
 

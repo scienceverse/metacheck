@@ -69,13 +69,15 @@ ref_consistency <- function(paper) {
   # traffic light ----
   tl <- dplyr::case_when(
     nrow(bibs) == 0 ~ "na",
-    nrow(table) > 0 ~ "red",
+    # yellow, not red: in the Meta-Psychology run it was red for 146 of 149 papers,
+    # mostly for faults of the PDF conversion (#695, point 2)
+    nrow(table) > 0 ~ "yellow",
     .default = "green"
   )
 
   # report ----
   report <- c(
-    red = "There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text",
+    yellow = "There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text",
     green = "All cross-references were in the bibliography and bibliography entries were cross-referenced in the text",
     na = "No bibliography entries were detected"
   )

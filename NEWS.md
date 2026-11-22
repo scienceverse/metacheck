@@ -1,5 +1,16 @@
 # metacheck 0.4.4
 
+* More faults from the Meta-Psychology run (#695) and #590:
+  * ref_consistency, codebook_check, ethics_check, power and open_practices give yellow ("look at this") where they gave red, until a validation shows that people agree with most of their red findings: they were red for 146, 53, 50, 44 and 70 of 149 papers, often where a person would not agree (point 2).
+  * ref_pubpeer leaves Statcheck's automatic comment out of a reference's count and its commenters also where others commented: only references Statcheck alone commented on were left out, so "excluding Statcheck" held in part (point 14). The report names the commenters.
+  * repo_check lists an OSF project once when the paper links it and a registration made from it: the registration's files went under the project's address in another form ("osf.io/62nxb" beside "10.17605/OSF.IO/62NXB"), so the project seemed listed twice (mp20233960). Of the project's own files and the registration's, the group with the most files is kept; on a tie the project, the later state (point 27).
+  * code_check lists a JAGS or BUGS model saved with an .R ending (`model {` first) among the files not checked, not as R that does not parse (point 29).
+  * Columns at the right end of a table that have neither a name nor a value are left out when a whole file is read (`.drop_trailing_blank_cols()`): a spreadsheet saved with all 16,384 columns gave 16,294 "empty column" findings for one CSV (point 31).
+  * psychds_check's "data/ directory with data files" needs a data file under `data/` (at the top, or in one folder above it), as the standard says; any data file anywhere met it (point 33).
+  * code_check reads packages named in a vector given to an install-and-load function the script defines (`ipak(packages)`), to `for (p in c(...))`, or to `sapply(c(...), library, ...)` (`.code_loader_functions()`): Gmisc, epitools and fGarch were not installed (point 34). On the 611 R files of the Meta-Psychology run, only the three files concerned get other packages, and none loses one.
+  * An SPSS or Stata data file that the deposit's own code reads no longer makes reproducibility_check red as data without syntax (`.repro_named_in_code()`): three papers were red although every script ran (point 42).
+  * A script that stopped on a folder Metacheck then made for another script runs once more too: of four figure scripts that stopped on "Figures/" in 10.1111/1365-2664.14445, only the first was run again (#590).
+
 * A repository data_check refused for its number of files (`max_files_per_repo`, #702) is named by the checks after it (#706). data_check returns it as `count_refused`, and code_check, codebook_check, psychds_check and reproducibility_check name it and are yellow; code_check reported "We found 0 R, 0 Python, ... code files", with no light, for 10.1111/2041-210X.13428 (369,548 files), because data_check's `structure` no longer has that repository's rows.
 
 * Faults from the Meta-Psychology run (#695) and #593, #590:

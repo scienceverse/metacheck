@@ -446,6 +446,13 @@ code_check <- function(paper, local_path = NULL,
         file_lines <- code_read(file_path)
       }
       if (fetched_copy) unlink(file_path)
+      # A JAGS or BUGS model saved with an .R ending ("model {" first, as
+      # .repro_is_jags_model() reads it) is no R code: it was reported as R that
+      # does not parse (mp2017840's bglmm.R, #695 point 29)
+      if (identical(the_file$language, "R") && !is_rmd && !is_qmd &&
+          .repro_is_jags_model(file_lines, the_file$file_name))
+        stop(paste("it was not checked, because it is a JAGS or BUGS model saved with an .R",
+                   "ending, not R code"), call. = FALSE)
 
       # Side-collect R text for the version-pinning scan after this loop
       # (.code_version_pin_check()'s groundhog/checkpoint detection), keyed

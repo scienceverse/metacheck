@@ -621,7 +621,7 @@ test_that("with no codebook the report says so instead of showing an empty table
   rpt <- paste(cc$report, collapse = "\n")
   expect_match(rpt, "No codebook or README documentation was found", fixed = TRUE)
   expect_false(grepl("#### Column Documentation", rpt, fixed = TRUE))
-  expect_equal(cc$traffic_light, "red")
+  expect_equal(cc$traffic_light, "yellow")   # yellow, not red (#695, point 2)
 })
 
 test_that("codebook_check emits plain headings instead of a tabset in simple mode", {
