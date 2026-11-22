@@ -1599,23 +1599,43 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # could not unpack (encrypted, or compressed with a method metacheck cannot
 # unpack): before, they were named only in a message during the run, and the
 # checks did not see them. `failed` has the columns archive, file_name and
-# reason (.expand_zip()'s attribute "unpack_failed"). Returns list(report,
-# summary), NULL when none.
+# reason (.expand_zip()'s attribute "unpack_failed"); a row whose file_name is
+# NA is a whole archive that could not be opened (.archive_unopened()).
+# Returns list(report, summary), NULL when none.
 .unzip_failed_text <- function(failed) {
   none <- list(report = NULL, summary = NULL)
   if (!is.data.frame(failed) || !nrow(failed)) return(none)
   failed <- failed[!duplicated(paste(failed$archive, failed$file_name)), , drop = FALSE]
-  n <- nrow(failed)
-  lines <- vapply(split(failed, factor(failed$archive, unique(failed$archive))), function(f)
+  whole <- is.na(failed$file_name)
+  arch <- failed[whole, , drop = FALSE]
+  memb <- failed[!whole, , drop = FALSE]
+  n <- nrow(memb)
+  lines <- if (n) vapply(split(memb, factor(memb$archive, unique(memb$archive))), function(f)
     paste0("- ", .unzip_failed_note(data.frame(name = f$file_name, path = NA_character_,
                                                 reason = f$reason), sprintf("`%s`", f$archive[1])), "."),
     character(1))
+  sent <- c(
+    if (nrow(arch)) sprintf("%d archive%s in the repository could not be opened, so the checks did not see %s files",
+                            nrow(arch), plural(nrow(arch)), plural(nrow(arch), "its", "their")),
+    if (n) sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s",
+                   n, plural(n), plural(n, "it", "them")))
   list(report = c("#### Files that could not be unpacked",
-                  sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s:",
-                          n, plural(n), plural(n, "it", "them")),
-                  "", unname(lines)),
-       summary = sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s.",
-                         n, plural(n), plural(n, "it", "them")))
+                  paste0(paste(sent, collapse = "; "), ":"), "",
+                  sprintf("- `%s` could not be opened (%s).", arch$archive, arch$reason),
+                  unname(lines)),
+       summary = paste0(paste(sent, collapse = "; "), "."))
+}
+
+# An archive that could not be opened at all (damaged, or cut off: a zip
+# without its central directory, #703), as the empty result of .expand_zip(),
+# .expand_tar() or .expand_compressed() with the attribute "unpack_failed":
+# before, it was dropped without a word, and a repository holding only such an
+# archive was reported as having no files.
+.archive_unopened <- function(empty, row, path) {
+  attr(empty, "unpack_failed") <- data.frame(
+    archive = .archive_label(row, path), file_name = NA_character_,
+    reason = "it is damaged or incomplete")
+  empty
 }
 
 # A sentence naming the members .unzip_all() could not write and why, for a
@@ -1697,9 +1717,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   base <- basename(name)
   types <- data_classify_files(base)
   roles <- .data_doc_role(base)
-  (types %in% c("data", "code") |
-     (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
-    !(types %in% skip_types) &
+  # an archive inside the archive is kept too, so data_check opens it in turn
+  # (zips inside zips were not opened, #700)
+  inner_archive <- .is_zip(base) | .is_tar_archive(base) | .is_single_compress(base)
+  (((types %in% c("data", "code") |
+       (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
+      !(types %in% skip_types)) | inner_archive) &
     !grepl("(^|/)__MACOSX/", name) & !.is_useless_file(name)
 }
 
@@ -1901,7 +1924,8 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   # names in valid UTF-8; a member stored under the old DOS characters is
   # taken out by its position (.unzip_all())
   entries <- .unzip_list(zip_path)
-  if (is.null(entries) || nrow(entries) == 0) return(empty)
+  if (is.null(entries)) return(.archive_unopened(empty, zip_row, zip_path))
+  if (nrow(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries$Name), , drop = FALSE]
   keep <- .archive_keep(entries$Name, skip_types)
   over <- keep & entries$Length > max_bytes
@@ -1964,7 +1988,8 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   dest <- .archive_dest(tar_path)
   entries <- tryCatch(utils::untar(tar_path, list = TRUE), error = function(e) NULL,
                       warning = function(w) NULL)
-  if (is.null(entries) || length(entries) == 0) return(empty)
+  if (is.null(entries)) return(.archive_unopened(empty, tar_row, tar_path))
+  if (length(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries, useBytes = TRUE)]
   # A tar records no character set for its names: a name that is not valid
   # UTF-8 is read as Latin-1, as other text files are (.utf8_lines()); text
@@ -2102,7 +2127,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
         else if (identical(status, "no_room"))
           .with_oversize(empty, gz_row, .archive_label(gz_row, gz_path), inner_name, NA,
                          archive = gz_path, attr_name = "over_budget")
-        else empty)
+        else .archive_unopened(empty, gz_row, gz_path))
     }
     .move_extracted(dirname(part), dest, inner_name)
   }

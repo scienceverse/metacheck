@@ -19,7 +19,8 @@
 # issue #462, a 16-digit ID sliced into two bogus "invalid date" violations).
 #
 # Deliberately does NOT check case (lowercase-vs-uppercase is acceptable — the
-# user confirmed this is not worth flagging even as a suggestion) or
+# user confirmed this is not worth flagging even as a suggestion; two paths
+# that differ ONLY in case are a different matter, "case-clash", #700) or
 # underscore-vs-dash separator consistency: that convention (from the
 # manuscript) is aimed at generic tools that parse a filename positionally.
 # metacheck's own classifiers (file_category(), data_classify_files(),
@@ -129,7 +130,8 @@
   "path-length-255"      = "bad",
   "path-length-228"      = "suggestion",
   "directory-length-100" = "suggestion",
-  "filename-length-50"   = "suggestion"
+  "filename-length-50"   = "suggestion",
+  "case-clash"           = "bad"
 )
 
 # Check ONE filename (basename only, no directory) against the naming-
@@ -257,6 +259,32 @@
     stringsAsFactors = FALSE)
 }
 
+# Paths of one repository that differ only in capital letters ("data.csv",
+# "Data.csv"): on Windows and macOS they cannot be stored side by side, so
+# unpacked or downloaded there one replaces the other (#700). `repo` groups the
+# paths by repository (NULL: all one repository). Returns a data.frame
+# (file_name, rule, detail), one row per such path, 0 rows when none.
+.file_naming_check_case <- function(file_path, repo = NULL) {
+  none <- data.frame(file_name = character(0), rule = character(0),
+                     detail = character(0), stringsAsFactors = FALSE)
+  repo <- if (is.null(repo)) rep("", length(file_path)) else rep_len(as.character(repo), length(file_path))
+  ok <- !is.na(file_path)
+  out <- lapply(split(file_path[ok], addNA(factor(repo[ok]), ifany = TRUE)), function(p) {
+    p <- unique(p)
+    low <- tolower(p)
+    clash <- low %in% low[duplicated(low)]
+    if (!any(clash)) return(NULL)
+    p <- p[clash]; low <- low[clash]
+    others <- vapply(seq_along(p), function(i)
+      paste(p[low == low[i] & p != p[i]], collapse = ", "), character(1))
+    data.frame(file_name = p, rule = "case-clash",
+               detail = sprintf("The path differs only in capital letters from %s: on Windows and macOS the two cannot be stored side by side, so one replaces the other", others),
+               stringsAsFactors = FALSE)
+  })
+  out <- do.call(rbind, out)
+  if (is.null(out)) none else out
+}
+
 #' Check repository files against the FAIR file-naming conventions
 #'
 #' Checks every file's name against the naming conventions from the metacheck
@@ -271,6 +299,9 @@
 #'   everything else only needs the basename)
 #' @param data_type not used any more: it was only used for a rule that made
 #'   a file of an unknown type a naming problem, which was removed (#648)
+#' @param repo optional repository of each file: paths that differ only in
+#'   capital letters are looked for within each repository (default: all files
+#'   are one repository)
 #'
 #' @returns a data.frame with one row per naming violation: `file_name`,
 #'   `rule`, `severity` (`"bad"` or `"suggestion"` — see Details), `detail`.
@@ -278,7 +309,8 @@
 #'
 #' @details
 #' Rules split into two severities. `"bad"`: spaces, special characters,
-#' diacritics, and exceeding the hard 255-character path limit — these break
+#' diacritics, exceeding the hard 255-character path limit, and a path that
+#' differs only in capital letters from another in the same repository — these break
 #' something real. `"suggestion"`: unpadded sibling numbering and the softer
 #' 228/100/50 path-length budgets — real conventions worth following, but nothing in
 #' metacheck's own classification or ordering logic actually depends on them
@@ -293,7 +325,7 @@
 #' @examples
 #' check_file_naming(c("data final (2).csv", "analysis.R", "My Data.xlsx"))
 check_file_naming <- function(file_name, file_path = file_name,
-                              data_type = NA_character_) {
+                              data_type = NA_character_, repo = NULL) {
   n <- length(file_name)
   if (n == 0) return(data.frame(
     file_name = character(0), rule = character(0), severity = character(0),
@@ -332,8 +364,9 @@ check_file_naming <- function(file_name, file_path = file_name,
 
   padding <- .file_naming_check_padding(file_name[!is.na(file_name)])
   length_issues <- .file_naming_check_length(file_path[!is.na(file_path)])
+  case_issues <- .file_naming_check_case(file_path, repo)
 
-  out <- rbind(per_file, padding, length_issues)
+  out <- rbind(per_file, padding, length_issues, case_issues)
   out$severity <- unname(.file_naming_severity[out$rule])
   out <- out[, c("file_name", "rule", "severity", "detail")]
   if (nrow(out)) out$file_name <- as_given(out$file_name)

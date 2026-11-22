@@ -254,3 +254,12 @@ test_that("the rules are betterleaks' rules of high and medium confidence, all r
   expect_true(all(readable))
   expect_true(all(lengths(x$patterns$keywords) > 0))
 })
+
+test_that(".tolower_long() gives tolower()'s result, long texts a line at a time (#702)", {
+  u <- enc2utf8("Z\u00dcRICH/D\u00c9F.CSV\n")
+  long <- paste(rep(u, 3000), collapse = "")
+  one_line <- paste(rep("\u00c9AB", 5000), collapse = "")
+  x <- c(long, paste0(long, "\n\n"), "\n", "", NA, "ABC", one_line, paste0("A\n", one_line, "\nB"))
+  expect_identical(.tolower_long(x, max_chars = 1000L), tolower(x))
+  expect_identical(.tolower_long(character(0)), character(0))
+})

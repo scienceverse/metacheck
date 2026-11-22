@@ -2922,13 +2922,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   if (is.null(results) || !nrow(results)) return(list())
   f <- list.files(root, recursive = TRUE, full.names = TRUE)
   f <- f[!grepl("/(_rlib|_pylib2?)/", gsub("\\\\", "/", f))]
-  sz <- file.size(f)
-  small <- f[!is.na(sz) & sz < 1024]
-  is_ptr <- vapply(small, function(p) {
-    l <- tryCatch(.utf8_lines(readLines(p, n = 1, warn = FALSE)), error = function(e) character(0))
-    length(l) && startsWith(l[1], "version https://git-lfs.github.com/spec/")
-  }, logical(1))
-  ptr <- unique(basename(small[is_ptr]))
+  ptr <- unique(basename(f[!is.na(.lfs_pointer_size(f))]))
   if (!length(ptr)) return(list())
   stopped <- which(results$outcome %in% "errored")
   out <- lapply(stopped, function(i) {
@@ -2959,15 +2953,11 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   src <- unique(sources[!is.na(sources) & file.exists(sources %||% "")])
   if (!length(src)) return(none)
   size <- file.size(src)
-  small <- src[!is.na(size) & size < 1024]
-  if (!length(small)) return(none)
-  stated <- vapply(small, function(f) {
-    l <- tryCatch(.utf8_lines(readLines(f, n = 3, warn = FALSE)), error = function(e) character(0))
-    if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) return(NA_real_)
-    s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
-    if (is.na(s)) NA_real_ else s
-  }, numeric(1))
-  pointers <- small[!is.na(stated)]
+  # a pointer that states no size has no file to swap in
+  stated <- .lfs_pointer_size(src)
+  stated[stated %in% -1] <- NA
+  names(stated) <- src
+  pointers <- src[!is.na(stated)]
   if (!length(pointers)) return(none)
   rows <- lapply(pointers, function(p) {
     same <- src[tolower(basename(src)) == tolower(basename(p)) & size == stated[[p]] & src != p]

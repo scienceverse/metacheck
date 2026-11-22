@@ -361,3 +361,19 @@ test_that(".meta_col and its helpers turn a deposit's people and text into one s
   expect_equal(metacheck:::.meta_text("<p>We analysed&nbsp;the   field</p>"), "We analysed the field")
   expect_equal(nchar(metacheck:::.meta_text(strrep("a", 2000), 100)), 100)
 })
+
+test_that(".lfs_pointer_size() tells a Git LFS pointer from other files (#700)", {
+  d <- file.path(tempdir(), "lfs700"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines(c("version https://git-lfs.github.com/spec/v1",
+               "oid sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393",
+               "size 734003200"), file.path(d, "large_data.csv"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:ab"), file.path(d, "nosize.csv"))
+  writeLines(c("a,b", "1,2"), file.path(d, "real.csv"))
+  f <- file.path(d, c("large_data.csv", "nosize.csv", "real.csv", "absent.csv"))
+  expect_equal(.lfs_pointer_size(f), c(734003200, -1, NA, NA))
+  txt <- .lfs_pointer_text("git_lfs/large_data.csv", 734003200)
+  expect_match(txt$summary, "^1 file is a Git LFS pointer")
+  expect_true("- `git_lfs/large_data.csv` (the file itself is 700.0 MB)" %in% txt$report)
+  expect_null(.lfs_pointer_text(character(0), numeric(0))$summary)
+})

@@ -8,7 +8,7 @@ download_repo_files(
   files,
   max_file_size = 100,
   max_download_size = 500,
-  max_files_per_repo = Inf,
+  max_files_per_repo = 1e+05,
   repo_file_counts = NULL,
   repo_listing = NULL,
   zip_timeout_s = 120,
@@ -30,7 +30,8 @@ on disk is still held to this budget.}
 
 \item{max_files_per_repo}{largest file COUNT a single repository may have
 before it is refused outright (same \code{"gated"} reporting as the size caps
-above), default \code{Inf} (no cap). The count is the repository's full listing
+above), default 100,000 (\code{Inf} for no cap; it was \code{Inf} until #702). The
+count is the repository's full listing
 (\code{repo_file_counts}, else \code{repo_listing}), files repo_check found inside
 its archives included, and a refused repository has none of its files
 fetched, also none from inside its archives (#699). Unlike \code{max_file_size}/\code{max_download_size},

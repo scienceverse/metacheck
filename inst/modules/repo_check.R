@@ -994,6 +994,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   github_files_df <- data.frame(repo_name = character(0))
+  # symbolic links of GitHub repositories, left out of the files (#700)
+  symlinks <- NULL
   if (length(github_urls) > 0) {
     # github_tree_files() fetches repo metadata + full tree in 2 API requests
     # (vs. N recursive /contents/ calls), so a repository is listed in full
@@ -1051,6 +1053,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
 
+    symlinks <- dplyr::bind_rows(lapply(names(gh_results), function(u) {
+      l <- gh_results[[u]]$links
+      if (NROW(l)) data.frame(repo_url = u, l)
+    }))
+    if (!NROW(symlinks)) symlinks <- NULL
     good_files <- Filter(Negate(is.null),
                          lapply(gh_results, \(r) if (!isTRUE(r$gated)) r$files else NULL))
     if (length(good_files) > 0) {
@@ -2676,6 +2683,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       kinds_of(useless_files$kind[!is_problem]),
       plural(n_useless_suggestion, "it", "them"), plural(n_useless_suggestion, "it", "them"))
   )
+  # Symbolic links, left out of the files (#700)
+  n_links <- NROW(symlinks)
+  summary_symlinks <- if (n_links) sprintf(
+    "We left out %d symbolic link%s: a link is stored as a small text file holding the path of the file it points to, so the checks would read that path as the file's content.",
+    n_links, plural(n_links))
+  report_symlinks <- if (n_links) c(
+    "#### Symbolic links",
+    paste(summary_symlinks, "Put the file itself in the repository instead of a link to it."),
+    "",
+    sprintf("- `%s` (%s) %s", symlinks$path, symlinks$repo_url,
+            ifelse(is.na(symlinks$target), "points to a file we could not read",
+                   sprintf("points to `%s`%s", symlinks$target,
+                           ifelse(symlinks$broken %in% TRUE, ", which is not in the repository", "")))))
   report_useless <- if (n_useless > 0) c(
     "#### Files that do not belong in the repository",
     sprintf(paste(
@@ -2728,10 +2748,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A LICENSE is collection-level exactly like the readme (one licence for the
   # whole deposit, never one per study), so it is excluded from per-study
   # grouping the same way — see the "license" doc_role in .data_doc_role().
+  # (the path is read only for the readme and licence rows: for every file it
+  # took 14 minutes in a repository of 369,548 files, #702)
   is_root_readme <- !is.na(all_files$doc_role) &
-    all_files$doc_role %in% c("readme", "license") &
-    is.na(.data_group_from_path(path_for_group)) &
-    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group))
+    all_files$doc_role %in% c("readme", "license")
+  is_root_readme[is_root_readme] <-
+    is.na(.data_group_from_path(path_for_group[is_root_readme])) &
+    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group[is_root_readme]))
   is_root_readme[is.na(is_root_readme)] <- FALSE
 
   all_files$group <- rep(NA_character_, nrow(all_files))
@@ -3321,7 +3344,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   naming_issues <- check_file_naming(
     all_files$file_name,
     file_path = all_files$file_path %||% all_files$file_name,
-    data_type = all_files$data_type)
+    data_type = all_files$data_type, repo = all_files$repo_url)
   naming_bad <- naming_issues[naming_issues$severity == "bad", , drop = FALSE]
   naming_suggest <- naming_issues[naming_issues$severity == "suggestion", , drop = FALSE]
   n_naming_bad <- nrow(naming_bad)
@@ -3352,7 +3375,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       lapply(function(df) {
         pf <- check_file_naming(
           df$file_name, file_path = df$file_path %||% df$file_name,
-          data_type = df$data_type)
+          data_type = df$data_type, repo = df$repo_url)
         if (nrow(pf) > 0) pf$paper_id <- df$paper_id[[1]]
         pf
       })
@@ -3500,6 +3523,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_roster,
     report_naming,
     report_useless,
+    report_symlinks,
     report_classification
   )
 
@@ -3601,7 +3625,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_unknown,
     summary_roster,
     summary_naming,
-    summary_useless
+    summary_useless,
+    summary_symlinks
   ) |>
     paste("\n- ", x = _, collapse = "")
 
@@ -3654,6 +3679,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Files that do not belong in a repository, left out of `table`: paper_id,
     # repo_url, file_path, kind and severity ("problem" or "suggestion").
     useless_files = useless_files,
+    # Symbolic links of GitHub repositories, left out of `table` (#700):
+    # repo_url, path, target (NA when it could not be read) and broken.
+    symlinks = symlinks,
     # Private OSF projects and ResearchBox boxes whose files were read through
     # a view-only or peer-review link in the paper: paper_id, repo_url (the
     # link) and project (its plain address).

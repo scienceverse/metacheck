@@ -1714,7 +1714,18 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
   pilot_study_pat <- paste0("(?<![a-z])pilot[ ._-]?(?:study|experiment|expt?)?[ ._-]?([0-9]{1,2})",
                             num_end, "([a-z](?![a-z]))?")
   pilot_pat <- "(?<![a-z])pilot[ ._-]?([0-9]{1,2})?"
-  vapply(paths, function(path) {
+  # Only a path with "pilot", or a study word followed by a digit, can match
+  # one of the patterns below; one test over all paths finds those, and each
+  # distinct one is read once. Before, every path went through the patterns
+  # one part at a time: 14 minutes for 369,548 files, four times per paper
+  # (#702).
+  out <- rep(NA_character_, length(paths))
+  low <- tolower(paths)
+  cand <- !is.na(paths) & nzchar(paths) &
+    grepl("pilot|(?:experiment|study|(?<![a-z])expt?|(?<![a-z])ex)[ ._-]?[0-9]", low, perl = TRUE)
+  if (!any(cand)) return(out)
+  todo <- unique(paths[cand])
+  found <- vapply(todo, function(path) {
     if (is.na(path) || !nzchar(path)) return(NA_character_)
     parts <- rev(strsplit(tolower(path), "/", fixed = TRUE)[[1]])
     for (part in parts) {
@@ -1728,6 +1739,8 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
     }
     NA_character_
   }, character(1), USE.NAMES = FALSE)
+  out[cand] <- found[match(paths[cand], todo)]
+  out
 }
 
 # Read a one-letter study label in a file path, "Shift_E1A.csv" (Experiment 1A)

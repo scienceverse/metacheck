@@ -147,3 +147,28 @@ test_that(".file_tree_block names a local folder by its own name (Lakens/tue_dat
   files$repo_url <- "https://osf.io/abcde/"
   expect_equal(.file_tree_block(files)[[3]], "**Repository: https://osf.io/abcde/**")
 })
+
+test_that("the tree of a large repository is drawn quickly and cut at .file_tree_max_lines (#702)", {
+  n <- 20000
+  p <- sprintf("site%03d/plot%02d/day%06d.csv", rep(1:200, length.out = n), rep(1:20, length.out = n), seq_len(n))
+  files <- data.frame(repo_url = "https://zenodo.org/records/1", file_path = p,
+                      file_name = basename(p), data_type = "data", doc_role = NA)
+  t <- system.time(block <- .file_tree_block(files))[["elapsed"]]
+  expect_lt(t, 30)
+  lines <- strsplit(block[grepl("^:::", block)], "\n", fixed = TRUE)[[1]]
+  expect_equal(sum(!grepl("^(:::|```)", lines)), .file_tree_max_lines + 1L)
+  expect_match(lines[length(lines) - 2], "^\\(and [0-9,]+ more files and folders, not shown\\)$")
+})
+
+test_that("a repository whose files are all inside a junk folder gets a tree (#703)", {
+  junk <- data.frame(repo_url = "https://osf.io/abcde",
+                     file_path = c("__MACOSX/._a.csv", "__MACOSX/._b.csv"))
+  block <- .file_tree_block(NULL, NULL, junk)
+  expect_true(any(grepl("__MACOSX/\\s+junk: remove \\(2 files\\)", block)))
+})
+
+test_that(".path_ancestors() gives every folder above each path", {
+  a <- .path_ancestors(c("a/b/c.csv", "x.csv", "a/", "/r/s"))
+  expect_equal(a$i, c(1L, 1L, 4L, 4L))
+  expect_equal(a$prefix, c("a", "a/b", "", "/r"))
+})
