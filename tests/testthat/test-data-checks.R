@@ -1886,6 +1886,49 @@ test_that("data_check and code_check refuse a repository over max_files_per_repo
   expect_equal(nrow(.repos_over_count(data.frame(repo_url = "a"), Inf)), 0)
 })
 
+test_that("the checks after data_check name a repository it refused for its number of files (#706)", {
+  p <- test_paper("x")
+  msg <- .repo_count_message("https://doi.org/10.5281/zenodo.3826426", 369548, 100000)
+  refused <- data.frame(repo_url = "https://doi.org/10.5281/zenodo.3826426", n_files = 369548L, message = msg)
+  none <- data.frame(paper_id = character(0), file_name = character(0), file_path = character(0),
+                     repo_url = character(0), file_url = character(0), file_location = character(0),
+                     file_size = numeric(0))
+  dc <- structure(list(module = "data_check", paper = p, table = none, structure = none,
+                       count_refused = refused, traffic_light = "yellow",
+                       summary_table = data.frame(paper_id = p$paper_id), prev_outputs = list()),
+                  class = "metacheck_module_output")
+  cc <- suppressMessages(module_run(dc, "code_check", download = FALSE))
+  expect_equal(cc$traffic_light, "yellow")
+  expect_match(cc$summary_text, "holds 369548 files, exceeding the 100000-file cap", fixed = TRUE)
+  expect_equal(cc$count_refused$repo_url, refused$repo_url)
+  cb <- suppressMessages(module_run(dc, "codebook_check"))
+  expect_equal(cb$traffic_light, "yellow")
+  expect_match(cb$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  ps <- suppressMessages(module_run(dc, "psychds_check"))
+  expect_equal(ps$traffic_light, "yellow")
+  expect_match(ps$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  rc <- suppressMessages(module_run(cc, "reproducibility_check", execute = FALSE))
+  expect_equal(rc$traffic_light, "yellow")
+  expect_match(rc$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  # nothing refused: as before
+  expect_null(.count_refused_note("x", refused[0, ]))
+  expect_equal(nrow(.count_refused_add(refused, refused)), 1)
+  expect_equal(nrow(.count_refused_add(refused[0, ], NULL)), 0)
+})
+
+test_that("reproducibility_check runs when code_check's files_written holds only NA (#695, point 41)", {
+  # a paper with only a JASP file: the column is logical, and strsplit() stopped
+  # on it with "non-character argument" (mp20202538)
+  p <- test_paper("x")
+  ct <- data.frame(paper_id = p$paper_id, file_name = "a.jasp", file_path = "a.jasp",
+                   repo_url = "r", language = "JASP", files_written = NA)
+  cc <- structure(list(module = "code_check", paper = p, table = ct,
+                       summary_table = data.frame(paper_id = p$paper_id), prev_outputs = list()),
+                  class = "metacheck_module_output")
+  expect_no_error(rc <- suppressMessages(module_run(cc, "reproducibility_check", execute = FALSE)))
+  expect_false(identical(rc$traffic_light, "fail"))
+})
+
 test_that(".data_group_from_path() reads only paths that can hold a study label, with the same results (#702)", {
   p <- c("Study 1/data.csv", "pilot/x.csv", "Pilot Study 1A/a.csv", "exp2/b.csv", "text1.csv",
          "study2_2019.csv", "a/b/c", NA, "", "index2.csv", "Study 1/data.csv")

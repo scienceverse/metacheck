@@ -291,6 +291,25 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
              message = .repo_count_message(names(over), over, max_files_per_repo))
 }
 
+# The repositories an earlier check refused for their number of files (data_check's
+# or code_check's `count_refused`), added to a check's own (#706): data_check's
+# `structure` no longer has their rows, so a later check that counts its files
+# cannot see them, and code_check reported "0 code files" as if there were none.
+.count_refused_add <- function(own, earlier) {
+  if (!is.data.frame(earlier) || !nrow(earlier) || !"repo_url" %in% names(earlier)) return(own)
+  as.data.frame(dplyr::bind_rows(own, earlier[!earlier$repo_url %in% own$repo_url, , drop = FALSE]))
+}
+
+# A check that found nothing to check names the repositories an earlier check
+# refused for their number of files, and is then yellow, not "na" (#706). `text`
+# is its own sentence; returns list(summary_text, traffic_light), or NULL when
+# none was refused.
+.count_refused_note <- function(text, refused) {
+  if (!is.data.frame(refused) || !nrow(refused) || !"message" %in% names(refused)) return(NULL)
+  list(summary_text = paste("\n- ", c(text, refused$message), collapse = ""),
+       traffic_light = "yellow")
+}
+
 # The report section and summary sentence for repositories repo_check could
 # not list in full (#681), for code_check and data_check: OSF projects listed
 # only in part (repo_check's `partial_repos`, with `reason` "request limit"

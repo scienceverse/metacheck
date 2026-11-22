@@ -771,3 +771,20 @@ test_that("codebook_check labels the columns of a local folder checked without a
   expect_equal(mo$table$label_status, c("labelled", "labelled"))
   expect_equal(mo$table$label[mo$table$column_name == "age"], "Age in years")
 })
+
+test_that("the model's match to a codebook variable without a label does not label a column (#695, point 32)", {
+  testthat::local_mocked_bindings(llm = function(...) {
+    r <- data.frame(column_name = c("q1", "q2"), codebook_variable = c("Q_one", "Q_two"))
+    attr(r, "llm") <- list(model = "fake")
+    r
+  })
+  labels_df <- data.frame(paper_id = "p", source_file = "d.csv", column_name = c("q1", "q2"),
+                          label = NA_character_, codebook_variable = NA_character_,
+                          label_source = NA_character_, label_status = "unlabelled",
+                          label_method = NA_character_)
+  cb <- data.frame(paper_id = "p", codebook_variable = c("Q_one", "Q_two"),
+                   label = c("First question", NA), codebook_source = "cb.csv")
+  out <- .cbc$codebook_match_llm(labels_df, data.frame(), cb, model = "x", params = list())$labels_df
+  expect_equal(out$label_status, c("llm", "unlabelled"))
+  expect_equal(out$label[1], "First question")
+})
