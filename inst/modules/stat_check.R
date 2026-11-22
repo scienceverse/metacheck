@@ -8,7 +8,7 @@
 #'
 #' Statcheck was developed by Michèle Nuijten and Sascha Epskamp.
 #'
-#' Statcheck considers p = 0.000 an error, as you should report p < 0.001. Furthermore, p < 0.03 is an error if the p-value was 0.031, and one should simply report exact p-values (p = 0.031). When the sentence of a test says it is one-sided ("one-tailed", "one-sided" or "directional"), a p-value that fits a one-sided test counts as consistent (statcheck's `OneTailedTxt` setting; #695). Statcheck might still miss one-sided tests that are described in another sentence, and falsely assume the p-value is incorrect. For more information, see [StatCheck](https://statcheck.io/).
+#' Statcheck considers p = 0.000 an error, as you should report p < 0.001. Furthermore, p < 0.03 is an error if the p-value was 0.031, and one should simply report exact p-values (p = 0.031). When the sentence of a test says it is one-sided ("one-tailed", "one-sided" or "directional"), a p-value that fits a one-sided test counts as consistent (statcheck's `OneTailedTxt` setting; #695). When the paper says anywhere that its tests are one-sided, a p-value that fits a one-sided test in either direction counts as consistent too: half the two-sided p, or 1 minus that half for an effect against the predicted direction. Equivalence tests (TOST) are left out, as their p-values do not test the difference. A statistic written with "<" or ">" is read as a bound, and in a sentence about equal variances an F-test's two-sided p (twice the one-tailed p) counts as consistent. For more information, see [StatCheck](https://statcheck.io/).
 #'
 #' This module only checks statistical results reported in the running text of the manuscript. It cannot (yet) process statistics reported only in tables.
 #'
@@ -56,6 +56,28 @@ stat_check <- function(paper) {
   stat_filter <- (stat_table$test_type == "t") |
     (stat_table$test_type == "F")
   table <- stat_table[stat_filter, ]
+
+  # An equivalence test (TOST) reports the p of a test against the equivalence
+  # bounds, not of the difference, so statcheck's p cannot be compared with it:
+  # mp20202474's two equivalence tests were flagged (#695, point 5)
+  table <- table[!grepl("\\bequivalence\\s+(?:tests?|testing|bounds?|margins?|intervals?|ranges?)\\b|\\bTOST\\b|\\btwo\\s+one[- ]sided\\s+tests?\\b",
+                        table$text %||% rep("", nrow(table)), ignore.case = TRUE, perl = TRUE), , drop = FALSE]
+  # In a paper that says its tests are one-sided, anywhere in its text, a p that
+  # fits a one-sided test in either direction is consistent (#695, point 5; see
+  # .paper_says_one_sided() and .stat_one_sided_fits())
+  if (nrow(table)) {
+    one_sided <- .paper_says_one_sided(paper)
+    in_paper <- one_sided[as.character(table$paper_id)] %in% TRUE
+    fits <- .stat_one_sided_fits(table)
+    table$one_sided_fit <- table$error %in% TRUE & in_paper & fits %in% TRUE
+    table$error[table$one_sided_fit] <- FALSE
+    table$decision_error[table$one_sided_fit] <- FALSE
+    # a statistic written with "<" or ">" is a bound, and an F-test for equal
+    # variances reports a two-sided p (#695, point 6; see .stat_bound_or_variance_fits())
+    table$bound_or_variance_fit <- table$error %in% TRUE & .stat_bound_or_variance_fits(table) %in% TRUE
+    table$error[table$bound_or_variance_fit] <- FALSE
+    table$decision_error[table$bound_or_variance_fit] <- FALSE
+  }
 
   # no validated stats
   if (nrow(table) == 0) {

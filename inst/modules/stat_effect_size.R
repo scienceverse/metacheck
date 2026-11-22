@@ -175,6 +175,8 @@ stat_effect_size <- function(paper) {
       d_implied_indep_equal_n = NA_character_,
       d_implied_indep_unequal_min = NA_character_,
       d_implied_indep_unequal_max = NA_character_,
+      d_implied_paired_gz = NA_character_,
+      d_implied_indep_equal_n_g = NA_character_,
       d_implied_n = NA_character_,
       d_coherence = NA_character_,
       d_coherence_assumption = NA_character_,
@@ -236,6 +238,14 @@ stat_effect_size <- function(paper) {
     out$d_implied_paired_dz <- as.character(d_paired_dz)
     out$d_implied_paired_drm_r05 <- as.character(d_paired_drm)
     out$d_implied_indep_equal_n <- as.character(d_equal)
+    # Hedges' small-sample correction, J = 1 - 3 / (4 df - 1): Hedges' g_z for a
+    # paired design (dz times J), g_s for independent groups (#695, point 10:
+    # mp2018895 reported dz = .85, the corrected value, and got "no match")
+    hedges_j <- if (is.finite(df) && df > 1) 1 - 3 / (4 * df - 1) else NA_real_
+    g_paired_z <- d_paired_dz * hedges_j
+    g_equal <- d_equal * hedges_j
+    out$d_implied_paired_gz <- as.character(g_paired_z)
+    out$d_implied_indep_equal_n_g <- as.character(g_equal)
 
     n_total <- df + 2
     use_unequal <- is.finite(n_total) && abs(n_total - round(n_total)) < 1e-8 && n_total >= 4
@@ -265,6 +275,12 @@ stat_effect_size <- function(paper) {
           d_stats$abs_d <= (d_unequal_max + tol)
       )
     }
+    # the same with Hedges' correction, tried after the uncorrected d
+    paired_g_match <- !is.na(hedges_j) && any(abs(d_stats$abs_d - g_paired_z) <= tol)
+    equal_g_match <- !is.na(hedges_j) && any(abs(d_stats$abs_d - g_equal) <= tol)
+    unequal_g_match <- use_unequal && !is.na(hedges_j) && any(
+      d_stats$abs_d >= (d_unequal_min * hedges_j - tol) &
+        d_stats$abs_d <= (d_unequal_max * hedges_j + tol))
 
     if (paired_match) {
       # Within-subjects design: n = df + 1. This is obvious from the df, so it
@@ -298,6 +314,22 @@ stat_effect_size <- function(paper) {
         "Match under independent-samples unequal-n range assumption (closest split n1 = %d, n2 = %d, N = %d).",
         n1[best], n2[best], n_total
       )
+    } else if (paired_g_match) {
+      out$d_coherence <- "match_under_assumptions"
+      out$d_coherence_assumption <- "paired_gz"
+      out$d_implied_n <- sprintf("n = %d", as.integer(df + 1))
+      out$d_coherence_note <- "Match under paired-samples Hedges' g_z (dz with the small-sample correction)."
+    } else if (equal_g_match) {
+      out$d_coherence <- "match_under_assumptions"
+      out$d_coherence_assumption <- "independent_equal_n_g"
+      out$d_implied_n <- sprintf("n1 = n2 = %s, N = %s", format((df + 2) / 2), format(df + 2))
+      out$d_coherence_note <- sprintf(
+        "Match under independent-samples Hedges' g_s, equal n (d with the small-sample correction; n1 = n2 = %s).",
+        format((df + 2) / 2))
+    } else if (unequal_g_match) {
+      out$d_coherence <- "match_under_assumptions"
+      out$d_coherence_assumption <- "independent_unequal_n_range_g"
+      out$d_coherence_note <- "Match under independent-samples Hedges' g_s, unequal n range (d with the small-sample correction)."
     } else if ({
       # parse_d_stats()'s "Hedges(?:'|’)?s..." alternative only matches
       # when an apostrophe follows "Hedges" -- without one ("Hedges g av",
@@ -314,7 +346,8 @@ stat_effect_size <- function(paper) {
       # small-sample correction of d_z/d_s (a deterministic multiplier of d,
       # just as checkable as d_z itself) -- #455's own confirmed example is
       # always explicitly subscripted, so only that narrower shape is exempt.
-      grepl("^(g[ _](av|z|rm)|gs)$", g_label)
+      # (g_z, dz with Hedges' correction, is checked above, #695 point 10)
+      grepl("^(g[ _](av|rm)|gs)$", g_label)
     }) {
       # Hedges' g_av (Cumming, 2012's bias-corrected average-variance
       # standardizer) also depends on the individual condition SDs and the
@@ -337,7 +370,8 @@ stat_effect_size <- function(paper) {
       out$d_coherence <- "no_match"
       out$d_coherence_assumption <- "none"
       out$d_coherence_note <- paste0(
-        "No match under tested assumptions (paired dz, independent equal-n, independent unequal-n range). ",
+        "No match under tested assumptions (paired dz, independent equal-n, independent unequal-n range, ",
+        "each also with Hedges' small-sample correction). ",
         "Tolerance = ", tol, ". A no-match can occur when fewer than 2 decimal places are reported."
       )
     }
@@ -505,6 +539,18 @@ stat_effect_size <- function(paper) {
     dplyr::select(dplyr::all_of(c(by, "text")))
 
   eq <- extract_eq(paper)
+  # the sentence of each equation row
+  eq_text <- if (nrow(eq)) text_tbl$text[match(paste(eq$paper_id, eq$text_id),
+                                               paste(text_tbl$paper_id, text_tbl$text_id))] else character(0)
+  # "eta squared" written in words: extract_eq() names the value "squared"
+  # only, so it was no effect size (mp20212803; #695, point 10). The words
+  # before it are taken from the sentence ("partial eta squared").
+  sq <- which(tolower(eq$lhs) %in% "squared")
+  for (k in sq) {
+    w <- regmatches(eq_text[k], regexpr("(?i)\\b(?:partial\\s+)?(?:eta|omega)[\\s-]+squared\\b",
+                                        eq_text[k] %||% "", perl = TRUE))
+    if (length(w)) eq$lhs[k] <- tolower(gsub("\\s+", " ", w))
+  }
 
   # label each equation row as a test, an effect size, or neither. The specific
   # effect-size type (d vs eta) is re-derived from the text by the coherence
@@ -572,6 +618,14 @@ stat_effect_size <- function(paper) {
     table <- data.frame()
   } else {
     eq$kind <- mapply(label_lhs, eq$lhs, eq$df, USE.NAMES = FALSE)
+    # "t = 1, ..., T" counts, it reports no test: a t without degrees of
+    # freedom and with a whole number, followed by a list (mp20191615; #695,
+    # point 10)
+    counter <- eq$kind %in% "t-test" & is.na(eq$df) & grepl("^\\d+$", eq$rhs) &
+      vapply(seq_len(nrow(eq)), function(k) grepl(
+        paste0("(?i)\\bt\\s*=\\s*", eq$rhs[k], "\\s*(?:,\\s*(?:\\.\\.\\.|\u2026|\\d+\\s*,)|\\.\\.\\.|\u2026|to\\s+[A-Z]\\b)"),
+        eq_text[k] %||% "", perl = TRUE), logical(1))
+    eq$kind[counter] <- NA_character_
     # process each sentence in turn (split preserves within-sentence row order),
     # then restore the original paper/sentence order, which extract_eq() and
     # split() would otherwise reorder by paper_id.

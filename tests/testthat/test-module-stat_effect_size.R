@@ -291,3 +291,20 @@ test_that("stat_effect_size keeps the note that both eta-squared kinds were repo
   mo <- module_run(test_paper(s), "stat_effect_size")
   expect_true(any(grepl("Both eta-squared and partial eta-squared", mo$table$eta_coherence_note)))
 })
+
+test_that("Hedges' corrected d, eta squared in words and a t counter (#695, point 10)", {
+  txt <- c("The effect was large, t(19) = 4.04, p < .001, g_z = .87.",
+           "The groups differed, t(38) = 2.5, p = .017, g = .78.",
+           "There was an effect, F(1, 40) = 6.5, p = .015, partial eta squared = .14.",
+           "We repeat this for t = 1, ..., T datasets.",
+           "Time points t = 1, 2, 3 were used.")
+  t <- as.data.frame(module_run(test_paper(txt), "stat_effect_size")$table)
+  # Hedges' g_z (dz times J) and g_s (equal-n d times J) match
+  expect_equal(t$d_coherence_assumption[t$text_id == 1], "paired_gz")
+  expect_equal(t$d_coherence_assumption[t$text_id == 2], "independent_equal_n_g")
+  # "partial eta squared" written in words is read and checked
+  expect_match(t$es[t$text_id == 3], "partial eta squared", fixed = TRUE)
+  expect_equal(t$eta_coherence[t$text_id == 3], "match_under_assumptions")
+  # a counter is no test
+  expect_false(any(t$text_id %in% 4:5))
+})

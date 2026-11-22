@@ -82,6 +82,14 @@ test_that("marginal", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
 
+  # "significan..." close after the trigger word, also with a hyphen (#695, point 9)
+  txt <- c("It was marginally non-significant (p = .07).", "A trend-level significance was found.",
+           "Results approached conventional levels of significance.",
+           "This approach is a significant contribution.", "The trend was significant.",
+           "There was almost no significant change.", "The margins had significantly more cover.")
+  found <- module_run(test_paper(txt), module)$table$text
+  expect_equal(found, txt[1:3])
+
   # iteration
   skip_no_psychsci()
   mod_output <- module_run(psychsci, module)
