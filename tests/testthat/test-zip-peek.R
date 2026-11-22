@@ -1465,3 +1465,20 @@ test_that("an encrypted zip member is named as not unpacked, and data_check's re
   expect_null(.unzip_failed_text(NULL)$report)
   expect_null(.unzip_failed_text(uf[0, ])$summary)
 })
+
+test_that("an archive that cannot be opened is named by .unzip_failed_text() (#703)", {
+  d <- file.path(tempdir(), "zp_703"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  bad <- file.path(d, "bad.zip")
+  writeBin(as.raw(c(0x50, 0x4b, 0x03, 0x04, rep(0, 40))), bad)
+  row <- data.frame(file_name = "bad.zip", file_path = "bad.zip", repo_url = "r")
+  out <- .expand_zip(bad, row)
+  expect_equal(nrow(out), 0)
+  uf <- attr(out, "unpack_failed")
+  expect_equal(uf$archive, "bad.zip")
+  expect_true(is.na(uf$file_name))
+  txt <- .unzip_failed_text(rbind(uf, data.frame(archive = "b.zip", file_name = "x.csv",
+                                                 reason = "encrypted")))
+  expect_match(txt$summary, "^1 archive in the repository could not be opened, so the checks did not see its files; 1 file in the repository's archives could not be unpacked")
+  expect_true("- `bad.zip` could not be opened (it is damaged or incomplete)." %in% txt$report)
+})

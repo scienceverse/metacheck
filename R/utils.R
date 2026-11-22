@@ -492,6 +492,47 @@ path_sanitize <- function(path, replacement = "_",
 # a safe margin. On other platforms the effective limit is far higher (per-
 # component 255), so we only guard the total on Windows but still cap absurd
 # single components everywhere.
+# For each of `paths` (files on disk), the size a Git LFS pointer states (-1
+# when it states none), or NA when the file is no such pointer. A repository that keeps a file in Git
+# LFS holds a small text file in its place ("version
+# https://git-lfs.github.com/spec/v1", "oid sha256:...", "size 734003200"),
+# and so do GitHub's archives and a Zenodo copy made from one: the file itself
+# was never deposited. reproducibility_check, data_check and code_check tell
+# such a pointer from the file it stands for (#568, #700).
+.lfs_pointer_size <- function(paths) {
+  out <- rep(NA_real_, length(paths))
+  ok <- !is.na(paths) & file.exists(paths %||% "")
+  size <- rep(NA_real_, length(paths))
+  size[ok] <- file.size(paths[ok])
+  for (i in which(ok & !is.na(size) & size < 1024)) {
+    l <- tryCatch(.utf8_lines(readLines(paths[[i]], n = 3, warn = FALSE)),
+                  error = function(e) character(0))
+    if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) next
+    s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
+    # a pointer that states no size is still a pointer
+    out[i] <- if (is.na(s)) -1 else s
+  }
+  out
+}
+
+# The report section and summary sentence for files that are Git LFS pointers
+# (.lfs_pointer_size()), for data_check and code_check: `names` are the files'
+# paths in the repository, `sizes` the sizes their pointers state. Returns
+# list(report, summary), NULL when there are none.
+.lfs_pointer_text <- function(names, sizes) {
+  none <- list(report = NULL, summary = NULL)
+  if (!length(names)) return(none)
+  n <- length(names)
+  stated <- ifelse(is.na(sizes) | sizes < 0, "",
+                   sprintf(" (the file itself is %s)", vapply(sizes, .cap_size_str, "")))
+  sent <- sprintf(paste0("%d file%s %s a Git LFS pointer: the repository holds a small text file ",
+                         "in place of the file itself, which was not deposited, so the checks did not see %s"),
+                  n, plural(n), plural(n, "is", "are"), plural(n, "it", "them"))
+  list(report = c("#### Files kept in Git LFS", paste0(sent, ":"), "",
+                  sprintf("- `%s`%s", names, stated)),
+       summary = paste0(sent, "."))
+}
+
 .max_path_chars <- if (.Platform$OS.type == "windows") 250L else 4000L
 .max_component_chars <- 255L    # per-directory / filename limit on all platforms
 

@@ -35,7 +35,8 @@
 #' @param download if TRUE (default), download the code files to be checked from online repositories so they are read locally. Set FALSE to stream each file from its URL instead.
 #' @param max_file_size largest single file to download, in MB (default 100). A file over this is skipped on its own; the rest of the repository is still downloaded. Set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500), used as a budget: files already in the cache count first, then the smallest missing files are added until the next one would not fit. A file whose size cannot be found out is downloaded only up to `max_file_size` or what is left of the budget, whichever is smaller, and left out if it is larger. Set `Inf` for no cap.
-#' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
+#' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default 100,000; `Inf` for no cap). Such a repository is refused before code_check looks at its files one by one (#702). See [download_repo_files()]'s own parameter of the same name.
+#' @param max_code_size largest code file to analyse, in MB (default 5). A larger file is listed with the reason but not read: a script of 800,000 lines kept code_check busy for 16 minutes (#700). Set `Inf` for no limit.
 #' @param osf_max_requests the largest number of requests to the OSF for listing one OSF project, passed to `repo_check()` when this module runs it (default 50; `Inf` for no limit). A project listed only in part is named in a warning before anything is downloaded, because files in folders not yet opened are not downloaded either.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
 #' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name. Also forwarded to `repo_check()` and to `.code_expand_zip()`'s own zip-peeking step, both of which make the same kind of request and can hit the same rate limit.
@@ -45,7 +46,8 @@
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
-                        max_files_per_repo = Inf,
+                        max_files_per_repo = 100000,
+                        max_code_size = 5,
                         osf_max_requests = 50,
                         cache = FALSE, skip_on_api_limit = FALSE,
                         manifest = NULL) {
@@ -114,6 +116,13 @@ code_check <- function(paper, local_path = NULL,
     listing_gated <- mo$gated_repos
     archive_deposits <- mo$archive_deposits
   }
+  # Repositories with more files than max_files_per_repo are refused here,
+  # before the steps below that take time for every file (#702)
+  count_refused <- .repos_over_count(all_files, max_files_per_repo)
+  if (nrow(count_refused)) {
+    for (m in count_refused$message) .cap_report(m)
+    all_files <- all_files[!all_files$repo_url %in% count_refused$repo_url, , drop = FALSE]
+  }
   if (isTRUE(download) && nrow(all_files) > 0)
     .cap_report_partial(listing_partial, all_files$repo_url)
   # repositories listed only in part or not at all: the checks below do not
@@ -126,7 +135,8 @@ code_check <- function(paper, local_path = NULL,
   # each step downloading its own subset separately -- see .code_predownload()
   # for why. Each step's own need_dl check afterwards then finds file_location
   # already populated and is a no-op.
-  predl_gated <- NULL
+  # (the repositories refused above for their number of files first)
+  predl_gated <- if (nrow(count_refused)) count_refused[c("repo_url", "message")]
   code_failed_files <- NULL
   # each repository's whole listing, before the expand steps below add
   # archive members: the catch-up download counts with it too, and makes its
@@ -135,7 +145,7 @@ code_check <- function(paper, local_path = NULL,
   if (isTRUE(download)) {
     all_files <- .code_predownload(all_files, max_file_size, max_download_size,
                                    cache, skip_on_api_limit, max_files_per_repo)
-    predl_gated <- attr(all_files, "gated")
+    predl_gated <- dplyr::bind_rows(predl_gated, attr(all_files, "gated"))
     code_failed_files <- attr(all_files, "failed")
   }
 
@@ -262,10 +272,12 @@ code_check <- function(paper, local_path = NULL,
       # batch where neither paper had any code file.
       table = code_files,
       # yellow when a repository was not listed in full: its code may exist
-      # unseen (#681)
-      traffic_light = if (is.null(not_listed$summary)) "na" else "yellow",
-      summary_text = if (is.null(not_listed$summary)) summary_code else
-        paste("\n- ", c(summary_code, not_listed$summary), collapse = ""),
+      # unseen (#681); also when one was refused for its number of files
+      # (#702), which is said here too, as on the path below
+      traffic_light = if (is.null(not_listed$summary) && !nrow(count_refused)) "na" else "yellow",
+      summary_text = if (is.null(not_listed$summary) && !nrow(count_refused)) summary_code else
+        paste("\n- ", c(summary_code, not_listed$summary, count_refused$message),
+              collapse = ""),
       report = not_listed$report,
       # code_n (not code_file_n): must match the normal-path summary_table's
       # column name below, or a corpus batch mixing papers with and without
@@ -375,6 +387,28 @@ code_check <- function(paper, local_path = NULL,
                                         max_file_size = max_file_size,
                                         skip_on_api_limit = skip_on_api_limit)
         fetched_copy <- !identical(file_path, the_file$file_url)
+      }
+      # a file over max_code_size is listed with the reason, not read (#700)
+      code_bytes <- suppressWarnings(file.size(file_path))
+      if (isTRUE(code_bytes > max_code_size * 1024^2)) {
+        if (fetched_copy) unlink(file_path)
+        stop(sprintf("it was not checked, because it is %s, more than max_code_size (%s MB)",
+                     .cap_size_str(code_bytes), .cap_num(max_code_size)), call. = FALSE)
+      }
+      # nor is a file whose content is no code: binary, compressed, an image,
+      # an HTML page (#700). A .jasp or notebook is not tested here: a .jasp
+      # is not read at all, and a notebook is read as JSON.
+      if (!is.na(.lfs_pointer_size(file_path))) {
+        if (fetched_copy) unlink(file_path)
+        stop(paste("it was not checked, because it is a Git LFS pointer: the repository holds a",
+                   "small text file in place of the file itself, which was not deposited"), call. = FALSE)
+      }
+      if (!grepl("\\.ipynb$", the_file$file_name, ignore.case = TRUE)) {
+        not_text <- .code_not_text(file_path)
+        if (!is.na(not_text)) {
+          if (fetched_copy) unlink(file_path)
+          stop(sprintf("it was not checked, because %s", not_text), call. = FALSE)
+        }
       }
 
       # read in files
@@ -540,6 +574,36 @@ code_check <- function(paper, local_path = NULL,
   }
   code_files <- .code_missing_files(code_files, all_files)
   code_files$checked[is.na(code_files$checked)] <- FALSE
+
+  ## code files not checked, each with the reason (#700) ----
+  # Before, such a file was in the table with empty cells, or not at all: a
+  # file over a limit, one that could not be read or is no code, a JASP file,
+  # and code in a language metacheck recognises but does not check (Julia,
+  # jamovi, NetLogo).
+  shown_path <- function(df) {
+    p <- df$file_path %||% df$file_name
+    ifelse(is.na(p) | !nzchar(p), df$file_name, p)
+  }
+  err <- code_files$error %||% rep(NA_character_, nrow(code_files))
+  nc_reason <- ifelse(!is.na(err), err,
+                      ifelse(code_files$language %in% "JASP",
+                             "JASP files are listed, not checked: a .jasp file is a binary archive",
+                             NA_character_))
+  other_lang <- all_files[!is.na(all_files$language) & !all_files$language %in% listed_langs &
+                            !.in_renv_folder(all_files) & !.in_others_code_folder(all_files), , drop = FALSE]
+  not_checked <- data.frame(
+    File = c(shown_path(code_files)[!is.na(nc_reason)], shown_path(other_lang)),
+    Reason = c(nc_reason[!is.na(nc_reason)],
+               sprintf("%s code is recognised, but not checked", other_lang$language)))
+  not_checked <- not_checked[!duplicated(not_checked), , drop = FALSE]
+  n_nc <- nrow(not_checked)
+  summary_not_checked <- if (n_nc) sprintf(
+    "%d code file%s %s not checked; the report names %s and says why.",
+    n_nc, plural(n_nc), plural(n_nc, "was", "were"), plural(n_nc, "it", "them"))
+  report_not_checked <- if (n_nc) c(
+    "#### Code files not checked",
+    sprintf("We did not check %d code file%s, for the reason given with each:", n_nc, plural(n_nc)),
+    scroll_table(not_checked, maxrows = 5))
 
   # Reporting ----
 
@@ -1005,6 +1069,7 @@ code_check <- function(paper, local_path = NULL,
     failed_text$report,
     not_listed$report,
     scroll_table(report_table, maxrows = 5),
+    report_not_checked,
     "#### Code Comments",
     report_comments,
     "#### Missing Files",
@@ -1159,6 +1224,7 @@ code_check <- function(paper, local_path = NULL,
     summary_code,
     failed_text$summary,
     not_listed$summary,
+    summary_not_checked,
     summary_comments,
     if (length(setwd_issues) > 0) summary_setwd,
     if (length(install_packages_issues) > 0) summary_install_packages,

@@ -1869,3 +1869,44 @@ test_that("a file of unknown size is downloaded with a limit, not left out (#583
   expect_true(is.na(dl$file_location))
   expect_match(attr(dl, "gated")$message, "unknown size not downloaded")
 })
+
+test_that("paths that differ only in capital letters get names of their own on disk (#700)", {
+  rel <- c("names/case/Data.csv", "names/case/data.csv", "names/case/DATA.CSV", "a.R", "Dir/x", "dir/x")
+  expect_equal(.case_clash_rename(rep("r", 6), rel),
+               c("names/case/Data~2.csv", "names/case/data~3.csv", "names/case/DATA.CSV",
+                 "a.R", "Dir/x", "dir/x~2"))
+  # the same name in every call: chosen from the full listing
+  listing <- data.frame(repo_url = "r", file_path = rel, file_name = basename(rel))
+  expect_equal(.case_clash_rename("r", "names/case/data.csv", listing), "names/case/data~3.csv")
+  # paths of different repositories do not clash
+  expect_equal(.case_clash_rename(c("r", "s"), c("a.csv", "A.csv")), c("a.csv", "A.csv"))
+  expect_equal(.case_clash_rename(character(0), character(0)), character(0))
+})
+
+test_that("download_repo_files() stores files that differ only in capital letters apart (#700)", {
+  src <- file.path(tempdir(), "dl_case_src"); unlink(src, recursive = TRUE); dir.create(src)
+  withr::defer(unlink(src, recursive = TRUE))
+  writeLines("upper", file.path(src, "u.csv")); writeLines("lower", file.path(src, "l.csv"))
+  files <- data.frame(repo_url = "https://example.org/case700", file_name = c("Data.csv", "data.csv"),
+                      file_path = c("Data.csv", "data.csv"),
+                      file_size = file.size(file.path(src, c("u.csv", "l.csv"))),
+                      file_url = c("https://example.org/u.csv", "https://example.org/l.csv"),
+                      file_location = NA_character_)
+  local_mocked_bindings(.download_one = function(url, dest, ...) {
+    dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+    file.copy(file.path(src, basename(url)), dest, overwrite = TRUE)
+    NA_character_
+  })
+  dl <- suppressMessages(download_repo_files(files))
+  expect_false(dl$file_location[1] == dl$file_location[2])
+  expect_equal(readLines(dl$file_location[1]), "upper")
+  expect_equal(readLines(dl$file_location[2]), "lower")
+})
+
+test_that(".repo_links() reads a link's target from its folder and marks broken links (#700)", {
+  l <- .repo_links(c("links/to_small.csv", "links/broken.R", "top.R", "links/up.R"),
+                   all_paths = c("data/small.csv", "links", "data"),
+                   raw_urls = NA, targets = c("../data/small.csv", "missing.R", NA, "../../x.R"))
+  expect_equal(l$broken, c(FALSE, TRUE, NA, TRUE))
+  expect_equal(l$target[1], "../data/small.csv")
+})

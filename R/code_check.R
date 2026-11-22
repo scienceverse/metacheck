@@ -309,6 +309,29 @@ code_read <- function(file_path) {
   "R"
 }
 
+# Why a file named as code is not code, from its first bytes, or NA when it
+# is text. A file was taken for what its name says: saved R data and a PNG
+# image named .R showed 0 code lines and no error, and an HTML page named .py
+# was read as Python (#700). A file starting with a byte order mark of
+# UTF-16 is text (it has zero bytes between its letters).
+.code_not_text <- function(path) {
+  b <- tryCatch(readBin(path, "raw", 8192L), error = function(e) raw(0))
+  if (!length(b)) return(NA_character_)
+  starts <- function(m) length(b) >= length(m) && identical(b[seq_along(m)], m)
+  if (starts(as.raw(c(0xff, 0xfe))) || starts(as.raw(c(0xfe, 0xff)))) return(NA_character_)
+  if (starts(as.raw(c(0x1f, 0x8b))) || starts(as.raw(c(0x42, 0x5a, 0x68))) ||
+      starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a))))
+    return("it is a compressed file (such as saved R data), not code")
+  if (starts(as.raw(c(0x89, 0x50, 0x4e, 0x47)))) return("it is a PNG image, not code")
+  if (starts(charToRaw("%PDF"))) return("it is a PDF file, not code")
+  if (starts(as.raw(c(0x50, 0x4b, 0x03, 0x04)))) return("it is a zip archive, not code")
+  if (any(b == as.raw(0))) return("it holds binary data, not text")
+  head_txt <- rawToChar(b[seq_len(min(length(b), 1024L))])
+  if (grepl("^[[:space:]]*<(!doctype html|html)", head_txt, ignore.case = TRUE, useBytes = TRUE))
+    return("it is an HTML page, not code")
+  NA_character_
+}
+
 #' Detect Code Language
 #'
 #' Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata, Mplus).
@@ -331,7 +354,9 @@ code_lang <- function(file_name) {
     return(character(0))
   }
 
-  ext <- tolower(tools::file_ext(file_name))
+  # a space at the end of a name ("analysis.R ", which Windows cannot even
+  # store) hid the extension (#700)
+  ext <- tolower(tools::file_ext(trimws(file_name, which = "right")))
   # ".ipynb" is a Jupyter notebook: JSON holding source in its code cells,
   # recovered by code_extract_py()/code_extract_r() the way an .Rmd/.qmd is
   # purled. Jupyter runs MANY kernels, so the extension alone does NOT fix the
@@ -855,9 +880,11 @@ code_lang <- function(file_name) {
                      error = function(e) NULL)
     if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
 
-    # renv's own files are left out of code_check, so they are not fetched
-    is_code <- !is.na(code_lang(peek$name)) &
-      !.in_renv_folder(data.frame(file_path = peek$name))
+    # renv's own files are left out of code_check, so they are not fetched.
+    # A zip inside the zip is fetched too, and its code files are taken out
+    # of it below (zips inside zips were not opened, #700).
+    in_renv <- .in_renv_folder(data.frame(file_path = peek$name))
+    is_code <- (!is.na(code_lang(peek$name)) | .is_zip(peek$name)) & !in_renv
     if (!any(is_code)) next
 
     # One row per code file in the zip, as repo_check makes for the zips it
@@ -897,7 +924,47 @@ code_lang <- function(file_name) {
   # calls make the same choice of files from this listing as data_check
   # makes from its own.
   rows <- dl[got, intersect(names(all_files), names(dl)), drop = FALSE]
+  inner <- .is_zip(rows$file_name)
+  rows <- dplyr::bind_rows(rows[!inner, , drop = FALSE],
+                           .code_expand_inner_zips(rows[inner, , drop = FALSE], all_files,
+                                                   cache = cache, max_file_size = max_file_size,
+                                                   max_download_size = max_download_size))
   dplyr::bind_rows(all_files, rows)
+}
+
+# The code files inside zips that are themselves inside a zip (`zips`: rows of
+# zips on disk, fetched by .code_expand_zip()), taken out on disk two more
+# levels deep (#700), as data_check opens them: code and inner zips only, each
+# file no larger than max_file_size, within what is left of the repository's
+# budget (.repo_budget(), from `listing`). Returns the code files' rows.
+.code_expand_inner_zips <- function(zips, listing, cache = FALSE, max_file_size = 100,
+                                    max_download_size = 500, levels = 2L) {
+  out <- list()
+  max_bytes <- if (is.finite(max_file_size)) max_file_size * 1024^2 else Inf
+  skip <- c("data", "documentation", "materials", "output", "unknown")
+  for (level in seq_len(levels)) {
+    if (!NROW(zips)) break
+    nxt <- list()
+    for (j in seq_len(nrow(zips))) {
+      z <- zips[j, , drop = FALSE]
+      left <- Inf
+      if (.in_download_folder(z$file_location) && !is.na(z$repo_url))
+        left <- .budget_free(.repo_budget(z$repo_url, listing, cache = cache,
+                                          max_file_size = max_file_size,
+                                          max_download_size = max_download_size %||% Inf))
+      ex <- tryCatch(.expand_zip(z$file_location, z, skip_types = skip, max_bytes = max_bytes,
+                                 max_total = left),
+                     error = function(e) z[0, , drop = FALSE])
+      ex <- ex[!is.na(ex$file_location), , drop = FALSE]
+      if (!nrow(ex)) next
+      is_inner <- .is_zip(ex$file_name)
+      out[[length(out) + 1L]] <- ex[!is_inner & !is.na(code_lang(ex$file_name)), , drop = FALSE]
+      nxt[[length(nxt) + 1L]] <- ex[is_inner, , drop = FALSE]
+    }
+    zips <- dplyr::bind_rows(nxt)
+  }
+  if (!length(out)) return(zips[0, , drop = FALSE])
+  dplyr::bind_rows(out)
 }
 
 #' Convert Rmd/qmd files to R code only
@@ -2101,7 +2168,14 @@ code_library_names <- function(code_text,
   }
   char_only <- "character\\.only\\s*=\\s*(TRUE|T)\\b"
 
-  for (ln in seq_along(code_text)) {
+  # Only a line with one of these words can hold a hit below: one test over
+  # all lines finds them, and only those go through the patterns one line at a
+  # time. On every line, the patterns took most of code_check's time, 0.3 ms a
+  # line: minutes for a script of 800,000 lines (#700).
+  maybe <- if (lang == "R") grepl("library|require|p_load|install|::", code_text, useBytes = TRUE) else
+    grepl("^\\s*(?:from|import)\\s", code_text, perl = TRUE, useBytes = TRUE)
+
+  for (ln in which(maybe)) {
     L <- code_text[ln]
 
     if (lang == "R") {

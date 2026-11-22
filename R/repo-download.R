@@ -224,6 +224,73 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   list(report = report, summary = summary)
 }
 
+# Paths of one repository that differ only in capital letters ("data.csv",
+# "Data.csv", "DATA.CSV") are one file on Windows and macOS: every row was
+# given the first one's copy, so the others silently carried its content
+# (#700). The second and later of each such set get a name of their own on
+# disk, "~2", "~3" before the extension ("data~2.csv"), in the order of their
+# paths, so the first keeps its name. Done on every system, as .portable_name()
+# is, so a result does not depend on the computer. The sets are found in the
+# full listing (`listing`, else the rows themselves), so every call gives a
+# file the same name. `repo` and `rel` are the rows' repositories and paths;
+# returns the paths to store them under.
+.case_clash_rename <- function(repo, rel, listing = NULL) {
+  if (!length(rel)) return(rel)
+  if (NROW(listing) && "repo_url" %in% names(listing)) {
+    lp <- listing$file_path %||% listing$file_name
+    lp <- ifelse(is.na(lp), listing$file_name, lp)
+    all_repo <- c(listing$repo_url, repo)
+    all_rel <- c(lp, rel)
+  } else {
+    all_repo <- repo
+    all_rel <- rel
+  }
+  ok <- !is.na(all_rel) & !is.na(all_repo)
+  for (r in unique(repo[!is.na(repo)])) {
+    p <- sort(unique(all_rel[ok & all_repo == r]), method = "radix")
+    low <- tolower(gsub("\\\\", "/", p))
+    clash <- low %in% low[duplicated(low)]
+    if (!any(clash)) next
+    p <- p[clash]
+    k <- stats::ave(seq_along(p), low[clash], FUN = seq_along)
+    ext <- tools::file_ext(p)
+    stem <- ifelse(nzchar(ext), substr(p, 1L, nchar(p) - nchar(ext) - 1L), p)
+    new <- ifelse(k == 1L, p, paste0(stem, "~", k, ifelse(nzchar(ext), paste0(".", ext), "")))
+    at <- which(repo %in% r)
+    hit <- match(rel[at], p)
+    rel[at[!is.na(hit)]] <- new[hit[!is.na(hit)]]
+  }
+  rel
+}
+
+# The message for a repository refused because it holds more files than
+# max_files_per_repo, the same in download_repo_files(), data_check and
+# code_check.
+.repo_count_message <- function(repo, n, max_files_per_repo) {
+  sprintf(paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
+                 "skipped entirely (not size-capped, file-count-capped). ",
+                 "Raise `max_files_per_repo` to include it."),
+          repo, as.integer(n), as.integer(max_files_per_repo))
+}
+
+# The repositories of `listing` (a file table with repo_url, a repository's
+# full listing) that hold more files than max_files_per_repo, as a data frame
+# repo_url, n_files, message (0 rows when none). data_check and code_check
+# refuse them before their first step on each file (#702): refused only by
+# download_repo_files(), a repository of 369,548 files was first classified
+# and grouped file by file, which took hours.
+.repos_over_count <- function(listing, max_files_per_repo) {
+  none <- data.frame(repo_url = character(0), n_files = integer(0),
+                     message = character(0))
+  if (!is.finite(max_files_per_repo) || !NROW(listing) ||
+      !"repo_url" %in% names(listing)) return(none)
+  n <- table(listing$repo_url)
+  over <- n[n > max_files_per_repo]
+  if (!length(over)) return(none)
+  data.frame(repo_url = names(over), n_files = as.integer(over),
+             message = .repo_count_message(names(over), over, max_files_per_repo))
+}
+
 # The report section and summary sentence for repositories repo_check could
 # not list in full (#681), for code_check and data_check: OSF projects listed
 # only in part (repo_check's `partial_repos`, with `reason` "request limit"
@@ -1783,6 +1850,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   # inside an archive, in the folder its archive's members are kept in
   rel <- L$file_path %||% L$file_name
   rel <- ifelse(is.na(rel), L$file_name, rel)
+  # under the names download_repo_files() stores them by (#700)
+  rel <- .case_clash_rename(rep(repo, n), rel)
   storage_col <- L$provider %||% rep(NA_character_, n)
   on_disk <- vapply(which(pick), function(j) {
     p <- suppressWarnings(.safe_write_path(
@@ -1860,7 +1929,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   on disk is still held to this budget.
 #' @param max_files_per_repo largest file COUNT a single repository may have
 #'   before it is refused outright (same `"gated"` reporting as the size caps
-#'   above), default `Inf` (no cap). The count is the repository's full listing
+#'   above), default 100,000 (`Inf` for no cap; it was `Inf` until #702). The
+#'   count is the repository's full listing
 #'   (`repo_file_counts`, else `repo_listing`), files repo_check found inside
 #'   its archives included, and a refused repository has none of its files
 #'   fetched, also none from inside its archives (#699). Unlike `max_file_size`/`max_download_size`,
@@ -1951,7 +2021,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 download_repo_files <- function(files,
                                 max_file_size = 100,
                                 max_download_size = 500,
-                                max_files_per_repo = Inf,
+                                max_files_per_repo = 100000,
                                 repo_file_counts = NULL,
                                 repo_listing = NULL,
                                 zip_timeout_s = 120,
@@ -1985,6 +2055,9 @@ download_repo_files <- function(files,
   # Cache path per file; reuse anything already cached.
   rel_path <- files$file_path %||% files$file_name
   rel_path <- ifelse(is.na(rel_path), files$file_name, rel_path)
+  # a name of its own for each of the paths that differ only in capital
+  # letters, chosen from the full listing (#700)
+  rel_path <- .case_clash_rename(files$repo_url, rel_path, repo_listing)
   files$.cache_path <- vapply(seq_len(nrow(files)), function(i) {
     # Guard the cache path against the OS path-length limit (a deeply nested repo
     # file under a long OneDrive root can exceed ~260 chars). .safe_write_path
@@ -2121,11 +2194,7 @@ download_repo_files <- function(files,
       true_n <- if (!is.null(repo_file_counts) && repo %in% names(repo_file_counts))
         repo_file_counts[[repo]] else length(idx)
       if (true_n <= max_files_per_repo) next
-      msg <- sprintf(
-        paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
-               "skipped entirely (not size-capped, file-count-capped). ",
-               "Raise `max_files_per_repo` to include it."),
-        repo, true_n, max_files_per_repo)
+      msg <- .repo_count_message(repo, true_n, max_files_per_repo)
       .cap_report(msg)
       files$.limit_refused[idx[!already[idx]]] <- sprintf(
         "it was not downloaded, because its repository holds %d files, more than max_files_per_repo (%s)",
@@ -2327,6 +2396,14 @@ download_repo_files <- function(files,
           row <- fetched[fetched$name == files$archive_member[k], , drop = FALSE]
           if (nrow(row) == 0) next
           if (!isTRUE(row$ok[[1]]) || is.na(row$path[[1]])) {
+            # a file whose path would leave its folder ("../escape.txt") is
+            # refused on purpose: reported as "failed after retries ... Re-run
+            # to retry", which cannot help (#700), it is named with its reason
+            # among the files left out, as a limit's are
+            if (grepl("path traversal|leads outside the folder", row$error[[1]] %||% "")) {
+              files$.limit_refused[k] <- "it was not unpacked, because its path leads outside its folder"
+              next
+            }
             failed <- rbind(failed, data.frame(
               repo_url = files$repo_url[k], file_name = files$file_name[k],
               file_url = arc,
