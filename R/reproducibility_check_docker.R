@@ -439,7 +439,7 @@ repro_docker_available <- function() {
 #'
 #' A second pass after every package has had its turn, since one time limit
 #' covers the whole install: first the deposit's own copy of the package, when
-#' it has one (see [.repro_deposit_packages()]); then Bioconductor, because the fixed list of
+#' it has one (see `.repro_deposit_packages()`); then Bioconductor, because the fixed list of
 #' `.repro_bioc_packages()` misses many names and some packages moved there,
 #' keeping only an old copy in the CRAN Archive; then the latest version in the
 #' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker; then a
@@ -787,7 +787,7 @@ repro_docker_available <- function() {
 #'   container run (default 600 — installs can be slow, esp. compiling from
 #'   source)
 #' @param deposit_pkgs the deposit's own copies of packages, as
-#'   [.repro_deposit_packages()] gives them: a named vector of folders or
+#'   `.repro_deposit_packages()` gives them: a named vector of folders or
 #'   source tarballs on the host. A package that is not on CRAN is installed
 #'   from its copy first (#588); `NULL` for none.
 #'

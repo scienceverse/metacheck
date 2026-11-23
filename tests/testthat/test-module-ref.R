@@ -195,7 +195,10 @@ test_that("ref_pubpeer", {
   paper$bib_match <- NULL
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
-  expect_equal(sum(mod_output$table$total_comments), 3)
+  # 2, not 3: one of the 3 comments on 10.1177/0956797614520714 is Statcheck's,
+  # which is left out of the count (#695, point 14); PubPeer's own data, so
+  # this changes when someone comments on the cited papers
+  expect_equal(sum(mod_output$table$total_comments), 2)
 
   # no DOIs
   paper <- demopaper()
@@ -209,7 +212,7 @@ test_that("ref_pubpeer", {
   paper <- demopaper()
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
-  expect_equal(sum(mod_output$table$total_comments), 3)
+  expect_equal(sum(mod_output$table$total_comments), 2)   # see above
 
   # multiple papers
   paper <- psychsci[c(4, 9)]
