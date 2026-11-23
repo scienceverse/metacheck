@@ -3054,8 +3054,9 @@ code_packages <- function(packages) {
     refs <- strsplit(refs, "\u001f", fixed = TRUE)[[1]]
     # a file read from a web address is not one the repository should hold:
     # read.spss("http://journal.sjdm.org/.../study1.sav") was reported as the
-    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out
-    refs <- base(refs[!grepl("://", refs, fixed = TRUE)])
+    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out.
+    # A Windows drive written as "C://" is a path, not a web address (#723).
+    refs <- base(refs[!.is_web_address(refs)])
     # a piece, and a name with a placeholder ("Ax1_s{seed}.jsonl"), are no
     # file names, as reproducibility_check also leaves them out (.repro_ref_checkable())
     refs <- refs[nzchar(refs) & !grepl("^[._-]", refs) & !grepl(.code_placeholder_re, refs, perl = TRUE)]

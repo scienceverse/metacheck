@@ -571,6 +571,9 @@ test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
   # a file read from a web address (#695)
   expect_false(.repro_ref_checkable(data.frame(ref = "http://journal.sjdm.org/16/1234/study1.sav",
                                                basename = "study1.sav")))
+  # a Windows drive written with a double slash is a path, not a web address (#723)
+  expect_true(.repro_ref_checkable(data.frame(ref = "C://Lakens/files/example.csv",
+                                              basename = "example.csv")))
 })
 
 test_that(".repro_built_names finds names joined to a variable (#568)", {

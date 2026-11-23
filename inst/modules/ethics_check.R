@@ -8,15 +8,19 @@
 #' Patterns are designed to capture:
 #'
 #' **Human research committee names**
-#' - `Institutional Review Board` / IRB (US standard)
-#' - `Independent Ethics Committee` / IEC (ICH-GCP international clinical trial term)
+#' - `Institutional Review Board` / IRB (US standard), also `Internal Review Board`
+#' - `Independent Ethics Committee` / IEC (ICH-GCP international clinical trial
+#'   term); not `IEC` followed by a number, which is a technical standard
 #' - `Ethical/Ethics Review Board` (generic)
-#' - `Ethics (Advisory/Review) Committee/Board/Panel/Sub-committee`
+#' - `Ethics (Advisory/Review) Committee/Board/Panel/Sub-committee/Commission`,
+#'   in the singular or plural
 #' - `Research Ethics Committee/Board/Panel` (UK/Canada/Australia)
-#' - `Medical Ethics Committee`
+#' - `Medical Ethics Committee`, `Bioethics Committee/Commission`, `Ethikkommission`
+#' - `Ethical Review Authority/Unit/Office/Agency`
 #' - `Human Subjects/Research Committee` / `Human Research Ethics (Advisory) Panel`
+#' - `Human Research Protection Office/Program`, `Office for Human Subjects Protection`
 #' - `Committee for/on the Protection of Human Subjects`
-#' - `Committee on (Health) Research Ethics`
+#' - `Committee(s) on/for (Medical and Health) Research Ethics`
 #' - `Office of Research Ethics`
 #' - Abbreviations: IEC, REC, REB, ERB, METC, DEC. REC/REB/ERB/DEC are short
 #'   enough to collide with unrelated jargon (e.g. `REC` as a recognition-heuristic
@@ -55,6 +59,12 @@
 #' - `Exempted from (ethics|irb|institutional review)`
 #' - `Waived by the (ethics|irb|institutional|review) (committee|board)`
 #' - `Deemed exempt`
+#' - Ethics review that was not needed: `Ethics review was not required`,
+#'   `did not require further ethical review`, `exempt from formal human
+#'   research ethics review`, `no new institutional ethics review`
+#'
+#' A template line the authors have not filled in ("[Add ethics approval ...
+#' here.]") is not a statement.
 #'
 #' **Declaration of Helsinki**
 #' - `Declaration of Helsinki` / `Helsinki Declaration`
@@ -66,20 +76,37 @@
 #' - Ethical behaviour as a measured variable (e.g. "ethical decision-making")
 #' - URLs containing "ethics" in path components
 #'
-#' Live data collection is detected by the internal helper `.detect_live_data()`,
-#' which searches for sentences indicating that data were collected directly from
-#' human or animal participants. Papers without any live-data signal are not
-#' flagged as missing ethics approval. The helper uses conservative patterns to
-#' avoid flagging secondary data analyses, computational experiments, or
-#' economics papers that analyse existing survey data. See `.detect_live_data()`
-#' for the full list of patterns and intentional exclusions.
+#' **When a statement is expected**
 #'
-#' A paper that states that no human or animal subjects took part ("no human
-#' subjects were involved", "did not involve human participants", or people
-#' taking part "not as subjects") is not expected to have an ethics statement,
-#' whatever participant phrase it also has (see `.detect_no_participants()`).
-#' A negation near a participant phrase alone ("No participants were
-#' excluded") does not count: it reports a study with participants.
+#' The module sorts each paper by where its data came from (the internal
+#' `.data_source()`; the signs and how the rule was tested are described in
+#' `R/data-source.R`):
+#' - `own`: the authors collected data from people or animals, for this paper,
+#'   in an earlier study of their own, or (a protocol) will collect them;
+#' - `existing_records`: records about individual people that the authors
+#'   obtained for this study, such as hospital records or a cohort;
+#' - `existing_unclear`: existing data about people from a source the module
+#'   could not identify;
+#' - `open_resource`: an open resource any researcher can use, such as UK
+#'   Biobank or NHANES;
+#' - `none`: no data about people or animals (a review, simulation,
+#'   commentary, theory, tutorial, coding of published papers, or figures
+#'   about groups);
+#' - `uncertain`: the signs were missing or pointed both ways;
+#' - `no_text`: the paper has no text.
+#'
+#' A statement is expected for `own`, `existing_records` and
+#' `existing_unclear`. A paper without a statement in these classes, or in
+#' `uncertain`, is flagged. The module reads the text, and the results of
+#' `power`, `stat_p_exact`, `stat_check`, `repo_check`, `data_check` and
+#' `prereg_check` when they ran before it (run it after them); without
+#' `stat_p_exact`, it finds the p-values in the text.
+#'
+#' On 199 PsyArXiv and medRxiv preprints labelled after the rule was fixed,
+#' the module decided right whether a statement is needed for 86.9% (the
+#' earlier live-data search: 83.4%). Its main errors: other people's studies
+#' described in the words of a new study, records and specimens described
+#' only as counts, and open resources the paper does not call open.
 #'
 #' @keywords general
 #'
@@ -93,20 +120,26 @@ ethics_check <- function(paper) {
   ## patterns ----
   ethics_words <- c(
     # committee name variants — human research
-    "institutional\\s+review\\s+board",
+    "(institutional|internal)\\s+review\\s+boards?",
     "independent\\s+ethics\\s+committee",
-    "ethical?\\s+review\\s+board",
-    "ethics\\s+(advisory\\s+|review\\s+)?(committee|board|panel|sub-?committee)",
-    "ethical\\s+(advisory\\s+|review\\s+)?(committee|board|panel|sub-?committee)",
-    "research\\s+ethics\\s+(committee|board|panel)",
+    "ethical?\\s+review\\s+boards?",
+    "ethics\\s+(advisory\\s+|review\\s+)?(committees?|boards?|panels?|sub-?committees?|commission)",
+    "ethical\\s+(advisory\\s+|review\\s+)?(committees?|boards?|panels?|sub-?committees?|commission)",
+    "research\\s+ethics\\s+(committees?|boards?|panels?)",
     "medical\\s+ethics\\s+committee",
+    "bioethic(s|al)?\\s+(committee|commission|board)",
+    "ethik-?kommission",
+    "ethic(s|al)\\s+review\\s+(authority|unit|office|agency)",
     "human\\s+(subjects?|research)\\s+(committee|review\\s+board)",
     "human\\s+research\\s+ethics\\s+(advisory\\s+)?(panel|committee|board)",
+    "human\\s+(subjects?|research)\\s+protections?\\s+(office|program|programme|committee)",
+    "office\\s+(for|of)\\s+(the\\s+)?(protection\\s+of\\s+)?human\\s+(subjects?|research)(\\s+protections?)?",
     "committee\\s+(for|on)\\s+(the\\s+)?protection\\s+of\\s+human\\s+subjects",
-    "committee\\s+on\\s+(health\\s+)?research\\s+ethics",
+    "committees?\\s+(for|on)\\s+(\\w+\\s+){0,4}research\\s+ethics",
     "office\\s+of\\s+research\\s+ethics",
     "\\birb\\b",
-    "\\biec\\b",
+    # not a technical standard ("IEC 62471")
+    "\\biec\\b($|[^ 0-9-]| +[^ 0-9])",
     "\\b(rec|reb|erb|dec)\\b.{0,30}\\b(ethic|approv|committee|board|panel|institutional|protocol)",
     "\\b(ethic|approv|committee|board|panel|institutional|protocol).{0,30}\\b(rec|reb|erb|dec)\\b",
     "\\bmetc\\b",
@@ -135,9 +168,9 @@ ethics_check <- function(paper) {
     "received\\s+ethical?\\s+approval",
     "approved\\s+by\\s+(the\\s+)?(ethics|irb|institutional|independent|local|review|research)",
     "approved\\s+by\\s+.{0,60}ethics\\s+(committee|board|panel|sub-?committee)",
-    "approved\\s+by\\s+.{0,80}(ethics|research)\\s+.{0,30}(committee|board|panel|sub-?committee|council|office)",
-    "approved\\s+by\\s+.{0,80}(committee|board|panel|sub-?committee|council)\\s+.{0,40}(ethic|research)",
-    "(received|obtained)\\s+(ethics|ethical)?\\s*(approval|clearance)\\s+from\\s+.{0,80}(ethics|irb|institutional|research|review)\\s+.{0,30}(committee|board|panel|sub-?committee|office)",
+    "approved\\s+by\\s+.{0,80}(ethics|research)\\s+.{0,30}(committees?|boards?|panels?|sub-?committees?|council|office|commission)",
+    "approved\\s+by\\s+.{0,80}(committees?|boards?|panels?|sub-?committees?|council|commission)\\s+.{0,40}(ethic|research)",
+    "(received|obtained)\\s+(ethics|ethical)?\\s*(approval|clearance)\\s+from\\s+.{0,80}(ethics|irb|institutional|research|review)\\s+.{0,30}(committees?|boards?|panels?|sub-?committees?|office|commission)",
     "this\\s+study\\s+(was\\s+)?(approved|reviewed)\\s+by",
     "the\\s+study\\s+(was\\s+)?(approved|reviewed)\\s+by",
     "the\\s+protocol\\s+(was\\s+)?(approved|reviewed)\\s+by",
@@ -157,6 +190,13 @@ ethics_check <- function(paper) {
     "exempt(ed)?\\s+from\\s+(ethics|irb|institutional\\s+review)",
     "waived?\\s+(by\\s+)?(the\\s+)?(ethics|irb|institutional|review)\\s+(committee|board|review)?",
     "deemed\\s+exempt",
+    # ethics review that was not needed ("did not require further ethical
+    # review", "exempt from formal human research ethics review")
+    "(ethics|ethical|irb|institutional)\\s+review\\s+(was|is)\\s+(not\\s+(required|needed|necessary|sought)|waived)",
+    "not\\s+(require|requiring|required|need|needed)\\s+(an?\\s+)?(further\\s+|formal\\s+|additional\\s+|separate\\s+)?(ethics|ethical|irb)\\s+(review|approval|clearance)",
+    "exempt(ed|ion)?\\s+from\\s+(formal\\s+|further\\s+)?(\\w+\\s+){0,3}(ethics|ethical|irb)\\s+review",
+    "\\bno\\s+(new\\s+|further\\s+)?(institutional\\s+)?ethics\\s+review",
+    "scope\\s+of\\s+.{0,40}ethical\\s+review",
     # Helsinki
     "declaration\\s+of\\s+helsinki",
     "helsinki\\s+declaration"
@@ -164,21 +204,39 @@ ethics_check <- function(paper) {
 
   table <- paper |>
     text_search(ethics_words)
+  # a template line the authors have not filled in yet ("[Add ethics
+  # approval, recruitment, and stimulus details here.]") is not a statement;
+  # an anonymised one ("approved by the XXX University ethics committee") is,
+  # and so is one followed by a layout note ("[INSERT TABLE 1 HERE]")
+  if (nrow(table) > 0) {
+    placeholder <- grepl("\\[\\s*(add|insert)\\b[^]]*(ethic|approv|irb|committee|board)",
+                         table$text, ignore.case = TRUE, perl = TRUE)
+    table <- table[!placeholder, ]
+  }
   table$ethics <- TRUE
   if (!"text" %in% names(table)) table$text <- character(0)
 
-  live_table <- .detect_live_data(paper)
-  live_table$live_data <- TRUE
+  # where the data came from ----
+  # read from the text, and from the results of the modules that ran before
+  # this one (see .data_source() in R/data-source.R). A for loop, not
+  # lapply(): get_prev_outputs() looks two frames up for the chain.
+  prev <- list()
+  for (m in c("power", "stat_p_exact", "stat_check", "repo_check", "data_check", "prereg_check")) {
+    if (is.null(get_prev_outputs(m, "traffic_light"))) next
+    prev[[m]] <- list(table = get_prev_outputs(m, "table"),
+                      ownership = get_prev_outputs(m, "ownership"))
+  }
+  ds <- .data_source(paper, prev = prev)
+  source_table <- ds$evidence
+  # the sentences that show the authors' own data collection, under the
+  # name the run scripts of the preprint repositories count (totals.py)
+  source_table$live_data <- source_table$sign %in% "own"
 
   # re-order by paper_id and text_id
   paper_ids <- paper_id(paper)
   table$paper_id <- factor(table$paper_id, paper_ids)
   table <- dplyr::arrange(table, paper_id, text_id)
   table$paper_id <- as.character(table$paper_id)
-
-  live_table$paper_id <- factor(live_table$paper_id, paper_ids)
-  live_table <- dplyr::arrange(live_table, paper_id, text_id)
-  live_table$paper_id <- as.character(live_table$paper_id)
 
   # summary_table ----
   all_ids <- data.frame(paper_id = paper_ids)
@@ -200,64 +258,55 @@ ethics_check <- function(paper) {
     )
   }
 
-  if (nrow(live_table) > 0) {
-    live_summary <- live_table |>
-      summarise(
-        needs_ethics = any(live_data),
-        live_data_statements = list(unique(text[live_data])),
-        .by = paper_id
-      )
-    live_na <- lengths(live_summary$live_data_statements) == 0
-    live_summary$live_data_statements[live_na] <- NA_character_
-  } else {
-    live_summary <- dplyr::tibble(
-      paper_id = character(0),
-      needs_ethics = logical(0),
-      live_data_statements = list()
-    )
-  }
+  source_summary <- ds$summary
+  names(source_summary)[names(source_summary) == "signs"] <- "data_source_signs"
+  source_summary$data_source_statements <- lapply(source_summary$paper_id, \(id) {
+    s <- unique(source_table$text[source_table$paper_id == id])
+    if (length(s)) s else NA_character_
+  })
 
   summary_table <- all_ids |>
     dplyr::left_join(ethics_summary, by = "paper_id") |>
-    dplyr::left_join(live_summary, by = "paper_id")
+    dplyr::left_join(source_summary, by = "paper_id")
   summary_table$ethics_approved[is.na(summary_table$ethics_approved)] <- FALSE
-  summary_table$needs_ethics[is.na(summary_table$needs_ethics)] <- FALSE
-
-  # A paper that states no human or animal subjects took part ("no human
-  # subjects were involved", "not as subjects recruited for a study") is not
-  # expected to have an ethics statement, whatever participant phrase it also
-  # has (dq96z_v2; see .detect_no_participants())
-  none_table <- .detect_no_participants(paper)
-  none_ids <- unique(as.character(none_table$paper_id %||% character(0)))
-  summary_table$states_no_participants <- summary_table$paper_id %in% none_ids
-  summary_table$needs_ethics[summary_table$states_no_participants] <- FALSE
   # vapply()/lengths(), not sapply(): for no papers sapply() returned list(),
   # and indexing with it stopped ("invalid subscript type 'list'", U79)
   ethics_null <- vapply(summary_table$ethics_statements, is.null, logical(1))
   summary_table$ethics_statements[ethics_null] <- NA_character_
-  live_null <- vapply(summary_table$live_data_statements, is.null, logical(1))
-  summary_table$live_data_statements[live_null] <- NA_character_
 
   # traffic_light + summary_text ----
-  n_needs   <- sum(summary_table$needs_ethics)
-  n_missing <- sum(summary_table$needs_ethics & !summary_table$ethics_approved)
-  tl <- if (n_needs == 0) {
-    "na"
-  } else if (n_missing == 0) {
-    "green"
-  } else {
+  # A statement is expected for the authors' own data and for records
+  # obtained for the study; a paper whose data source is uncertain is
+  # flagged too, as we could not rule out that it needs one.
+  needs     <- summary_table$needs_ethics %in% TRUE
+  uncertain <- summary_table$data_source %in% "uncertain"
+  approved  <- summary_table$ethics_approved
+  n_check   <- sum(needs | uncertain)
+  n_missing <- sum(needs & !approved)
+  n_unsure  <- sum(uncertain & !approved)
+  tl <- if (n_missing + n_unsure > 0) {
     # yellow, not red, until a validation shows people agree with most of its red findings (#695, point 2)
     "yellow"
-  }
-  summary_text <- if (n_missing > 0) {
-    sprintf(
-      "%d of %d paper%s appeared to involve live data collection and lacked an ethics approval statement.",
-      n_missing, nrow(summary_table), plural(nrow(summary_table))
-    )
-  } else if (n_needs > 0) {
-    "All papers that appeared to involve live data collection contained an ethics approval statement."
+  } else if (n_check > 0) {
+    "green"
   } else {
-    "No papers appeared to involve live data collection requiring an ethics approval statement."
+    "na"
+  }
+  n <- nrow(summary_table)
+  summary_text <- if (n_missing + n_unsure > 0) {
+    paste0(
+      if (n_missing > 0) sprintf(
+        "%d of %d paper%s appeared to report data about people or animals that need an ethics statement, and lacked one.",
+        n_missing, n, plural(n)),
+      if (n_missing > 0 && n_unsure > 0) " ",
+      if (n_unsure > 0) sprintf(
+        "For %d of %d paper%s we could not tell whether %s data about people or animals, and found no ethics statement.",
+        n_unsure, n, plural(n), if (n_unsure == 1) "it reports" else "they report")
+    )
+  } else if (n_check > 0) {
+    "All papers that appeared to report data about people or animals that need an ethics statement contained one."
+  } else {
+    "No papers appeared to report data about people or animals that need an ethics statement."
   }
 
   # report ----
@@ -266,46 +315,57 @@ ethics_check <- function(paper) {
   report <- NULL
 
   if (nrow(summary_table) == 1) {
-    approved <- summary_table$ethics_approved
-    needs    <- summary_table$needs_ethics
-    live_statements <- summary_table$live_data_statements[[1]]
+    quote <- \(x, max = 3) paste0("> ", utils::head(unique(x), max), collapse = "\n\n")
+    src <- summary_table$data_source[[1]]
+    is_approved <- summary_table$ethics_approved[[1]]
+    statements <- unique(table$text[table$ethics])
+    evidence <- source_table$text
+    signs <- summary_table$data_source_signs[[1]]
 
-    if (!needs && summary_table$states_no_participants[[1]] && !approved) {
-      report <- sprintf(
-        "We did not detect an ethics approval statement. The paper states that no human or animal participants took part, so we do not expect one:\n\n> %s",
-        paste(unique(none_table$text), collapse = "\n\n> ")
-      )
-    } else if (!needs) {
-      if (approved) {
-        report <- sprintf(
-          "An ethics approval statement was detected, based on the following text:\n\n> %s",
-          paste(unique(table$text[table$ethics]), collapse = "\n\n> ")
-        )
+    main <- switch(src,
+      own = if (is_approved) {
+        "The paper appears to report data that the authors collected from people or animals, and it has an ethics statement."
       } else {
-        report <- "We did not detect an ethics approval statement, and this paper does not appear to involve live data collection from human or animal participants. Ethics approval is typically not required for theoretical work, simulations, reviews, meta-analyses, or secondary analyses of published data."
-      }
-    } else {
-      live_quote <- paste(live_statements, collapse = "\n\n> ")
-      if (approved) {
-        report <- sprintf(
-          "Based on the following text, we would expect an ethics approval statement, and it was present:\n\n> %s\n\nEthics approval statement:\n\n> %s",
-          live_quote,
-          paste(unique(table$text[table$ethics]), collapse = "\n\n> ")
-        )
+        "The paper appears to report data that the authors collected from people or animals, but we found no ethics statement. Such data need one: approval by an ethics committee, or a reason why none was needed. We based this on the sentences below. A paper can describe someone else's study in the same words; if these data are not the authors' own, no statement is needed."
+      },
+      existing_records = if (is_approved) {
+        "The paper appears to analyse records about individual people that the authors obtained for this study, and it has an ethics statement."
       } else {
-        report <- sprintf(
-          "Based on the following text, we would expect an ethics approval statement, but it was not present:\n\n> %s",
-          live_quote
-        )
-      }
+        "The paper appears to analyse records about individual people that the authors obtained for this study, such as hospital records or a cohort, but we found no ethics statement. Such analyses usually need an approval or a waiver from an ethics committee."
+      },
+      existing_unclear = if (is_approved) {
+        "The paper appears to analyse data about people, from a source we could not identify, and it has an ethics statement."
+      } else {
+        "The paper appears to analyse data about people, but we could not tell where the data came from. If the authors collected them, or obtained records for this study, an ethics statement is needed. If they come from an open resource such as UK Biobank or NHANES, it is not. We found no ethics statement."
+      },
+      open_resource = "The paper appears to analyse an open resource, which needs no ethics statement of its own.",
+      none = sprintf("The paper does not appear to report data about individual people or animals (%s), so we do not expect an ethics statement.",
+                     if (nzchar(signs)) paste("we found:", signs) else
+                       "we found no method part, no sample description and no statistical results, and at most one sign that the authors collected data"),
+      uncertain = if (is_approved) {
+        "We could not tell whether this paper reports data about people or animals, but it has an ethics statement."
+      } else {
+        "We could not tell whether this paper reports data about people or animals: the signs we look for were missing or pointed both ways. If it does, it needs an ethics statement, and we found none."
+      },
+      no_text = "The paper has too little text to check."
+    )
+    parts <- main
+    if (length(evidence) > 0) {
+      parts <- c(parts, paste0("We based this on:\n\n", quote(evidence)))
+    } else if (nzchar(signs) && !src %in% "none") {
+      parts <- c(parts, paste0("We based this on: ", signs, "."))
     }
+    if (is_approved) {
+      parts <- c(parts, paste0("Ethics statement:\n\n", quote(statements, Inf)))
+    }
+    report <- paste(parts, collapse = "\n\n")
   }
 
   # return a list ----
   list(
-    table = dplyr::bind_rows(table, live_table),
+    table = dplyr::bind_rows(table, source_table),
     summary_table = summary_table,
-    na_replace = list(ethics_approved = FALSE, states_no_participants = FALSE),
+    na_replace = list(ethics_approved = FALSE),
     traffic_light = tl,
     summary_text = summary_text,
     report = report
