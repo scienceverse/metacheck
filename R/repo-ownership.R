@@ -215,9 +215,11 @@
   found <- dplyr::bind_rows(lapply(names(finders), \(k) {
     x <- tryCatch(suppressMessages(suppressWarnings(finders[[k]](q))), error = \(e) NULL)
     if (!is.data.frame(x) || !nrow(x) || !"href" %in% names(x)) return(NULL)
-    # the sequence archives' finder names each link's archive itself (#660)
-    data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x$text_id %||% NA_integer_,
-               repo_type = x$repo_type %||% k)
+    # the sequence archives' finder names each link's archive itself (#660).
+    # [[ ]], not $: a finder returns a tibble, on which $ warned "Unknown or
+    # uninitialised column: `repo_type`" for every finder without the column
+    data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x[["text_id"]] %||% NA_integer_,
+               repo_type = x[["repo_type"]] %||% k)
   }))
   if (is.null(found) || !nrow(found)) return(empty)
   # a GitHub repository written by its name alone ("GitHub repository,

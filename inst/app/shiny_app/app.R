@@ -236,11 +236,14 @@ report_slot_release <- function(slot) {
 # Modules that are validated AND can run on a server (no local-file modules by
 # default; repo_check/code_check/data_check/codebook_check still run against
 # online repositories, since local_path is never set here).
+# ethics_check last: it reads the results of power, stat_p_exact, stat_check,
+# repo_check, data_check and prereg_check (#695, point 18)
 VALIDATED_MODULES <- c(
-  "power", "marginal", "prereg_check", "ethics_check",
+  "power", "marginal", "prereg_check",
   "ref_pubpeer", "ref_retraction", "ref_replication",
   "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
-  "repo_check", "code_check", "data_check", "codebook_check"
+  "repo_check", "code_check", "data_check", "codebook_check",
+  "ethics_check"
 )
 
 # The services whose keys a visitor can enter (see api_keys.R): those the

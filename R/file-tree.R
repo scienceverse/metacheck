@@ -308,8 +308,9 @@
     # empty row between every line of the tree.
     # A local folder by its own name: its full path is the place on the
     # computer that ran the check, on a server its job folder
-    # (Lakens/tue_datamanager_check#5, item 2).
-    label <- if (grepl("^[A-Za-z][A-Za-z0-9+.-]*://", b$repo)) b$repo else basename(b$repo)
+    # (Lakens/tue_datamanager_check#5, item 2). A Windows drive written as
+    # "C://" is a local folder too (#723).
+    label <- if (.is_web_address(b$repo)) b$repo else basename(b$repo)
     c(paste0("**Repository: ", label, "**"),
       paste(c("::: {style=\"max-height: 40em; overflow: auto;\"}",
               "```", b$lines, "```", ":::"), collapse = "\n"))

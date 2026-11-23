@@ -2370,8 +2370,9 @@ repro_defined_vars <- function(code_text_list) {
   is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
   piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
   placeholder <- grepl("[%{}$*]|: ", d$ref)
-  # a file read from a web address is not one the deposit should hold (#695)
-  web <- grepl("://", d$ref, fixed = TRUE)
+  # a file read from a web address is not one the deposit should hold (#695);
+  # a Windows drive written as "C://" is a path, not a web address (#723)
+  web <- .is_web_address(d$ref)
   !is_call & !piece & !placeholder & !web & !(tolower(d$basename) %in% built)
 }
 

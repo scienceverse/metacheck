@@ -834,10 +834,11 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 
 # TRUE when `x` names an existing local file rather than a URL. A URL scheme
 # ("https://", "file://") is never treated as a path, so a file:// URL still
-# goes through the HTTP code like any other URL.
+# goes through the HTTP code like any other URL. A Windows drive written as
+# "C://" is a path (#723).
 .is_local_file <- function(x) {
   length(x) == 1 && !is.na(x) && nzchar(x) &&
-    !grepl("^[A-Za-z][A-Za-z0-9+.-]*://", x) &&
+    !.is_web_address(x) &&
     file.exists(x) && !dir.exists(x)
 }
 
