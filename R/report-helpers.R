@@ -105,6 +105,73 @@ report_type <- function(report_type = NULL) {
   shown
 }
 
+# A whole number from a report setting, or `default` when the setting is not
+# one number of at least 1.
+.report_limit_option <- function(name, default) {
+  n <- suppressWarnings(as.integer(getOption(name, default)))
+  if (length(n) != 1 || is.na(n) || n < 1L) n <- default
+  n
+}
+
+# What a report shows of a table that scroll_table() writes into a report: at
+# most getOption("metacheck.report_max_rows", 100) rows and
+# getOption("metacheck.report_max_cols", 100) columns, and each text cell cut
+# to getOption("metacheck.report_max_cell_chars", 300) characters followed by
+# "...", so a report's size does not grow with the size of a deposit's files.
+# A data preview of 100 rows by 1,190 columns, a list of 13,562 codebook
+# variables and survey answers of several thousand characters per cell gave
+# reports of 15 to 25 MB of markdown that could not be turned into HTML within
+# the server's 15 minutes (PsyArXiv, November 2026). A cell holding a link
+# (<a ...>) is left whole, as a cut link breaks the page. Only the report is
+# shortened: the module's own output keeps every row, column and character.
+# The brief report's to-do list reads its tables back from the report text
+# (.report_extract_tables()), so it lists at most this many rows per table.
+# Returns list(table, note): note is the line telling the reader what is left
+# out, or NULL when the table is shown whole.
+.report_table_limits <- function(table) {
+  max_rows  <- .report_limit_option("metacheck.report_max_rows", 100L)
+  max_cols  <- .report_limit_option("metacheck.report_max_cols", 100L)
+  max_chars <- .report_limit_option("metacheck.report_max_cell_chars", 300L)
+  n_rows <- nrow(table)
+  n_cols <- ncol(table)
+  # the names are put back as they were: subsetting a data frame makes blank
+  # and repeated column names unique, which scroll_table() keeps (U131)
+  nm <- names(table)
+  if (n_cols > max_cols) {
+    table <- table[, seq_len(max_cols), drop = FALSE]
+    nm <- nm[seq_len(max_cols)]
+  }
+  if (n_rows > max_rows) table <- utils::head(table, max_rows)
+  if (!identical(names(table), nm)) names(table) <- nm
+
+  cut <- FALSE
+  for (j in seq_along(table)) {
+    x <- table[[j]]
+    if (!is.character(x) && !is.factor(x)) next
+    x <- as.character(x)
+    # NA for a text that is not valid in its encoding: left as it is
+    len <- suppressWarnings(nchar(x, type = "chars", allowNA = TRUE))
+    long <- !is.na(len) & len > max_chars &
+      !grepl("<a\\b", x, ignore.case = TRUE, perl = TRUE, useBytes = TRUE)
+    if (any(long)) {
+      x[long] <- paste0(substr(x[long], 1L, max_chars), "…")
+      table[[j]] <- x
+      cut <- TRUE
+    }
+  }
+
+  shown <- c(
+    if (n_rows > max_rows) sprintf("the first %d of %d rows", max_rows, n_rows),
+    if (n_cols > max_cols) sprintf("the first %d of %d columns", max_cols, n_cols)
+  )
+  note <- c(
+    if (length(shown)) paste0("Showing ", paste(shown, collapse = " and "), "."),
+    if (cut) sprintf("Cells longer than %d characters are cut (…).", max_chars)
+  )
+  list(table = table,
+       note = if (length(note)) paste0("*", paste(note, collapse = " "), "*"))
+}
+
 # Whether a report_type value shows only flagged modules (red/yellow/fail)
 # with summary text only, skipping full detail -- true for "brief" and
 # "simple_brief".
@@ -922,6 +989,8 @@ report_type <- function(report_type = NULL) {
 #'
 #' To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 will be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, 200, NA).
 #'
+#' The report shows at most the first 100 rows and the first 100 columns of a table, and cuts text cells longer than 300 characters (a cell holding a link is left whole); a line under the table says what is left out. Change these numbers with `options(metacheck.report_max_rows = , metacheck.report_max_cols = , metacheck.report_max_cell_chars = )`.
+#'
 #' @param table the data frame to show in a table, or a vector for a list
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
 #' @param maxrows if the table has more rows than this, paginate
@@ -947,6 +1016,16 @@ scroll_table <- function(table,
   # return nothing if no table contents
   if (is.null(table) || nrow(table) == 0 || ncol(table) == 0) {
     return("")
+  }
+
+  # the rows, columns and characters the report shows (.report_table_limits());
+  # cut before line breaks become <br>, so no <br> is cut in two
+  n_cols <- ncol(table)
+  limited <- .report_table_limits(table)
+  table <- limited$table
+  # widths for columns left out are dropped with them
+  if (ncol(table) < n_cols && length(colwidths) > ncol(table)) {
+    colwidths <- colwidths[seq_len(ncol(table))]
   }
 
   # replace line breaks with <br>
@@ -987,6 +1066,7 @@ metacheck::report_table(table, %s, %s, %s)
     maxrows,
     ifelse(isTRUE(escape), "TRUE", "FALSE")
   )
+  if (!is.null(limited$note)) md <- paste0(md, "\n", limited$note, "\n")
 
   return(md)
 }
