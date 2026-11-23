@@ -2620,6 +2620,10 @@ test_that("library() in a script does not give an S3 warning from the capture co
 
 test_that("the container's capture code knows the statistic names (found with Lakens/tue_datamanager_check#5, item 4)", {
   # the helpers as the container gets them: text, run in a fresh environment
+  # The coverage run adds calls that count the lines run to every function,
+  # and these calls do not work in the text written out from them ("argument
+  # is of length zero"); R CMD check and the full tests run it
+  skip_on_covr()
   e <- new.env(parent = globalenv())
   eval(parse(text = .repro_docker_capture_preamble()), envir = e)
   expect_equal(e$stato_type_column("mean")$termSource, "STATO")
