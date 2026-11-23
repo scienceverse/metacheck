@@ -417,6 +417,10 @@ test_that("an .rds with a labelled text column is read and counted before haven 
   # <haven_labelled> to <character>", PsyArXiv preprint jev3u_v1). This
   # session has loaded haven already, so the check runs in a new one.
   skip_on_cran()
+  # The coverage run tests a changed copy of the package, which the new
+  # session cannot load (it stopped with status 1); R CMD check and the full
+  # tests run it
+  skip_on_covr()
   skip_if_not_installed("processx")
   skip_if_not_installed("haven")
   wd <- withr::local_tempdir()
