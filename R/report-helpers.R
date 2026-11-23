@@ -154,7 +154,7 @@ report_type <- function(report_type = NULL) {
     long <- !is.na(len) & len > max_chars &
       !grepl("<a\\b", x, ignore.case = TRUE, perl = TRUE, useBytes = TRUE)
     if (any(long)) {
-      x[long] <- paste0(substr(x[long], 1L, max_chars), "…")
+      x[long] <- paste0(substr(x[long], 1L, max_chars), "\u2026")
       table[[j]] <- x
       cut <- TRUE
     }
@@ -166,7 +166,7 @@ report_type <- function(report_type = NULL) {
   )
   note <- c(
     if (length(shown)) paste0("Showing ", paste(shown, collapse = " and "), "."),
-    if (cut) sprintf("Cells longer than %d characters are cut (…).", max_chars)
+    if (cut) sprintf("Cells longer than %d characters are cut (\u2026).", max_chars)
   )
   list(table = table,
        note = if (length(note)) paste0("*", paste(note, collapse = " "), "*"))
