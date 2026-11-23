@@ -33,6 +33,8 @@ A helper function for making module reports.
 See \href{https://quarto.org/docs/authoring/article-layout.html}{quarto article layout} for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
 
 To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 will be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, 200, NA).
+
+The report shows at most the first 100 rows and the first 100 columns of a table, and cuts text cells longer than 300 characters (a cell holding a link is left whole); a line under the table says what is left out. Change these numbers with \code{options(metacheck.report_max_rows = , metacheck.report_max_cols = , metacheck.report_max_cell_chars = )}.
 }
 \examples{
 scroll_table(LETTERS)

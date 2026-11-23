@@ -87,6 +87,100 @@ test_that(".report_file_tabs keeps a report's per-file tables to a limit", {
   expect_length(.report_file_tabs(character(0)), 0)
 })
 
+test_that(".report_table_limits keeps a report's tables to a size", {
+  # Explicit reset, as for report_type above (bare session options)
+  opts <- c("metacheck.report_max_rows", "metacheck.report_max_cols",
+            "metacheck.report_max_cell_chars")
+  old <- options()[opts]
+  names(old) <- opts
+  on.exit(options(old), add = TRUE)
+  options(stats::setNames(vector("list", 3), opts))
+
+  # within the limits: unchanged, no note
+  small <- data.frame(a = 1:3, b = c("x", "y", "z"))
+  lim <- .report_table_limits(small)
+  expect_identical(lim$table, small)
+  expect_null(lim$note)
+
+  # 150 rows, 120 columns
+  wide <- as.data.frame(matrix(1:(150 * 120), nrow = 150))
+  lim <- .report_table_limits(wide)
+  expect_equal(dim(lim$table), c(100, 100))
+  expect_equal(names(lim$table), names(wide)[1:100])
+  expect_equal(lim$table[[1]], 1:100)
+  expect_equal(lim$note,
+               "*Showing the first 100 of 150 rows and the first 100 of 120 columns.*")
+
+  # long text is cut, a link is left whole, NA stays NA
+  long <- strrep("a", 400)
+  link <- paste0("<a href='https://osf.io/abcde'>", strrep("b", 400), "</a>")
+  txt <- data.frame(t = c(long, link, NA, "short"), stringsAsFactors = FALSE)
+  lim <- .report_table_limits(txt)
+  expect_equal(lim$table$t[1], paste0(strrep("a", 300), "…"))
+  expect_equal(lim$table$t[2], link)
+  expect_true(is.na(lim$table$t[3]))
+  expect_equal(lim$table$t[4], "short")
+  expect_equal(lim$note, "*Cells longer than 300 characters are cut (…).*")
+
+  # a factor column is cut too
+  lim <- .report_table_limits(data.frame(f = factor(c(long, "x"))))
+  expect_equal(lim$table$f[1], paste0(strrep("a", 300), "…"))
+
+  # blank and repeated column names are kept as they are
+  dup <- data.frame(1:120, 1:120, 1:120)
+  names(dup) <- c("", "", "x")
+  lim <- .report_table_limits(dup)
+  expect_equal(names(lim$table), c("", "", "x"))
+  expect_equal(nrow(lim$table), 100)
+
+  # the settings
+  options(metacheck.report_max_rows = 5, metacheck.report_max_cols = 2,
+          metacheck.report_max_cell_chars = 10)
+  lim <- .report_table_limits(data.frame(a = 1:6, b = 1:6, c = strrep("c", 20)))
+  expect_equal(dim(lim$table), c(5, 2))
+  expect_equal(lim$note,
+               "*Showing the first 5 of 6 rows and the first 2 of 3 columns.*")
+  lim <- .report_table_limits(data.frame(c = strrep("c", 20)))
+  expect_equal(lim$table$c, paste0(strrep("c", 10), "…"))
+
+  # an unusable setting falls back to the default
+  for (bad in list(0, -1, NA, "x", c(1, 2))) {
+    options(metacheck.report_max_rows = bad)
+    expect_equal(nrow(.report_table_limits(data.frame(a = 1:150))$table), 100)
+  }
+})
+
+test_that("scroll_table writes only what the report shows", {
+  opts <- c("metacheck.report_max_rows", "metacheck.report_max_cols",
+            "metacheck.report_max_cell_chars")
+  old <- options()[opts]
+  names(old) <- opts
+  on.exit(options(old), add = TRUE)
+  options(stats::setNames(vector("list", 3), opts))
+
+  big <- data.frame(n = 1:13562, text = strrep("v", 400))
+  obs <- scroll_table(big)
+  expect_match(obs, "*Showing the first 100 of 13562 rows. Cells longer than 300 characters are cut (…).*",
+               fixed = TRUE)
+  # the table read back from the report text has the rows shown
+  tbl <- .report_extract_tables(obs)[[1]]
+  expect_equal(nrow(tbl), 100)
+  expect_equal(tbl$text[1], paste0(strrep("v", 300), "…"))
+
+  # a line break in a long cell is cut before it becomes <br>
+  obs <- scroll_table(data.frame(t = paste0(strrep("x", 299), "\nmore")))
+  tbl <- .report_extract_tables(obs)[[1]]
+  expect_equal(tbl$t, paste0(strrep("x", 299), "<br>…"))
+
+  # widths of columns left out are dropped
+  obs <- scroll_table(as.data.frame(matrix(1:101, nrow = 1)), rep(10, 101))
+  widths <- sub("(?s).*report_table\\(table, (c\\(.*?\\)), 2, FALSE\\).*", "\\1", obs, perl = TRUE)
+  expect_length(eval(parse(text = widths)), 100)
+
+  # a table within the limits is written as before, without a note
+  expect_false(grepl("Showing the first", scroll_table(data.frame(a = 1:3)), fixed = TRUE))
+})
+
 test_that(".report_flagged_bullets", {
   # no report field at all
   expect_equal(.report_flagged_bullets(list(report = NULL)), character(0))
