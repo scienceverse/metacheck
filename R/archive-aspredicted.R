@@ -9,7 +9,7 @@
 #' paper <- demopaper()
 #' aspredicted_links(paper)
 aspredicted_links <- function(paper) {
-  href <- NULL
+  href <- text <- NULL
 
   found <- paper_table(paper, "url") |>
     dplyr::filter(grepl("aspredicted\\.org", href, ignore.case = TRUE))

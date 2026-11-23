@@ -384,7 +384,9 @@
 
   # title and abstract, and the headings
   abstract <- vapply(ids, \(i) paste(txt[pid == i & is_abstract], collapse = " "), character(1))
-  ta <- paste(title, ".", abstract)
+  # recycle0: an empty paper list has no ids, and paste() would still give
+  # one " . ", so the table of signs could not be made
+  ta <- paste(title, ".", abstract, recycle0 = TRUE)
   for (k in names(.ds_type)) f[[paste0(k, "_ta")]] <- as.integer(.ds_has(.ds_type[[k]], ta))
   f$comment_title <- as.integer(.ds_has(.ds_comment_title, title))
   f$existing_ta <- as.integer(.ds_has(.ds_existing, ta))
