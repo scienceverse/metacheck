@@ -12,7 +12,7 @@ lines of R code that follow the install loop
 \description{
 A second pass after every package has had its turn, since one time limit
 covers the whole install: first the deposit's own copy of the package, when
-it has one (see \code{\link[=.repro_deposit_packages]{.repro_deposit_packages()}}); then Bioconductor, because the fixed list of
+it has one (see \code{.repro_deposit_packages()}); then Bioconductor, because the fixed list of
 \code{.repro_bioc_packages()} misses many names and some packages moved there,
 keeping only an old copy in the CRAN Archive; then the latest version in the
 CRAN Archive, as \code{\link[=.repro_cran_archive_install]{.repro_cran_archive_install()}} does outside Docker; then a

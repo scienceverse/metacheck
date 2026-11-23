@@ -1649,8 +1649,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # "parses"; it is looked at too, else it was run as a script (#568:
   # 10.1111/2041-210X.13967's 109 MB Training_Dataset_1.r)
   is_binary <- vapply(seq_len(n_code), function(i) !is.null(attr(raw_text_list[[i]], "binary")), logical(1))
-  if (any(parse_error_raw | is_binary)) {
-    for (i in which(parse_error_raw | is_binary)) {
+  # code_check does not parse a JAGS or BUGS model saved as .R (0.4.4.33): its
+  # parse_error is NA ("not checked"), not TRUE, so such a file was not looked
+  # at here and was run as an R script. A file code_check did not check is
+  # looked at too, but only to find a model; a model found that way counts as
+  # not parsing, as code_check had it before, so it is not run as R either
+  # (runs_as_r, below).
+  not_checked <- if ("parse_error" %in% names(r_files)) is.na(r_files$parse_error) else rep(FALSE, n_code)
+  look <- parse_error_raw | is_binary | not_checked
+  if (any(look)) {
+    for (i in which(look)) {
       raw <- raw_text_list[[i]]
       fn  <- r_files$file_name[i]
       jags_hit <- .repro_is_jags_model(
@@ -1658,8 +1666,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (jags_hit) {
         sniff_type[i] <- "jags_model"
         sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
+        if (not_checked[i]) parse_error_raw[i] <- TRUE
         next
       }
+      if (!parse_error_raw[i] && !is_binary[i]) next
       # a file that is not text, such as R data saved as .R (#568)
       path_i <- resolve_row_path(i)
       detected <- if (!is.na(path_i)) .repro_binary_kind(path_i) else NA_character_

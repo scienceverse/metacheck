@@ -27,7 +27,7 @@ container run (default 600 — installs can be slow, esp. compiling from
 source)}
 
 \item{deposit_pkgs}{the deposit's own copies of packages, as
-\code{\link[=.repro_deposit_packages]{.repro_deposit_packages()}} gives them: a named vector of folders or
+\code{.repro_deposit_packages()} gives them: a named vector of folders or
 source tarballs on the host. A package that is not on CRAN is installed
 from its copy first (#588); \code{NULL} for none.}
 }
