@@ -6,7 +6,7 @@ test_that("ref_consistency", {
   paper <- demopaper()
 
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "red")
+  expect_equal(mod_output$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mod_output$table), 4)
   expect_equal(mod_output$module, module)
 
@@ -195,7 +195,10 @@ test_that("ref_pubpeer", {
   paper$bib_match <- NULL
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
-  expect_equal(sum(mod_output$table$total_comments), 3)
+  # 2, not 3: one of the 3 comments on 10.1177/0956797614520714 is Statcheck's,
+  # which is left out of the count (#695, point 14); PubPeer's own data, so
+  # this changes when someone comments on the cited papers
+  expect_equal(sum(mod_output$table$total_comments), 2)
 
   # no DOIs
   paper <- demopaper()
@@ -209,7 +212,7 @@ test_that("ref_pubpeer", {
   paper <- demopaper()
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
-  expect_equal(sum(mod_output$table$total_comments), 3)
+  expect_equal(sum(mod_output$table$total_comments), 2)   # see above
 
   # multiple papers
   paper <- psychsci[c(4, 9)]
@@ -364,4 +367,18 @@ test_that("ref_summary labels unmatched references and keeps one row per referen
   mo <- module_run(fake, "ref_summary")
   expect_equal(nrow(mo$table), length(b))
   expect_equal(mo$table$accuracy_mismatch[mo$table$bib_id == b[1]], "no match")
+})
+
+test_that("ref_pubpeer leaves Statcheck's comment out of the count (#695, point 14)", {
+  p <- demopaper()
+  dois <- unique(stats::na.omit(p$bib$doi))[1:3]
+  local_mocked_bindings(pubpeer_comments = function(doi) data.frame(
+    doi = dois, total_comments = c(1, 3, 2), url = "https://pubpeer.com/x",
+    users = c("Statcheck", "Statcheck, A. Reader", "A. Reader, B. Writer")))
+  mo <- module_run(p, "ref_pubpeer")
+  # Statcheck alone: left out; with others: one comment less, and not a commenter
+  expect_setequal(mo$table$doi, dois[2:3])
+  expect_equal(mo$table$total_comments[mo$table$doi == dois[2]], 2)
+  expect_equal(mo$table$users[mo$table$doi == dois[2]], "A. Reader")
+  expect_match(paste(mo$report, collapse = " "), "Commenters", fixed = TRUE)
 })

@@ -159,11 +159,14 @@ server <- function(input, output, session) {
   report_error    <- reactiveVal("")
   report_filename <- reactiveVal("")
 
+  # ethics_check last: it reads the results of power, stat_p_exact,
+  # stat_check, repo_check, data_check and prereg_check (#695, point 18)
   validated_modules <- c(
-    "power", "marginal", "prereg_check", "ethics_check",
+    "power", "marginal", "prereg_check",
     "ref_pubpeer", "ref_retraction", "ref_replication",
     "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
-    "repo_check", "code_check", "data_check", "codebook_check"
+    "repo_check", "code_check", "data_check", "codebook_check",
+    "ethics_check"
   )
 
   # Modules that read the files inside a repository. They all take the same

@@ -2904,7 +2904,10 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
     # <character>", the PISA country codes of PsyArXiv preprint jev3u_v1)
     if (is.data.frame(df) && any(vapply(df, inherits, logical(1), "haven_labelled")))
       loadNamespace("haven")
-    .utf8_repair_df(df)
+    df <- .utf8_repair_df(df)
+    # only on a whole file: the first rows alone cannot show a column is empty
+    if (is.data.frame(df) && !is.finite(n_rows)) df <- .drop_trailing_blank_cols(df)
+    df
   }, error = function(e) {
     if (grepl("time limit", conditionMessage(e), ignore.case = TRUE)) stop(e)
     warning("Could not read ", basename(path), ": ", conditionMessage(e))
@@ -7507,6 +7510,33 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
     grepl("^(V\\d+|X(\\.\\d+)?|col_\\d+)$", x) |       # base R make.names / fallback
     grepl("^Unnamed:?\\.?\\s*\\d+$", x, ignore.case = TRUE) |  # pandas
     !nzchar(x)                                          # bare blank
+}
+
+# The columns at the right end of a table that have neither a name (a name the
+# reader invented, see .is_placeholder_name()) nor any value are left out: a
+# spreadsheet saved with every column it can hold (16,384 in Excel) gave a CSV of
+# 16,383 fields, of which about 140 had a name, and data_check reported 16,296
+# empty columns for that one file (#695, point 31). Only from the right end, and
+# only while both hold: a column with a name or a value, and every column left
+# of it, stays.
+.drop_trailing_blank_cols <- function(df) {
+  if (!is.data.frame(df) || ncol(df) < 2) return(df)
+  blank <- function(x) {
+    if (is.character(x) || is.factor(x)) {
+      x <- as.character(x)
+      all(is.na(x) | !nzchar(trimws(x)))
+    } else all(is.na(x))
+  }
+  nms <- names(df)
+  keep_to <- ncol(df)
+  while (keep_to > 1 && .is_placeholder_name(nms[keep_to]) && blank(df[[keep_to]]))
+    keep_to <- keep_to - 1L
+  if (keep_to == ncol(df)) return(df)
+  extra <- attributes(df)[setdiff(names(attributes(df)), c("names", "row.names", "class"))]
+  out <- df[seq_len(keep_to)]
+  for (a in names(extra)) attr(out, a) <- extra[[a]]
+  attr(out, "blank_cols_dropped") <- ncol(df) - keep_to
+  out
 }
 
 # Fraction of columns that are internally type-CONSISTENT over the given rows: a

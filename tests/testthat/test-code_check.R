@@ -1441,6 +1441,22 @@ test_that("files a script writes or downloads are not missing, in any language, 
                    files_written = "")
   out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
   expect_equal(out$loaded_files_missing_names, "gone.csv")
+
+  # a Windows drive written with a double slash is a path, not a web address (#723)
+  cf <- data.frame(paper_id = "p", repo_url = "r", file_name = "a.R",
+                   loaded_refs = paste("C://folder/x.csv", "https://site/y.csv", sep = "\u001f"),
+                   files_written = "")
+  out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
+  expect_equal(out$loaded_files_missing_names, "x.csv")
+  expect_equal(out$loaded_files_missing, 1L)
+})
+
+test_that(".is_web_address needs a scheme of at least two letters (#723)", {
+  expect_equal(.is_web_address(c("https://site/x.csv", "ftp://h/x", "s3://bucket/x",
+                                 "file:///C:/x.csv", 'url("https://site/x.csv")')),
+               rep(TRUE, 5))
+  expect_equal(.is_web_address(c("C://folder/x.csv", "C:/folder/x.csv", "data/x.csv", NA)),
+               rep(FALSE, 4))
 })
 
 test_that("text that is not a path on the authors' computer is not an absolute path (#648)", {
@@ -1573,4 +1589,16 @@ test_that("code_check names the code files it did not check, with the reason (#7
   expect_match(rep_txt, "compressed file")
   expect_match(rep_txt, "Julia code is recognised, but not checked")
   expect_match(rep_txt, "Git LFS pointer")
+})
+
+test_that("code_check lists a JAGS model saved as .R as not checked, not as R that does not parse (#695, point 29)", {
+  d <- file.path(tempdir(), "cc695"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines(c("model{", "  for (i in 1:N) { y[i] ~ dnorm(mu, tau) }", "  mu ~ dnorm(0, 0.001)", "}"),
+             file.path(d, "bglmm.R"))
+  writeLines("x <- 1", file.path(d, "ok.R"))
+  cc <- suppressMessages(module_run(test_paper("x"), "code_check", local_path = d, local_only = TRUE))
+  rep_txt <- paste(cc$report, collapse = " ")
+  expect_match(rep_txt, "JAGS or BUGS model", fixed = TRUE)
+  expect_false(any(cc$table$parse_error %in% TRUE))
 })

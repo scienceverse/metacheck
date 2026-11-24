@@ -571,6 +571,9 @@ test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
   # a file read from a web address (#695)
   expect_false(.repro_ref_checkable(data.frame(ref = "http://journal.sjdm.org/16/1234/study1.sav",
                                                basename = "study1.sav")))
+  # a Windows drive written with a double slash is a path, not a web address (#723)
+  expect_true(.repro_ref_checkable(data.frame(ref = "C://Lakens/files/example.csv",
+                                              basename = "example.csv")))
 })
 
 test_that(".repro_built_names finds names joined to a variable (#568)", {
@@ -2617,6 +2620,10 @@ test_that("library() in a script does not give an S3 warning from the capture co
 
 test_that("the container's capture code knows the statistic names (found with Lakens/tue_datamanager_check#5, item 4)", {
   # the helpers as the container gets them: text, run in a fresh environment
+  # The coverage run adds calls that count the lines run to every function,
+  # and these calls do not work in the text written out from them ("argument
+  # is of length zero"); R CMD check and the full tests run it
+  skip_on_covr()
   e <- new.env(parent = globalenv())
   eval(parse(text = .repro_docker_capture_preamble()), envir = e)
   expect_equal(e$stato_type_column("mean")$termSource, "STATO")
@@ -2902,6 +2909,17 @@ test_that(".repro_make_failed_write_folders makes the folder in the sandbox only
   # not again
   unlink(file.path(root, "out"), recursive = TRUE)
   expect_equal(nrow(.repro_make_failed_write_folders(res, run_tbl, root, list(a.R = "out"))), 0)
+  # several scripts stopped on one folder: made once, and each runs again (#590)
+  res2 <- data.frame(file_name = c("f1.R", "f2.R", "f3.R"), outcome = "errored", stderr = "",
+                     error = "Error in `ggsave()`:\n! Cannot find directory 'Figures/'.")
+  run_tbl2 <- data.frame(file_name = res2$file_name, run_dir = file.path(root, "code"))
+  made2 <- .repro_make_failed_write_folders(res2, run_tbl2, root)
+  expect_equal(made2$script, c("f1.R", "f2.R", "f3.R"))
+  expect_equal(unique(made2$folder), "code/Figures")
+  # a folder the deposit or another script made is not taken for one of ours
+  dir.create(file.path(root, "code", "Other"))
+  res2$error <- "Error in `ggsave()`:\n! Cannot find directory 'Other/'."
+  expect_equal(nrow(.repro_make_failed_write_folders(res2, run_tbl2, root)), 0)
 })
 
 test_that(".repro_error_message gives each failure's message, short (#615)", {
@@ -4083,6 +4101,37 @@ test_that(".repro_needs_arguments: programs that stopped for want of their argum
            "Error in read.csv(\"x.csv\") : cannot open file",
            "Error in args[1] : object of type 'closure' is not subsettable")
   expect_equal(.repro_needs_arguments(r, err, "R"), c(TRUE, FALSE, FALSE))
+  # stopped at its own check of the number of arguments, whatever the message (#593)
+  own <- list(a = c("args = commandArgs(trailingOnly = T)", "if(length(args)!=3) {",
+                    "  stop(\"Provide (only) signal strength for the analysis\", call.=F)", "}"),
+              b = c("args = commandArgs(trailingOnly = T)", "x <- 1", "stop(\"Something else broke\")"))
+  err <- c("Error: Provide (only) signal strength for the analysis\nExecution halted",
+           "Error: Something else broke\nExecution halted")
+  expect_equal(.repro_needs_arguments(own, err, "R"), c(TRUE, FALSE))
+  # indexes `args` it never assigns, as a file a driver sources after setting it (#593)
+  un <- list(a = c("#args=\"\" #init", "if(dir.exists(args[1])) x <- 1"),
+             b = c("args <- c('a', 'b')", "f(args[3])"))
+  err <- rep("Error in args[1] : object of type 'closure' is not subsettable", 2)
+  expect_equal(.repro_needs_arguments(un, err, "R"), c(TRUE, FALSE))
+})
+
+test_that("an SPSS or Stata file the code reads is recognised by its name in the code (#695, point 42)", {
+  code <- c('rawdata <- read_sav("../data/rawdata.sav")', "x <- read_spss('Data for SPSS.sav')",
+            '# notes about otherdata.sav')
+  expect_equal(.repro_named_in_code(c("data/RawData.sav", "other.sav", "Data for SPSS.sav", "data.sav", "otherdata.sav"), code),
+               c(TRUE, FALSE, TRUE, FALSE, FALSE))
+  expect_length(.repro_named_in_code(character(0), code), 0)
+})
+
+test_that("the packages of a Python 2 script include those of the local modules it imports (#593)", {
+  ctl <- list(calculate_FST.py = c("import genomics", "print(genomics.f())"),
+              genomics.py = c("import numpy as np", "import helper", "def f(): return np.mean([1, 2])"),
+              helper.py = "import scipy", other.py = "import pandas")
+  files <- .repro_py_with_imports("calculate_FST.py", ctl, names(ctl))
+  expect_setequal(files, c("calculate_FST.py", "genomics.py", "helper.py"))
+  d <- repro_dependencies_py(ctl[files])
+  expect_true(all(c("numpy", "scipy") %in% d$package))
+  expect_false("pandas" %in% d$package)
 })
 
 test_that("a file written during the run is found, and copied to where a script looked (#568)", {
@@ -4317,6 +4366,25 @@ test_that("a file the deposit holds elsewhere is copied to where a script looked
   # placed once: the second time there is nothing left to copy
   expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
   expect_equal(.repro_placed_text(placed[0, ]), "")
+})
+
+test_that("of several different files of one name, the one in the folders the path names is placed (#590)", {
+  root <- withr::local_tempdir()
+  for (d in c("zip/output/ADMIXTURE/popmap", "zip/output/RAxML", "code")) dir.create(file.path(root, d), recursive = TRUE)
+  writeLines("A", file.path(root, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt"))
+  writeLines("B", file.path(root, "zip/output/RAxML/popmap_Cm.txt"))
+  before <- .repro_sandbox_names(root)
+  res <- data.frame(file_name = "plot.R", outcome = "errored", stderr = "",
+                    error = "cannot open file 'output/ADMIXTURE/popmap/popmap_Cm.txt': No such file or directory")
+  run_tbl <- data.frame(file_name = "plot.R", run_dir = file.path(root, "code"))
+  placed <- .repro_place_from_deposit(res, run_tbl, root, before)
+  expect_equal(placed$from, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt")
+  expect_equal(readLines(file.path(root, "code/output/ADMIXTURE/popmap/popmap_Cm.txt")), "A")
+  # only the file name in common with both: no choice
+  res$error <- "cannot open file 'other/popmap_Cm.txt': No such file or directory"
+  expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
+  expect_equal(.repro_path_tail_match("output/RAxML/popmap_HC.txt",
+                                      c("x/output/RAxML/popmap_HC.txt", "y/popmap_HC.txt")), c(3L, 1L))
 })
 
 test_that("the files sf and terra could not open are read from their errors (#575, item 2)", {

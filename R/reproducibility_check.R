@@ -1359,6 +1359,15 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
       cand <- pool[pool_base == tolower(basename(p)) & file.exists(file.path(root, pool))]
       if (length(cand) > 1 && same_content &&
           length(unique(.repro_md5(file.path(root, cand)))) == 1) cand <- cand[1]
+      # Of several that differ, the one in the folders the path names: the
+      # deposit of 10.1111/1365-2745.14340 has popmap_Cm.txt in two folders, and
+      # the script asked for output/ADMIXTURE/popmap/popmap_Cm.txt (#590). Only
+      # when one matches more folders than every other, and at least one.
+      if (length(cand) > 1) {
+        depth <- .repro_path_tail_match(p, cand)
+        best <- which(depth == max(depth))
+        if (max(depth) >= 2 && length(best) == 1) cand <- cand[best]
+      }
       if (length(cand) != 1) next
       dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
       if (isTRUE(file.copy(file.path(root, cand), dest)))
@@ -1366,6 +1375,21 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     }
   }
   if (length(rows)) do.call(rbind, rows) else none
+}
+
+# For each path of `cand`, how many of its last parts (the file name and the
+# folders above it) are the same as the last parts of `want`, without regard to
+# capitals: 3 for "x/output/RAxML/popmap_HC.txt" against "output/RAxML/popmap_HC.txt".
+.repro_path_tail_match <- function(want, cand) {
+  w <- rev(strsplit(tolower(gsub("\\\\", "/", want)), "/", fixed = TRUE)[[1]])
+  w <- w[nzchar(w) & w != "."]
+  vapply(cand, function(cp) {
+    c2 <- rev(strsplit(tolower(gsub("\\\\", "/", cp)), "/", fixed = TRUE)[[1]])
+    c2 <- c2[nzchar(c2) & c2 != "."]
+    k <- 0L
+    while (k < min(length(w), length(c2)) && w[k + 1] == c2[k + 1]) k <- k + 1L
+    k
+  }, integer(1), USE.NAMES = FALSE)
 }
 
 # The folders a script's write stopped on, from its error (#591): a script
@@ -1429,6 +1453,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     substring(p, nchar(root_n) + 2)
   }
   rows <- list()
+  # folders made here, for this or another script, now or in a pass before
+  made_by_us <- unique(unlist(seen, use.names = FALSE))
   for (s in results$file_name[results$outcome %in% "errored"]) {
     i <- match(s, results$file_name); k <- match(s, run_tbl$file_name)
     if (is.na(i) || is.na(k)) next
@@ -1440,9 +1466,18 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
             else .repro_norm_rel(if (run_dir == ".") d else file.path(run_dir, d))
       if (is.na(to) || !nzchar(to) || to == "." || to %in% seen[[s]]) next
       dest <- file.path(root, .portable_path(to))
-      if (dir.exists(dest)) next
-      if (isTRUE(dir.create(dest, recursive = TRUE, showWarnings = FALSE)))
+      # A folder made for another script that stopped on it too: this script
+      # runs once more as well. In 10.1111/1365-2664.14445 four figure scripts
+      # stopped on "Figures/", which was made for the first, and the other
+      # three were not run again (#590)
+      if (dir.exists(dest)) {
+        if (to %in% made_by_us) rows[[length(rows) + 1]] <- data.frame(script = s, folder = to)
+        next
+      }
+      if (isTRUE(dir.create(dest, recursive = TRUE, showWarnings = FALSE))) {
         rows[[length(rows) + 1]] <- data.frame(script = s, folder = to)
+        made_by_us <- c(made_by_us, to)
+      }
     }
   }
   if (length(rows)) do.call(rbind, rows) else none
@@ -1452,7 +1487,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # them (see .repro_make_failed_write_folders()).
 .repro_folders_made_text <- function(made) {
   if (is.null(made) || !nrow(made)) return("")
-  n_s <- length(unique(made$script)); n <- nrow(made)
+  # one folder made for several scripts counts once (#590)
+  n_s <- length(unique(made$script)); n <- length(unique(made$folder))
   sprintf(paste0(" **%s wrote into %s that the deposit does not have**, so we made %s and ran %s once more: %s. ",
                  "Keeping the (empty) output folders in the deposit, or making them in the code with ",
                  "`dir.create()`, solves this."),
@@ -2334,8 +2370,9 @@ repro_defined_vars <- function(code_text_list) {
   is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
   piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
   placeholder <- grepl("[%{}$*]|: ", d$ref)
-  # a file read from a web address is not one the deposit should hold (#695)
-  web <- grepl("://", d$ref, fixed = TRUE)
+  # a file read from a web address is not one the deposit should hold (#695);
+  # a Windows drive written as "C://" is a path, not a web address (#723)
+  web <- .is_web_address(d$ref)
   !is_call & !piece & !placeholder & !web & !(tolower(d$basename) %in% built)
 }
 
@@ -4002,6 +4039,20 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out
 }
 
+# The files `scripts` and the local modules they import, and the modules those
+# import, by file name (see .repro_py_imported()): whose packages a run of these
+# scripts needs (#593).
+.repro_py_with_imports <- function(scripts, code_text_list, paths = NULL) {
+  imp_by <- .repro_py_imported(code_text_list, paths)
+  out <- scripts
+  repeat {
+    more <- setdiff(names(imp_by)[vapply(imp_by, function(by) any(by %in% out), logical(1))], out)
+    if (!length(more)) break
+    out <- c(out, more)
+  }
+  out
+}
+
 # Apply each resolved (matched, non-ambiguous, real target) rewrite of
 # repro_rewrite_paths() to a script's text as a literal replacement. Fixed
 # (non-regex) to avoid metacharacter surprises in file paths. A plain
@@ -4684,6 +4735,26 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out
 }
 
+# Which of the files `fnames` the code names: the file's name in quotes, alone or
+# at the end of a path ("../data/rawdata.sav"), without regard to capitals
+# (#695, point 42). `code_text` is the lines of all the code.
+.repro_named_in_code <- function(fnames, code_text) {
+  if (!length(fnames)) return(logical(0))
+  txt <- tolower(paste(code_text, collapse = "\n"))
+  vapply(tolower(basename(gsub("\\\\", "/", fnames))), function(b)
+    grepl(paste0("[\"'/\\\\]\\Q", b, "\\E[\"']"), txt, perl = TRUE),
+    logical(1), USE.NAMES = FALSE)
+}
+
+# The summary of a paper with no R or Python code to run, which names the
+# repositories an earlier check refused for their number of files (#706): such a
+# repository may hold code that was never looked at.
+.repro_no_code_text <- function(non_r_note = "", count_refused = NULL) {
+  paste0("We found no R or Python code files to assess for reproducibility.", non_r_note,
+         if (NROW(count_refused) && "message" %in% names(count_refused))
+           paste0(" ", paste(count_refused$message, collapse = " ")) else "")
+}
+
 # The packages the code loads that are on neither CRAN nor Bioconductor and that
 # the install found nowhere else, since the code does not say where they come from
 # (#389). character(0) when there are none.
@@ -4939,7 +5010,43 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
                  "Use '-h'|sys[.]argv\\[|parse_args\\(|", own), txt, perl = TRUE)
   else grepl(paste0("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)|", own), txt, perl = TRUE)
   usage <- grepl("(?im)^\\s*usage\\s*:|Show this help message and exit", paste(txt, out), perl = TRUE)
-  unname(reads & (points | usage))
+  if (identical(lang, "Python")) return(unname(reads & (points | usage)))
+  # In R, a script that stopped at its own check of how many arguments it got,
+  # whatever its message says: `if (length(args) != 3) stop("...")`. Its message
+  # ("Provide (only) signal strength for the analysis") named no argument (#593)
+  own_check <- vapply(seq_along(code), function(i)
+    .repro_stopped_at_arg_check(code[[i]], txt[i]), logical(1))
+  # A script that indexes `args` it never assigned, as a file a driver script
+  # sources after setting `args`: R then finds its own args() function, and the
+  # script stops on "object of type 'closure' is not subsettable" (#593)
+  closure <- grepl("Error in args\\[[^\n]*object of type 'closure' is not subsettable", txt, perl = TRUE) &
+    vapply(code, function(s) {
+      s <- sub("#.*$", "", unlist(strsplit(paste(s, collapse = "\n"), "\n", fixed = TRUE)))
+      any(grepl("\\bargs\\s*\\[", s, perl = TRUE)) &&
+        !any(grepl("(^|[^A-Za-z0-9._])args\\s*(<-|=[^=])|assign\\(\\s*['\"]args['\"]", s, perl = TRUE))
+    }, logical(1))
+  unname((reads & (points | usage | own_check)) | closure)
+}
+
+# Whether an R script stopped at its own check of the number of command-line
+# arguments: the message it stopped with is in a stop() or quit() call within
+# three lines after a test of length() of the variable it assigned from
+# commandArgs(). `lines` are the script's lines, `txt` its error.
+.repro_stopped_at_arg_check <- function(lines, txt) {
+  if (is.na(txt) || !nzchar(txt) || !length(lines)) return(FALSE)
+  lines <- strsplit(paste(as.character(lines), collapse = "\n"), "\n", fixed = TRUE)[[1]]
+  var_pat <- "([A-Za-z.][A-Za-z0-9._]*)\\s*(?:<-|=)\\s*commandArgs\\s*\\("
+  assigned <- regmatches(lines, regexpr(var_pat, lines, perl = TRUE))
+  vars <- unique(sub(paste0("^", var_pat, ".*"), "\\1", assigned, perl = TRUE))
+  if (!length(vars)) return(FALSE)
+  msg <- regmatches(txt, regexpr("(?m)^Error: [^\n]+", txt, perl = TRUE))
+  if (!length(msg)) return(FALSE)
+  msg <- trimws(substr(sub("^Error: ", "", msg[1]), 1, 40))
+  if (nchar(msg) < 5) return(FALSE)
+  stops <- which(grepl("\\b(stop|quit)\\s*\\(", lines, perl = TRUE) &
+                   grepl(msg, lines, fixed = TRUE))
+  len_pat <- paste0("\\blength\\s*\\(\\s*(", paste(gsub(".", "\\.", vars, fixed = TRUE), collapse = "|"), ")\\s*\\)")
+  any(vapply(stops, function(s) any(grepl(len_pat, lines[max(1, s - 3):s], perl = TRUE)), logical(1)))
 }
 
 .repro_needs_person_error <- function(txt) {

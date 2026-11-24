@@ -369,6 +369,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                         count_refused$message), collapse = ""),
       report = not_listed$report,
       gated_repos = listing_gated,
+      count_refused = count_refused,
       manifest_path = if (!is.null(manifest)) manifest_path else NULL,
       summary_table = data.frame(
         paper_id = .pid(all_files),
@@ -1798,6 +1799,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       structure = all_files,
       previews = file_previews,
       gated_repos = listing_gated,
+      count_refused = count_refused,
       manifest_path = manifest_path,
       group_no_evidence = group_no_evidence
     )
@@ -2537,6 +2539,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     structure = all_files,          # per-file classification, for codebook_check
     previews = file_previews,       # full read data frames
     gated_repos = listing_gated,    # repos found but not listable (size gate, ...)
+    # repos refused for their number of files (max_files_per_repo), whose rows
+    # `structure` no longer has: the later checks name them (#706)
+    count_refused = count_refused,
     manifest_path = manifest_path,  # full manifest path, when one was written
     # TRUE when no file's path/repository/code-reference/LLM evidence named a
     # real study anywhere in this repository — every group came from the

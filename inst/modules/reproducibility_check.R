@@ -583,10 +583,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     do.call(module_run, args)
   }
-  if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
+  # repositories data_check or code_check refused for their number of files: a
+  # paper with no code left says so, not only "no code files" (#706)
+  count_refused <- .count_refused_add(get_prev_outputs("code_check", "count_refused"),
+                                      get_prev_outputs("data_check", "count_refused"))
+  if (is.null(structure_df)) {
+    dc <- run_missing("data_check"); structure_df <- dc$structure
+    count_refused <- .count_refused_add(count_refused, dc$count_refused)
+  }
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
+    count_refused <- .count_refused_add(count_refused, cc$count_refused)
   }
   # Deposits linked in the paper that hold other people's work or the authors'
   # earlier work are not checked (repo_check's `table_not_checked`, #648), but
@@ -602,8 +610,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # by its path in the deposit (`file_path_deposit`) (#648)
   # the files any code file of the paper writes or downloads, in any language
   # (code_check's files_written), so a file a script makes is not missing (#648)
-  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl))
-    unique(unlist(strsplit(code_tbl$files_written[!is.na(code_tbl$files_written)], ",[[:space:]]*"))) else character(0)
+  # as.character(): a column of NA only, when no code file was read (a paper with
+  # only a JASP file), is logical, and strsplit() stopped on it with "non-character
+  # argument" (#695, point 41, mp20202538)
+  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl)) {
+    fw <- as.character(code_tbl$files_written)
+    unique(unlist(strsplit(fw[!is.na(fw)], ",[[:space:]]*")))
+  } else character(0)
   up <- .repro_unpack_archives(structure_df, code_tbl)
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
@@ -676,7 +689,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   has_sav <- any(grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE))
   has_sps <- any(grepl("\\.sps$", c(fnames_all, code_fnames), ignore.case = TRUE))
   has_selfcontained <- any(grepl("\\.(omv|jasp|spv)$", fnames_all, ignore.case = TRUE))
-  spss_red <- has_sav && !has_sps
+  # An SPSS or Stata data file the deposit's own code reads (read_sav(),
+  # read.dta(), rio::import(), ...) is data for that code, not a sign that the
+  # analysis was left out: three Meta-Psychology papers were red although every
+  # script ran, because their R code read a .sav (#695, point 42).
+  read_code_txt <- if (!is.null(code_tbl) && "file_location" %in% names(code_tbl)) {
+    locs <- as.character(code_tbl$file_location)
+    locs <- locs[!is.na(locs) & file.exists(locs)]
+    unlist(lapply(locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
+  } else character(0)
+  sav_files <- fnames_all[grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE)]
+  sav_unread <- length(sav_files) > 0 && !all(.repro_named_in_code(sav_files, read_code_txt))
+  spss_red <- sav_unread && !has_sps
   spss_report <- if (has_sav) {
     rec <- if (!has_selfcontained)
       paste0(" Consider depositing the analysis in **jamovi** (`.omv`) or ",
@@ -685,7 +709,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "the file itself.") else
       paste0(" (A jamovi/JASP/SPSS-Viewer file is also present, which is ",
              "self-reproducible.)")
-    if (!has_sps) c("#### SPSS data without syntax", paste0(
+    if (!has_sps && !sav_unread) c("#### SPSS data", paste0(
+      "The SPSS data file", plural(length(sav_files)), " (`.sav`/`.por`) ",
+      plural(length(sav_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in SPSS syntax."))
+    else if (!has_sps) c("#### SPSS data without syntax", paste0(
       "An SPSS data file (`.sav`/`.por`) is present but **no SPSS syntax file ",
       "(`.sps`) was found**, so the analysis that produced the results cannot be ",
       "reproduced from the deposit. This is treated as a reproducibility failure ",
@@ -706,9 +734,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # only "deposit the .do file (or the .smcl log it can be recovered from)".
   has_dta <- any(grepl("\\.dta$", fnames_all, ignore.case = TRUE))
   has_do  <- any(grepl("\\.(do|ado)$", c(fnames_all, code_fnames), ignore.case = TRUE))
-  stata_red <- has_dta && !has_do
+  dta_files <- fnames_all[grepl("\\.dta$", fnames_all, ignore.case = TRUE)]
+  dta_unread <- length(dta_files) > 0 && !all(.repro_named_in_code(dta_files, read_code_txt))
+  stata_red <- dta_unread && !has_do
   stata_report <- if (has_dta) {
-    if (!has_do) c("#### Stata data without syntax", paste0(
+    if (!has_do && !dta_unread) c("#### Stata data", paste0(
+      "The Stata data file", plural(length(dta_files)), " (`.dta`) ",
+      plural(length(dta_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in a Stata do-file."))
+    else if (!has_do) c("#### Stata data without syntax", paste0(
       "A Stata data file (`.dta`) is present but **no Stata syntax file (`.do`) ",
       "or output log (`.smcl`) was found**, so the analysis that produced the ",
       "results cannot be reproduced from the deposit. This is treated as a ",
@@ -1277,9 +1311,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # return, same as before Python support existed.
   if (is.null(code_tbl) || nrow(code_tbl) == 0 ||
       !"language" %in% names(code_tbl))
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.", non_r_note),
-      tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   r_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "R", ,
                       drop = FALSE]
@@ -1303,9 +1337,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # runs. ───────────────────────────────────────────────────────────────────
   .dbg <- function(...) message("[repro] ", ...)
   if (!has_r && !has_py)
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.",
-      non_r_note), tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   if (has_r && isTRUE(execute) && sandbox == "process" &&
       !requireNamespace("callr", quietly = TRUE))
@@ -1615,8 +1649,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # "parses"; it is looked at too, else it was run as a script (#568:
   # 10.1111/2041-210X.13967's 109 MB Training_Dataset_1.r)
   is_binary <- vapply(seq_len(n_code), function(i) !is.null(attr(raw_text_list[[i]], "binary")), logical(1))
-  if (any(parse_error_raw | is_binary)) {
-    for (i in which(parse_error_raw | is_binary)) {
+  # code_check does not parse a JAGS or BUGS model saved as .R (0.4.4.33): its
+  # parse_error is NA ("not checked"), not TRUE, so such a file was not looked
+  # at here and was run as an R script. A file code_check did not check is
+  # looked at too, but only to find a model; a model found that way counts as
+  # not parsing, as code_check had it before, so it is not run as R either
+  # (runs_as_r, below).
+  not_checked <- if ("parse_error" %in% names(r_files)) is.na(r_files$parse_error) else rep(FALSE, n_code)
+  look <- parse_error_raw | is_binary | not_checked
+  if (any(look)) {
+    for (i in which(look)) {
       raw <- raw_text_list[[i]]
       fn  <- r_files$file_name[i]
       jags_hit <- .repro_is_jags_model(
@@ -1624,8 +1666,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (jags_hit) {
         sniff_type[i] <- "jags_model"
         sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
+        if (not_checked[i]) parse_error_raw[i] <- TRUE
         next
       }
+      if (!parse_error_raw[i] && !is_binary[i]) next
       # a file that is not text, such as R data saved as .R (#568)
       path_i <- resolve_row_path(i)
       detected <- if (!is.na(path_i)) .repro_binary_kind(path_i) else NA_character_
@@ -3858,7 +3902,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!isTRUE(keep_sandbox)) on.exit(.repro_docker_lib_remove(py2_lib_dir), add = TRUE)
         py2_failed_deps <- character(0)
         if (isTRUE(install_missing)) {
-          py2_deps <- repro_dependencies_py(py_code_text_list[py2_names], manifest_text = py_manifest_text)
+          # the packages of the local modules these scripts import as well, and of
+          # the modules those import: numpy, imported only by genomics.py, was
+          # installed for Python 3 alone, and calculate_FST.py stopped on "No
+          # module named numpy" (10.1111/2041-210X.13324; #593)
+          py2_code <- .repro_py_with_imports(py2_names, py_code_text_list, py_files$file_path)
+          py2_deps <- repro_dependencies_py(py_code_text_list[py2_code], manifest_text = py_manifest_text)
           py2_deps <- py2_deps[!py2_deps$base & !py2_deps$package %in% py_local_modules, , drop = FALSE]
           .dbg("[repro/py] installing ", nrow(py2_deps), " Python 2 dependenc(y/ies): ",
                paste(py2_deps$package, collapse = ", "))

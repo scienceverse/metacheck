@@ -2286,6 +2286,31 @@ code_library_names <- function(code_text,
       ln <- nchar(gsub("[^\n]", "", substr(joined, 1L, m[[1]][i]))) + 1L
       add(sub("@.*$", "", sub("^.*/", "", pkgs)), "groundhog", ln)
     }
+    line_of <- function(pos) nchar(gsub("[^\n]", "", substr(joined, 1L, pos))) + 1L
+    # c("a", "b") given straight to lapply()/sapply() with library or require,
+    # not through a variable (#695, point 34)
+    m <- gregexpr(paste0("\\b(?:lapply|sapply|vapply|walk|map)\\s*\\(\\s*(c\\s*\\([^()]*\\))\\s*,\\s*",
+                         "(?:FUN\\s*=\\s*)?(?:function\\s*\\([^)]*\\)\\s*\\{?\\s*)?(library|require)\\b"),
+                  joined, perl = TRUE)
+    calls <- regmatches(joined, m)[[1]]
+    for (i in seq_along(calls)) {
+      vec <- sub("(?s)^[^(]*\\(\\s*(c\\s*\\([^()]*\\)).*$", "\\1", calls[i], perl = TRUE)
+      fn <- sub("(?s)^.*\\b(library|require)$", "\\1", calls[i], perl = TRUE)
+      add(.code_literal_strings(vec), fn, line_of(m[[1]][i]))
+    }
+    # the script's own install-and-load functions, called with a variable or a
+    # literal vector (see .code_loader_functions())
+    for (f in .code_loader_functions(code_text)) {
+      m <- gregexpr(sprintf("(?<![\\w.])%s\\s*\\(\\s*(c\\s*\\([^()]*\\)|[.A-Za-z][.A-Za-z0-9_]*)\\s*[,)]",
+                            gsub(".", "\\.", f, fixed = TRUE)), joined, perl = TRUE)
+      calls <- regmatches(joined, m)[[1]]
+      for (i in seq_along(calls)) {
+        arg <- trimws(sub(sprintf("(?s)^%s\\s*\\(\\s*(.*?)\\s*[,)]$", gsub(".", "\\.", f, fixed = TRUE)),
+                          "\\1", calls[i], perl = TRUE))
+        pkgs <- if (grepl("^c\\s*\\(", arg)) .code_literal_strings(arg) else vars[[arg]] %||% character(0)
+        add(pkgs, "loader", line_of(m[[1]][i]))
+      }
+    }
   }
 
   if (length(hits) == 0) return(empty)
@@ -2329,7 +2354,63 @@ code_library_names <- function(code_text,
       sprintf("\\(\\s*(%s)\\s+in\\s+(%s)\\s*\\)", id, id), l, perl = TRUE))[[1]]
     if (!is.null(out[[parts[3]]])) out[[parts[2]]] <- out[[parts[3]]]
   }
+  # a loop over a literal vector, `for (p in c("fGarch", "dplyr"))` (#695, point 34)
+  lit_loops <- regmatches(joined, gregexpr(
+    sprintf("\\bfor\\s*\\(\\s*(%s)\\s+in\\s+c\\s*\\([^()]*\\)\\s*\\)", id), joined, perl = TRUE))[[1]]
+  for (l in lit_loops) {
+    v <- sub(sprintf("^for\\s*\\(\\s*(%s)\\s+in.*$", id), "\\1", l, perl = TRUE)
+    strs <- .code_literal_strings(sub("^[^(]*\\(\\s*[^ ]+\\s+in\\s+", "", l, perl = TRUE))
+    if (length(strs)) out[[v]] <- strs
+  }
   out
+}
+
+# The quoted strings of a literal c("a", "b") (or "a"), when it holds nothing
+# else; character(0) otherwise.
+.code_literal_strings <- function(x) {
+  value <- sub("(?s)^\\s*c\\s*\\((.*)\\)\\s*\\)?\\s*$", "\\1", x, perl = TRUE)
+  strs <- regmatches(value, gregexpr("(['\"])[^'\"\n]*\\1", value, perl = TRUE))[[1]]
+  rest <- gsub("(['\"])[^'\"\n]*\\1", "", value, perl = TRUE)
+  if (!length(strs) || grepl("[^[:space:],)]", rest)) return(character(0))
+  gsub("^['\"]|['\"]$", "", strs)
+}
+
+# Functions a script defines that load or install the packages they are given:
+# a paper's own install-and-load helper, `ipak <- function(pkg) { ...
+# install.packages(new.pkg); sapply(pkg, require, character.only = TRUE) }`. Its
+# body calls library(), require(), install.packages() or p_load() on its argument
+# rather than on a name (character.only, or install.packages() of a variable).
+# Gmisc and epitools, given to such a function in mp20212909, were never
+# installed (#695, point 34). Returns the functions' names.
+.code_loader_functions <- function(code_text) {
+  joined <- paste(code_text, collapse = "\n")
+  id <- "[.A-Za-z][.A-Za-z0-9_]*"
+  defs <- gregexpr(sprintf("(%s)\\s*(?:<-|=)\\s*function\\s*\\(", id), joined, perl = TRUE)[[1]]
+  if (defs[1] < 0) return(character(0))
+  starts <- as.integer(defs)
+  lens <- attr(defs, "match.length")
+  chars <- strsplit(joined, "", fixed = TRUE)[[1]]
+  out <- character(0)
+  for (k in seq_along(starts)) {
+    name <- sub(sprintf("^(%s).*$", id), "\\1", substr(joined, starts[k], starts[k] + lens[k] - 1), perl = TRUE)
+    # the body: from the first "{" after the arguments to its matching "}", or
+    # the rest of the line for a body without braces; at most 5,000 characters
+    from <- starts[k] + lens[k]
+    to <- min(length(chars), from + 5000L)
+    seg <- chars[from:to]
+    open <- which(seg == "{")[1]
+    nl <- which(seg == "\n")[1]
+    body <- if (!is.na(open) && (is.na(nl) || open < nl + 200)) {
+      depth <- cumsum((seg == "{") - (seg == "}"))
+      end <- which(depth == 0 & seq_along(seg) > open)[1]
+      paste(seg[open:(if (is.na(end)) length(seg) else end)], collapse = "")
+    } else paste(seg[seq_len(if (is.na(nl)) length(seg) else nl)], collapse = "")
+    loads_arg <- grepl("(?:library|require)\\s*\\([^)]*character\\.only\\s*=\\s*(?:TRUE|T)\\b", body, perl = TRUE) ||
+      grepl("\\b(?:lapply|sapply|vapply|walk|map)\\s*\\([^,]+,\\s*(?:library|require)\\b", body, perl = TRUE) ||
+      grepl("\\binstall\\.packages\\s*\\(\\s*[.A-Za-z][.A-Za-z0-9_]*\\s*[,)\\[]", body, perl = TRUE)
+    if (loads_arg) out <- c(out, name)
+  }
+  unique(out)
 }
 
 #' Distinct packages from a code_check table
@@ -2973,8 +3054,9 @@ code_packages <- function(packages) {
     refs <- strsplit(refs, "\u001f", fixed = TRUE)[[1]]
     # a file read from a web address is not one the repository should hold:
     # read.spss("http://journal.sjdm.org/.../study1.sav") was reported as the
-    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out
-    refs <- base(refs[!grepl("://", refs, fixed = TRUE)])
+    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out.
+    # A Windows drive written as "C://" is a path, not a web address (#723).
+    refs <- base(refs[!.is_web_address(refs)])
     # a piece, and a name with a placeholder ("Ax1_s{seed}.jsonl"), are no
     # file names, as reproducibility_check also leaves them out (.repro_ref_checkable())
     refs <- refs[nzchar(refs) & !grepl("^[._-]", refs) & !grepl(.code_placeholder_re, refs, perl = TRUE)]

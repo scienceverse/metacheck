@@ -68,7 +68,8 @@ code_check <- function(paper, local_path = NULL,
   # starts from repo_check's table and only ever REPLACES a zip/tar/gz
   # archive's one row with its expanded member rows (see data_check.R's
   # zip/tar/gz expansion) -- it never drops a non-archive row repo_check
-  # found. So it is a strict superset for code_check's purposes, and it is
+  # found, except the rows of a repository it refused for its number of files
+  # (#702), which its `count_refused` names (#706). So it is a superset for code_check's purposes, and it is
   # the only place a code file bundled inside a zip data_check already
   # downloaded and expanded is visible at all (repo_check's own listing still
   # shows that zip as one opaque row when repo_check's peek_zips = FALSE, or
@@ -119,8 +120,13 @@ code_check <- function(paper, local_path = NULL,
   # Repositories with more files than max_files_per_repo are refused here,
   # before the steps below that take time for every file (#702)
   count_refused <- .repos_over_count(all_files, max_files_per_repo)
+  for (m in count_refused$message) .cap_report(m)
+  # data_check's `structure` no longer has the rows of a repository it refused,
+  # so the count above cannot see it: its refusal is taken over, without a
+  # second warning (#706)
+  count_refused <- .count_refused_add(count_refused,
+                                      if (is.null(local_path)) get_prev_outputs("data_check", "count_refused"))
   if (nrow(count_refused)) {
-    for (m in count_refused$message) .cap_report(m)
     all_files <- all_files[!all_files$repo_url %in% count_refused$repo_url, , drop = FALSE]
   }
   if (isTRUE(download) && nrow(all_files) > 0)
@@ -290,7 +296,9 @@ code_check <- function(paper, local_path = NULL,
       summary_table = .per_paper_table(paper,
                 code_n = 0
       ),
-      na_replace = c(code_n = 0)
+      na_replace = c(code_n = 0),
+      # for reproducibility_check, which names them too (#706)
+      count_refused = count_refused
     )
 
     return(info)
@@ -438,6 +446,13 @@ code_check <- function(paper, local_path = NULL,
         file_lines <- code_read(file_path)
       }
       if (fetched_copy) unlink(file_path)
+      # A JAGS or BUGS model saved with an .R ending ("model {" first, as
+      # .repro_is_jags_model() reads it) is no R code: it was reported as R that
+      # does not parse (mp2017840's bglmm.R, #695 point 29)
+      if (identical(the_file$language, "R") && !is_rmd && !is_qmd &&
+          .repro_is_jags_model(file_lines, the_file$file_name))
+        stop(paste("it was not checked, because it is a JAGS or BUGS model saved with an .R",
+                   "ending, not R code"), call. = FALSE)
 
       # Side-collect R text for the version-pinning scan after this loop
       # (.code_version_pin_check()'s groundhog/checkpoint detection), keyed
@@ -1253,6 +1268,8 @@ code_check <- function(paper, local_path = NULL,
     # image's R version from version_pin$r_versions when this check found a
     # declared one (renv.lock/sessionInfo), falling back to "latest"
     # otherwise -- see .repro_docker_image_for() (R/reproducibility_check_docker.R).
-    version_pin = version_pin
+    version_pin = version_pin,
+    # repositories refused for their number of files, for reproducibility_check (#706)
+    count_refused = count_refused
   )
 }

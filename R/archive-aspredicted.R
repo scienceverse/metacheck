@@ -9,10 +9,22 @@
 #' paper <- demopaper()
 #' aspredicted_links(paper)
 aspredicted_links <- function(paper) {
-  href <- NULL
+  href <- text <- NULL
 
-  paper_table(paper, "url") |>
+  found <- paper_table(paper, "url") |>
     dplyr::filter(grepl("aspredicted\\.org", href, ignore.case = TRUE))
+  # also a link written in the text that GROBID did not mark, or marked cut off
+  # at a line-end hyphen ("https://aspre-"), as osf_links() reads the text for
+  # OSF links (#695, point 4)
+  in_text <- text_search(paper, "(?:https?://)?aspredicted\\.org/[A-Za-z0-9_./?=&-]*[A-Za-z0-9_/]",
+                         return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+  in_text$href <- sub("^(?!https?://)", "https://", in_text$href, perl = TRUE)
+  key <- function(h) tolower(sub("^https?://(www\\.)?", "", sub("/+$", "", h)))
+  in_text <- in_text[!paste(in_text$paper_id, key(in_text$href)) %in%
+                       paste(found$paper_id, key(found$href)), , drop = FALSE]
+  in_text <- in_text[!duplicated(paste(in_text$paper_id, key(in_text$href))), , drop = FALSE]
+  dplyr::bind_rows(found, in_text)
 }
 
 #' Retrieve info from AsPredicted by URL

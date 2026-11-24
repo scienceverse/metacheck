@@ -105,7 +105,7 @@ test_that("power, with LLM (structured)", {
       )))
     )), .package = "ellmer")
   mo <- module_run(paper, module)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$sample_size, 30)
   expect_equal(mo$table$power, 0.8)
@@ -129,7 +129,7 @@ test_that("power, with LLM (structured)", {
       ))
     )), .package = "ellmer")
   mo <- module_run(paper, module)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mo$table), 2)
   expect_equal(mo$table$statistical_test,
                c("unpaired t-test", "1-way ANOVA"))
@@ -206,7 +206,7 @@ test_that("power, with LLM (structured)", {
         power_analyses = list(apriori_incomplete, sensitivity_incomplete))
     )), .package = "ellmer")
   mo <- module_run(paper, module)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mo$table), 2)
   expect_equal(mo$table$power_type, c("apriori", "sensitivity"))
   expect_equal(mo$table$statistical_test, c("unpaired t-test", "paired t-test"))
@@ -231,7 +231,7 @@ test_that("power, with LLM (structured)", {
       "paired samples t-test" = list(power_analyses = list(sensitivity_incomplete))
     )), .package = "ellmer")
   mo <- module_run(paper, module)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mo$table), 2)
   expect_equal(mo$table$power_type, c("apriori", "sensitivity"))
   expect_equal(mo$table$statistical_test, c("unpaired t-test", "paired t-test"))
@@ -441,7 +441,7 @@ test_that("power structured extraction treats an omitted optional key as not-ext
   expect_true("alpha_level" %in% names(mo$table))
   expect_true(is.na(mo$table$alpha_level))
   expect_false(mo$table$complete)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
 })
 
 test_that("power structured extraction keeps rows from a partially-failing call", {
@@ -521,7 +521,7 @@ test_that("power, with Ollama (structured)", {
   testthat::local_mocked_bindings(chat = mock_chat, chat_vllm = mock_chat,
                                   .package = "ellmer")
   mo <- module_run(paper, module)
-  expect_equal(mo$traffic_light, "red")
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
   expect_equal(nrow(mo$table), 2)
   expect_equal(mo$table$power_type, c("apriori", "sensitivity"))
   expect_equal(mo$table$statistical_test, c("unpaired t-test", "paired t-test"))

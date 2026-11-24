@@ -110,8 +110,8 @@ power <- function(paper, seed = 8675309) {
       tl <- "green"
       report_text <- c(report_text, "All essential information could be detected.")
     } else {
-      # LLM found incomplete power analyses
-      tl <- "red"
+      # LLM found incomplete power analyses; yellow, not red, until a validation shows people agree with most of its red findings (#695, point 2)
+      tl <- "yellow"
 
       cols_with_na <- names(has_na)[has_na]
 

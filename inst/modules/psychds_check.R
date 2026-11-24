@@ -109,7 +109,11 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   group_no_evidence <- isTRUE(group_no_evidence)
   labels_df <- get_prev_outputs("codebook_check", "table")
 
+  # repositories data_check refused for their number of files (#706)
+  count_refused <- get_prev_outputs("data_check", "count_refused") %||%
+    if (exists("mo", inherits = FALSE)) mo$count_refused
   empty <- function(text, pid = .pid(structure_df, columns_df)) {
+    refused_note <- .count_refused_note(text, count_refused)
     list(
       table = data.frame(),
       summary_table = data.frame(
@@ -121,8 +125,8 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       na_replace = c(required_met = 0, required_missing = 0,
                      recommended_met = 0, recommended_missing = 0,
                      misplaced_n = 0),
-      traffic_light = "na",
-      summary_text = text
+      traffic_light = refused_note$traffic_light %||% "na",
+      summary_text = refused_note$summary_text %||% text
     )
   }
 
@@ -161,6 +165,13 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   file_names_lc <- tolower(basename(current_path))
   has_dataset_desc <- any(file_names_lc == "dataset_description.json")
   has_data_files   <- any(is_data)
+  # The standard's data/ folder: a data file under "data/" at the top of the
+  # dataset, which may sit in one folder (a study's folder, or the folder a zip
+  # of the deposit unpacks into). Any data file anywhere met it, so 56 of 64
+  # Meta-Psychology papers with data files met it with none under data/ (#695,
+  # point 33).
+  in_data_dir <- grepl("^(?:[^/]+/)?data/", tolower(gsub("\\\\", "/", current_path %||% "")))
+  has_data_dir     <- any(is_data & in_data_dir)
   has_readme       <- any(!is.na(doc_role) & doc_role == "readme")
   has_changes      <- any(grepl("^changes(\\.|$)", file_names_lc))
 
@@ -177,7 +188,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       met = has_dataset_desc,
       detail = "Root metadata file describing the dataset (required)."),
     c(item = "data/ directory with data files",
-      met = has_data_files,
+      met = has_data_dir,
       detail = "At least one machine-readable data file under data/ (required)."),
     c(item = "describable variables (variableMeasured)",
       met = describable,

@@ -135,3 +135,13 @@ online <- function(url = "google.com", tries = 3, wait = 1) {
 
   FALSE
 }
+
+# TRUE for a web address: a scheme of at least two letters before "://"
+# ("http", "https", "ftp", "s3", "file"), at the start of `x` or after a
+# character that cannot belong to a scheme (`url("https://...")`). A Windows
+# drive written with a double slash ("C://folder/data.csv") is a path, not a
+# web address: taken for one, a file the deposit lacks was not counted
+# missing (#723).
+.is_web_address <- function(x) {
+  !is.na(x) & grepl("(^|[^A-Za-z0-9+.-])[A-Za-z][A-Za-z0-9+.-]+://", x)
+}
