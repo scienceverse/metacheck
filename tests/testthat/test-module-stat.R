@@ -82,6 +82,14 @@ test_that("marginal", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
 
+  # "significan..." close after the trigger word, also with a hyphen (#695, point 9)
+  txt <- c("It was marginally non-significant (p = .07).", "A trend-level significance was found.",
+           "Results approached conventional levels of significance.",
+           "This approach is a significant contribution.", "The trend was significant.",
+           "There was almost no significant change.", "The margins had significantly more cover.")
+  found <- module_run(test_paper(txt), module)$table$text
+  expect_equal(found, txt[1:3])
+
   # iteration
   skip_no_psychsci()
   mod_output <- module_run(psychsci, module)
@@ -133,6 +141,16 @@ test_that("stat_check", {
   )
   expect_equal(nrow(mod_output$table), 1)
   expect_equal(mod_output$table$paper_id, names(paper)[[2]])
+})
+
+test_that("stat_check reads a test as one-sided when its sentence says so (#695)", {
+  # p = .041 is half the two-sided p of t(28) = 1.80
+  mo <- module_run(test_paper("The effect was positive, t(28) = 1.80, p = .041 (one-tailed)."), "stat_check")
+  expect_equal(mo$traffic_light, "green")
+  expect_false(any(mo$table$error))
+  mo <- module_run(test_paper("The effect was positive, t(28) = 1.80, p = .041."), "stat_check")
+  expect_equal(mo$traffic_light, "red")
+  expect_true(all(mo$table$error))
 })
 
 

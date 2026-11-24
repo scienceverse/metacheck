@@ -683,9 +683,11 @@ osf_check_id <- function(osf_id) {
 #' @param guid the 5-letter GUID
 #'
 #' @returns the type, or `"inaccessible"` when the GUID is a validly-formed
-#'   OSF ID but the resource itself could not be reached (private, embargoed,
-#'   withdrawn, or deleted) -- distinct from `NA`, which means the input was
-#'   not a valid OSF ID at all
+#'   OSF ID but the OSF refused it or does not have it (private, embargoed,
+#'   withdrawn, or deleted), or `"unreachable"` when the request itself failed
+#'   (no connection, a server error, or too many requests), so nothing is
+#'   known about the link -- both distinct from `NA`, which means the input
+#'   was not a valid OSF ID at all
 #' @export
 #'
 #' @examples
@@ -721,7 +723,11 @@ osf_type <- function(guid) {
   )
   info <- osf_get_all_pages(url)
 
-  if (!is.null(attr(info, "osf_error"))) return("inaccessible")
+  # A request that failed (no connection, a server error, too many requests)
+  # says nothing about the link: "inaccessible" made prereg_check call such a
+  # link private, embargoed or withdrawn (#541)
+  err <- attr(info, "osf_error")
+  if (!is.null(err)) return(if (identical(err, "request_failed")) "unreachable" else "inaccessible")
 
   otype <- info$relationships$referent$links$related$meta$type
 
@@ -1070,9 +1076,11 @@ osf_delay <- function(delay = NULL) {
 #' function exists to retrieve a repository in full and someone archiving their
 #' own work wants their own files whatever size they are. Limits are available
 #' for when that is not what you want -- looking at somebody else's repository,
-#' say. In the default `mode = "files"`, files over `max_file_size` are omitted
-#' individually, while `max_download_size` is an all-or-nothing gate for the
-#' remaining repository total. Omitted files are reported as messages and
+#' say. They apply in `mode = "select"` and `mode = "zip"`, not in the default
+#' `mode = "all"` (see `mode` below). In `mode = "select"`, files over
+#' `max_file_size` are omitted individually, while `max_download_size` is an
+#' all-or-nothing gate for the remaining repository total. Omitted files are
+#' reported as messages and
 #' appear in the returned data frame with `downloaded = FALSE` and
 #' `attempted = FALSE`.
 #'
@@ -1185,7 +1193,7 @@ osf_delay <- function(delay = NULL) {
 #' \donttest{
 #' if (online("api.osf.io")) {
 #'   dl <- osf_file_download("6nt4v", download_to = file.path(tempdir(), "osf"),
-#'                           max_download_size = 10)
+#'                           max_download_size = 10, mode = "select")
 #' }
 #' }
 #' \dontrun{
@@ -1553,7 +1561,7 @@ osf_file_download <- function(osf_id,
         " skipped (the rest of the repository was downloaded). Largest: ",
         sprintf("%s (%s MB)",
                 files$name[too_big_files][order(-files$size[too_big_files])][1],
-                .cap_num(round(max(files$size[too_big_files], na.rm = TRUE) / mb))),
+                .cap_num(ceiling(max(files$size[too_big_files], na.rm = TRUE) / mb * 10) / 10)),
         ". Raise max_file_size to include them."
       ) |>
         message()

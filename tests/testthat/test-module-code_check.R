@@ -485,8 +485,9 @@ test_that("code_check reports a refused repository once, with its whole listing 
                     file_url = paste0("https://osf.io/download/", 1:6),
                     file_location = NA_character_, file_size = 100)
   counts <- list()
-  local_mocked_bindings(download_repo_files = function(files, ..., repo_file_counts = NULL) {
-    n <- as.integer(repo_file_counts[["https://osf.io/abcde"]])
+  local_mocked_bindings(download_repo_files = function(files, ..., repo_listing = NULL) {
+    # the whole listing is passed, from which the counts are taken (#699)
+    n <- sum(repo_listing$repo_url == "https://osf.io/abcde")
     counts[[length(counts) + 1]] <<- n
     attr(files, "gated") <- data.frame(repo_url = "https://osf.io/abcde",
       message = sprintf("The repository holds %d files.", n))
@@ -1038,4 +1039,33 @@ test_that("code_check leaves out renv's own files in a renv/ folder (#548)", {
   # renv.lock, next to the renv/ folder, is still found
   expect_true(mo$summary_table$code_version_pinned)
   expect_equal(mo$traffic_light, "green")
+})
+
+test_that("code_check does not read from the web a file left out by a download limit (#699)", {
+  paper <- test_paper()
+  tbl <- data.frame(paper_id = paper_id(paper), repo_url = "https://osf.io/abcde",
+                    file_name = c("small.R", "big.R"),
+                    file_url = c("https://osf.io/download/1", "https://osf.io/download/2"),
+                    file_location = NA_character_, file_size = c(100, 5e8))
+  why <- "it was not downloaded, because it is larger than the 100 MB per-file limit (max_file_size)"
+  fetched <- character(0)
+  local_mocked_bindings(
+    download_repo_files = function(files, ...) {
+      attr(files, "limit_refused") <- ifelse(files$file_name == "big.R", why, NA_character_)
+      files
+    },
+    .code_fetch_capped = function(url, file_name, ...) {
+      fetched <<- c(fetched, file_name)
+      p <- tempfile(fileext = ".R")
+      writeLines("x <- 1", p)
+      p
+    })
+  fake <- structure(list(module = "repo_check", table = tbl, paper = paper,
+                         summary_table = data.frame(paper_id = paper_id(paper))),
+                    class = "metacheck_module_output")
+  mo <- suppressWarnings(module_run(fake, "code_check"))
+  # only the file within the limits is fetched from the web
+  expect_equal(unique(fetched), "small.R")
+  expect_equal(mo$table$error[mo$table$file_name == "big.R"], why)
+  expect_true(is.na(mo$table$error[mo$table$file_name == "small.R"]))
 })

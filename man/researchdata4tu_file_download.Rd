@@ -7,8 +7,8 @@
 researchdata4tu_file_download(
   researchdata4tu_id,
   download_to,
-  max_file_size = 10,
-  max_download_size = 100,
+  max_file_size = 100,
+  max_download_size = 500,
   unzip_types = NULL,
   pb = NULL
 )

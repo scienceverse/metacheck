@@ -8,7 +8,8 @@ repro_install_deps_docker(
   install_deps,
   lib_dir,
   image = "rocker/r-ver:latest",
-  timeout = 600
+  timeout = 600,
+  deposit_pkgs = NULL
 )
 }
 \arguments{
@@ -24,6 +25,11 @@ bind-mounted into the container at \verb{/rlib}}
 \item{timeout}{per-package-batch timeout in seconds for the whole install
 container run (default 600 — installs can be slow, esp. compiling from
 source)}
+
+\item{deposit_pkgs}{the deposit's own copies of packages, as
+\code{.repro_deposit_packages()} gives them: a named vector of folders or
+source tarballs on the host. A package that is not on CRAN is installed
+from its copy first (#588); \code{NULL} for none.}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical),

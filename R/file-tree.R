@@ -17,7 +17,8 @@
 # - folders first (empty ones included), then files, each alphabetically
 #   without regard to capitals;
 # - the tree sits in a box with its own scroll bar, so a large repository does
-#   not make the report endless.
+#   not make the report endless, and at most 2,000 lines of it are drawn
+#   (.file_tree_max_lines).
 
 # Icon shown in the "Classified as" column, by data_type (readme is a
 # doc_role sub-kind of "documentation", checked first so a readme gets its
@@ -42,6 +43,9 @@
 .tree_mark_empty <- "empty folder"
 .tree_mark_hidden <- "hidden file"
 
+# The most lines drawn of one repository's tree (#702)
+.file_tree_max_lines <- 2000L
+
 # Walk a set of relative paths into tree rows. Each row also carries which
 # INPUT PATH (if any) it is the leaf of, via `leaf_idx` (index into `paths`,
 # NA for a folder row that is not itself an input) — so the caller can attach
@@ -62,45 +66,63 @@
     return(data.frame(text = character(0), leaf_idx = integer(0)))
   parts_list <- strsplit(gsub("\\\\", "/", paths), "/", fixed = FALSE)
   parts_list <- lapply(parts_list, function(x) x[nzchar(x)])
-  out_text <- character(0)
-  out_leaf <- integer(0)
+  # The rows go into vectors made at their full length (at most one row per
+  # part of a path), and each folder's paths are grouped once with split():
+  # adding each row with c() and comparing every path with each name took time
+  # in the square of the number of files, 54 minutes for 369,548 (#702).
+  n_max <- sum(lengths(parts_list))
+  out_text <- character(n_max)
+  out_leaf <- rep(NA_integer_, n_max)
+  n_out <- 0L
 
   walk <- function(parts_subset, idx_subset, dir_subset, prefix = "") {
     heads <- vapply(parts_subset, function(x) x[[1]], character(1))
-    depth1 <- vapply(parts_subset, length, integer(1)) == 1
+    depth1 <- lengths(parts_subset) == 1
     head_order <- unique(heads)
+    groups <- split(seq_along(heads), factor(heads, levels = head_order))
     # a head is a folder when something lies below it, or when it is itself
     # an input folder (an empty folder, or a junk folder shown as one line)
-    is_folder <- vapply(head_order, function(head) {
-      i <- heads == head
-      any(!depth1[i]) || any(depth1[i] & dir_subset[i])
-    }, logical(1))
-    head_order <- head_order[order(!is_folder, tolower(head_order))]
-    is_folder <- is_folder[match(head_order, unique(heads))]
-    names(is_folder) <- head_order
+    is_folder <- vapply(groups, function(i) any(!depth1[i]) || any(depth1[i] & dir_subset[i]),
+                        logical(1), USE.NAMES = FALSE)
+    o <- order(!is_folder, tolower(head_order))
 
-    for (i in seq_along(head_order)) {
-      head <- head_order[[i]]
-      sel <- heads == head
+    for (i in seq_along(o)) {
+      head <- head_order[[o[i]]]
+      sel <- groups[[o[i]]]
       tails <- lapply(parts_subset[sel], function(x) x[-1])
       tail_idx <- idx_subset[sel]
       tail_dir <- dir_subset[sel]
-      is_last <- i == length(head_order)
+      is_last <- i == length(o)
       branch <- if (is_last) "\u2514\u2500\u2500 " else "\u251C\u2500\u2500 "
       next_prefix <- paste0(prefix, if (is_last) "    " else "\u2502   ")
-      deeper <- vapply(tails, length, integer(1)) > 0
+      deeper <- lengths(tails) > 0
       # the row of this head points at the input path that IS this head (a
       # file, or a folder given as an input), else NA (a plain folder row)
       own <- which(!deeper)
-      this_leaf <- if (length(own)) tail_idx[[own[[1]]]] else NA_integer_
-      out_text <<- c(out_text, paste0(prefix, branch, head, if (is_folder[[head]]) "/" else ""))
-      out_leaf <<- c(out_leaf, this_leaf)
+      n_out <<- n_out + 1L
+      out_text[n_out] <<- paste0(prefix, branch, head, if (is_folder[[o[i]]]) "/" else "")
+      if (length(own)) out_leaf[n_out] <<- tail_idx[[own[[1]]]]
       if (any(deeper)) walk(tails[deeper], tail_idx[deeper], tail_dir[deeper], next_prefix)
     }
   }
 
   walk(parts_list, orig_idx, is_dir)
-  data.frame(text = out_text, leaf_idx = out_leaf)
+  data.frame(text = out_text[seq_len(n_out)], leaf_idx = out_leaf[seq_len(n_out)])
+}
+
+# Every folder above each of `paths` ("a" and "a/b" for "a/b/c.csv"), as a
+# data frame: i (which path) and prefix, the shallowest first. In one pass over
+# all paths, so the junk folders, the files they hold and the empty folders of
+# a tree are found without comparing each folder with every path (#702).
+.path_ancestors <- function(paths) {
+  pos <- gregexpr("/", paths, fixed = TRUE)
+  nc <- nchar(paths)
+  # a "/" at the end of a path closes its last part and is no folder above it,
+  # as strsplit() reads it
+  pos <- lapply(seq_along(pos), function(i) { p <- pos[[i]]; p[p > 0L & p < nc[i]] })
+  n <- lengths(pos)
+  i <- rep(seq_along(paths), n)
+  data.frame(i = i, prefix = substring(paths[i], 1L, unlist(pos) - 1L))
 }
 
 # The entries of one repository's tree: one row per file or folder to draw,
@@ -139,36 +161,39 @@
   # A junk folder is shown as one line: the shallowest folder of a junk path
   # that is itself junk (".git" for ".git/objects/ab/cd"), with the number of
   # files under it; nothing below it is drawn.
-  junk_root <- vapply(seq_len(nrow(paths)), function(i) {
-    if (is.na(junk_kind[[i]])) return(NA_character_)
-    seg <- strsplit(paths$path[[i]], "/", fixed = TRUE)[[1]]
-    if (length(seg) < 2) return(NA_character_)
-    for (k in seq_len(length(seg) - 1)) {
-      prefix <- paste(seg[seq_len(k)], collapse = "/")
-      if (!is.na(.useless_file_kind(prefix))) return(prefix)
-    }
-    NA_character_
-  }, character(1))
+  # (each folder name is judged once, for all paths below it, #702)
+  junk_root <- rep(NA_character_, nrow(paths))
+  jk <- which(!is.na(junk_kind))
+  if (length(jk)) {
+    anc <- .path_ancestors(paths$path[jk])
+    up <- unique(anc$prefix)
+    anc <- anc[anc$prefix %in% up[!is.na(.useless_file_kind(up))], , drop = FALSE]
+    anc <- anc[!duplicated(anc$i), , drop = FALSE]       # the shallowest
+    junk_root[jk[anc$i]] <- anc$prefix
+  }
   in_junk_dir <- !is.na(junk_root)
   # a folder that is itself junk counts as its own root
   own_root <- paths$is_dir & !is.na(junk_kind) & !in_junk_dir
   roots <- unique(c(junk_root[in_junk_dir], paths$path[own_root]))
+  # the folders above each file, for the files under each junk folder and for
+  # the empty folders below
+  file_paths <- paths$path[!paths$is_dir]
+  file_anc <- .path_ancestors(file_paths)
   root_rows <- data.frame(
     path = as.character(roots), is_dir = rep(TRUE, length(roots)),
-    n_files = unname(vapply(roots, function(r) {
-      sum(!paths$is_dir & startsWith(paths$path, paste0(r, "/")))
-    }, integer(1)))
+    n_files = as.integer(table(factor(file_anc$prefix[file_anc$prefix %in% roots],
+                                      levels = roots)))
   )
   keep <- !in_junk_dir & !own_root
   entries <- paths[keep, , drop = FALSE]
-  entries$n_files <- NA_integer_
+  # rep(): no rows are left when every file is inside a junk folder (#703)
+  entries$n_files <- rep(NA_integer_, nrow(entries))
   entries <- rbind(entries, root_rows)
   kind <- .useless_file_kind(entries$path)
 
   # empty folders: folders with no file anywhere below them
-  file_paths <- paths$path[!paths$is_dir]
   entries$empty <- entries$is_dir & is.na(entries$n_files) &
-    !vapply(entries$path, function(p) any(startsWith(file_paths, paste0(p, "/"))), logical(1))
+    !(entries$path %in% file_anc$prefix)
 
   # what is shown after each name
   hit <- match(entries$path, table_paths)
@@ -227,6 +252,10 @@
     if (nrow(entries) == 0) return(NULL)
     rows <- .file_tree_rows(entries$path, entries$is_dir)
     if (nrow(rows) == 0) return(NULL)
+    # at most .file_tree_max_lines lines, then one line with how many more
+    # (#702): a tree of 369,548 lines cannot be read
+    n_rows <- nrow(rows)
+    if (n_rows > .file_tree_max_lines) rows <- rows[seq_len(.file_tree_max_lines), , drop = FALSE]
 
     # A tree has to READ as a tree: every line in order, with the branch
     # characters lining up. So the rows are laid out as text and emitted as a
@@ -260,6 +289,9 @@
       if (has_naming) naming_txt else ""
     )
     lines <- sub("\\s+$", "", lines)
+    if (n_rows > nrow(rows))
+      lines <- c(lines, sprintf("(and %s more files and folders, not shown)",
+                                formatC(n_rows - nrow(rows), format = "d", big.mark = ",")))
 
     list(repo = repo, lines = lines,
          has_study = has_study, has_naming = has_naming)
@@ -276,8 +308,9 @@
     # empty row between every line of the tree.
     # A local folder by its own name: its full path is the place on the
     # computer that ran the check, on a server its job folder
-    # (Lakens/tue_datamanager_check#5, item 2).
-    label <- if (grepl("^[A-Za-z][A-Za-z0-9+.-]*://", b$repo)) b$repo else basename(b$repo)
+    # (Lakens/tue_datamanager_check#5, item 2). A Windows drive written as
+    # "C://" is a local folder too (#723).
+    label <- if (.is_web_address(b$repo)) b$repo else basename(b$repo)
     c(paste0("**Repository: ", label, "**"),
       paste(c("::: {style=\"max-height: 40em; overflow: auto;\"}",
               "```", b$lines, "```", ":::"), collapse = "\n"))

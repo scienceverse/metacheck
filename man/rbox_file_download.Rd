@@ -9,7 +9,9 @@ rbox_file_download(
   pb = NULL,
   file_ids = "all",
   subfolders = c("type", "section"),
-  cache = FALSE
+  cache = FALSE,
+  max_file_size = Inf,
+  max_download_size = Inf
 )
 }
 \arguments{
@@ -31,6 +33,18 @@ previously cached file list for the checksums of a download without a
 table of contents (see \code{\link[=rbox_files]{rbox_files()}}) instead of asking ResearchBox
 again. If \code{FALSE} (the default), the files are kept in a temporary folder
 that R removes when the session ends; within the session they are reused.}
+
+\item{max_file_size}{largest single file to download, in MB (default \code{Inf},
+no limit). Applied only with an API key, which lists each file's size
+before the download.}
+
+\item{max_download_size}{largest total download per box, in MB (default
+\code{Inf}, no limit). With an API key, the box's file list (one more request,
+kept for the session, and in the lasting cache with \code{cache = TRUE}) gives
+the sizes, and only the smallest files up to this total are downloaded.
+Without a key the sizes are not known: the download is stopped once it
+passes this size, and the box is then recorded as failed. A box already
+downloaded is reused as it is.}
 }
 \value{
 a data frame with one row per file (\code{rb_url}, \code{name},
@@ -38,7 +52,9 @@ a data frame with one row per file (\code{rb_url}, \code{name},
 columns of \link{file_types}), and a \code{"failed"} attribute: a data frame with
 \code{rb_url}, \code{name} (\code{NA} when the whole box failed) and \code{error} for each box
 or file that could not be retrieved. An error starting "API rate limit
-exhausted: " is expected to succeed when run again later.
+exhausted: " is expected to succeed when run again later. A
+\code{"limit_refused"} attribute lists the files the limits left out (\code{rb_url},
+\code{name}, \code{size}, \code{reason}).
 }
 \description{
 Downloads the boxes as zips and unpacks them into the repository cache (see

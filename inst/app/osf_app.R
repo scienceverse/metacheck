@@ -310,6 +310,11 @@ server <- function(input, output, session) {
           stop(paste("That ID is a valid OSF ID, but the project could not be",
                      "read. If it is private, enter a token above."),
                call. = FALSE)
+        } else if (identical(type, "unreachable")) {
+          # the request failed, which says nothing about the project (#541)
+          stop(paste("The OSF did not answer (no connection, a server error,",
+                     "or too many requests). Please try again later."),
+               call. = FALSE)
         } else {
           # A single project: show it as a one-row listing so that stage 2
           # works the same way whether the user started from a profile or a

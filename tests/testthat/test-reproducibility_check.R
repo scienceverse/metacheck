@@ -568,6 +568,12 @@ test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
   expect_true(.repro_ref_checkable(data.frame(ref = "x.csv", basename = "x.csv")))
   # a name the script builds, in any case
   expect_false(.repro_ref_checkable(data.frame(ref = "/X.csv", basename = "x.csv"), "x.csv"))
+  # a file read from a web address (#695)
+  expect_false(.repro_ref_checkable(data.frame(ref = "http://journal.sjdm.org/16/1234/study1.sav",
+                                               basename = "study1.sav")))
+  # a Windows drive written with a double slash is a path, not a web address (#723)
+  expect_true(.repro_ref_checkable(data.frame(ref = "C://Lakens/files/example.csv",
+                                              basename = "example.csv")))
 })
 
 test_that(".repro_built_names finds names joined to a variable (#568)", {
@@ -2614,6 +2620,10 @@ test_that("library() in a script does not give an S3 warning from the capture co
 
 test_that("the container's capture code knows the statistic names (found with Lakens/tue_datamanager_check#5, item 4)", {
   # the helpers as the container gets them: text, run in a fresh environment
+  # The coverage run adds calls that count the lines run to every function,
+  # and these calls do not work in the text written out from them ("argument
+  # is of length zero"); R CMD check and the full tests run it
+  skip_on_covr()
   e <- new.env(parent = globalenv())
   eval(parse(text = .repro_docker_capture_preamble()), envir = e)
   expect_equal(e$stato_type_column("mean")$termSource, "STATO")
@@ -2899,6 +2909,17 @@ test_that(".repro_make_failed_write_folders makes the folder in the sandbox only
   # not again
   unlink(file.path(root, "out"), recursive = TRUE)
   expect_equal(nrow(.repro_make_failed_write_folders(res, run_tbl, root, list(a.R = "out"))), 0)
+  # several scripts stopped on one folder: made once, and each runs again (#590)
+  res2 <- data.frame(file_name = c("f1.R", "f2.R", "f3.R"), outcome = "errored", stderr = "",
+                     error = "Error in `ggsave()`:\n! Cannot find directory 'Figures/'.")
+  run_tbl2 <- data.frame(file_name = res2$file_name, run_dir = file.path(root, "code"))
+  made2 <- .repro_make_failed_write_folders(res2, run_tbl2, root)
+  expect_equal(made2$script, c("f1.R", "f2.R", "f3.R"))
+  expect_equal(unique(made2$folder), "code/Figures")
+  # a folder the deposit or another script made is not taken for one of ours
+  dir.create(file.path(root, "code", "Other"))
+  res2$error <- "Error in `ggsave()`:\n! Cannot find directory 'Other/'."
+  expect_equal(nrow(.repro_make_failed_write_folders(res2, run_tbl2, root)), 0)
 })
 
 test_that(".repro_error_message gives each failure's message, short (#615)", {
@@ -2999,8 +3020,43 @@ test_that("the Docker install script knows where packages only elsewhere are (#5
   expect_no_error(parse(text = lines))
   expect_true(any(grepl("rmcelreath/rethinking", lines, fixed = TRUE)))
   expect_true(any(grepl("r-universe.dev/api/search", lines, fixed = TRUE)))
+  # R-Forge too, before R-universe's search
+  expect_lt(grep("R-Forge.R-project.org", lines, fixed = TRUE)[1],
+            grep("r-universe.dev/api/search", lines, fixed = TRUE)[1])
   # a package found in none of the places is marked so (#389)
   expect_true(any(grepl("found nowhere else: ", lines, fixed = TRUE)))
+})
+
+test_that("the deposit's own copy of a package is found and copied for the install (#588)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "rel.zip/owner-mypkg-1a2b/R"), recursive = TRUE)
+  writeLines(c("Package: mypkg", "Version: 1.0.0"), file.path(root, "rel.zip/owner-mypkg-1a2b/DESCRIPTION"))
+  writeLines("f <- function() 1", file.path(root, "rel.zip/owner-mypkg-1a2b/R/f.R"))
+  writeLines("x", file.path(root, "rel.zip/owner-mypkg-1a2b/big_data.csv"))
+  # three tarballs of one package: the highest version
+  dir.create(file.path(root, "_archive"))
+  for (v in c("0.2.0", "0.10.1", "0.9")) file.create(file.path(root, "_archive", paste0("lay_", v, ".tar.gz")))
+  # an installed package in a renv library is no source
+  dir.create(file.path(root, "renv/library/other"), recursive = TRUE)
+  writeLines(c("Package: other", "Version: 2.0", "Built: R 4.3.1; ; 2023-01-01; unix"),
+             file.path(root, "renv/library/other/DESCRIPTION"))
+  found <- .repro_deposit_packages(root, c("mypkg", "lay", "other", "notthere"))
+  expect_setequal(names(found), c("mypkg", "lay"))
+  expect_equal(basename(found[["lay"]]), "lay_0.10.1.tar.gz")
+  expect_length(.repro_deposit_packages(root, "notthere"), 0)
+  expect_length(.repro_deposit_packages(NULL, "mypkg"), 0)
+
+  box <- withr::local_tempdir()
+  inside <- .repro_copy_deposit_packages(found, box)
+  expect_equal(inside[["mypkg"]], "/sandbox/deposit_pkgs/mypkg")
+  expect_equal(inside[["lay"]], "/sandbox/deposit_pkgs/lay_0.10.1.tar.gz")
+  # only the parts a package install reads, not the data beside them
+  expect_true(file.exists(file.path(box, "deposit_pkgs/mypkg/R/f.R")))
+  expect_false(file.exists(file.path(box, "deposit_pkgs/mypkg/big_data.csv")))
+  # the install script tries the deposit first
+  lines <- .repro_docker_elsewhere_lines()
+  expect_lt(grep("install_local(deposit_pkgs", lines, fixed = TRUE)[1],
+            grep("BiocManager::install(bioc_needed", lines, fixed = TRUE)[1])
 })
 
 test_that(".repro_run_after_lines loads a script from its own folder (#568)", {
@@ -3976,9 +4032,20 @@ test_that("repro_run_scripts_docker uses the internet only when asked, within th
   expect_match(out$error, "x.tar.gz", fixed = TRUE)
   expect_lt(out$elapsed, 25)
   # the scripts together over the total
-  out <- run1(c(dl, "Sys.sleep(30)"), .repro_download_limits(TRUE, 100, 0.01))
+  net_total <- .repro_download_limits(TRUE, 100, 0.01)
+  out <- run1(c(dl, "Sys.sleep(30)"), net_total)
   expect_equal(out$outcome, "download_too_large")
   expect_match(out$error, "max_download_size", fixed = TRUE)
+  # a later script that downloads nothing keeps its own outcome (#593)
+  out <- run1(c("Sys.sleep(6)", "stop('my own error')"), net_total)
+  expect_equal(out$outcome, "errored")
+  expect_match(out$error, "my own error", fixed = TRUE)
+  # one that downloads after the limit was reached is stopped; this file (136 KB)
+  # is more than the 64 KB between two checks that counts as downloading
+  dl_big <- sub(url, "https://cloud.r-project.org/src/contrib/Archive/digest/digest_0.6.20.tar.gz",
+                dl, fixed = TRUE)
+  out <- run1(c("Sys.sleep(3)", dl_big, "Sys.sleep(30)"), net_total)
+  expect_equal(out$outcome, "download_too_large")
 })
 
 test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
@@ -3989,9 +4056,15 @@ test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
   skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
 
   root <- withr::local_tempdir()
-  writeLines(c("import urllib.request",
-               'd = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz").read()',
-               "print(len(d))"), file.path(root, "d.py"))
+  # Any answer from the server shows the internet is on: CRAN refuses Python's
+  # own name ("Python-urllib/3.12") with 429 when too many use it (#730). With
+  # the network off, the address cannot be looked up, a URLError, not caught.
+  writeLines(c("import urllib.request, urllib.error",
+               "try:",
+               '    d = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz", timeout = 60).read()',
+               "    print(len(d))",
+               "except urllib.error.HTTPError as e:",
+               '    print("the server answered", e.code)'), file.path(root, "d.py"))
   writeLines(c("import sys", "sys.exit(3)"), file.path(root, "e.py"))
   run_tbl <- data.frame(file_name = c("d.py", "e.py"), script_path = file.path(root, c("d.py", "e.py")), run_dir = root)
   off <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120)
@@ -3999,7 +4072,7 @@ test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
   on <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120,
                                     net = .repro_download_limits(TRUE))
   # the script's own failure is still a failure
-  expect_equal(on$outcome, c("ran_ok", "errored"))
+  expect_equal(on$outcome, c("ran_ok", "errored"), info = on$error[1])
 })
 
 test_that(".repro_binary_kind tells saved data and other binary files from code (#568)", {
@@ -4034,6 +4107,37 @@ test_that(".repro_needs_arguments: programs that stopped for want of their argum
            "Error in read.csv(\"x.csv\") : cannot open file",
            "Error in args[1] : object of type 'closure' is not subsettable")
   expect_equal(.repro_needs_arguments(r, err, "R"), c(TRUE, FALSE, FALSE))
+  # stopped at its own check of the number of arguments, whatever the message (#593)
+  own <- list(a = c("args = commandArgs(trailingOnly = T)", "if(length(args)!=3) {",
+                    "  stop(\"Provide (only) signal strength for the analysis\", call.=F)", "}"),
+              b = c("args = commandArgs(trailingOnly = T)", "x <- 1", "stop(\"Something else broke\")"))
+  err <- c("Error: Provide (only) signal strength for the analysis\nExecution halted",
+           "Error: Something else broke\nExecution halted")
+  expect_equal(.repro_needs_arguments(own, err, "R"), c(TRUE, FALSE))
+  # indexes `args` it never assigns, as a file a driver sources after setting it (#593)
+  un <- list(a = c("#args=\"\" #init", "if(dir.exists(args[1])) x <- 1"),
+             b = c("args <- c('a', 'b')", "f(args[3])"))
+  err <- rep("Error in args[1] : object of type 'closure' is not subsettable", 2)
+  expect_equal(.repro_needs_arguments(un, err, "R"), c(TRUE, FALSE))
+})
+
+test_that("an SPSS or Stata file the code reads is recognised by its name in the code (#695, point 42)", {
+  code <- c('rawdata <- read_sav("../data/rawdata.sav")', "x <- read_spss('Data for SPSS.sav')",
+            '# notes about otherdata.sav')
+  expect_equal(.repro_named_in_code(c("data/RawData.sav", "other.sav", "Data for SPSS.sav", "data.sav", "otherdata.sav"), code),
+               c(TRUE, FALSE, TRUE, FALSE, FALSE))
+  expect_length(.repro_named_in_code(character(0), code), 0)
+})
+
+test_that("the packages of a Python 2 script include those of the local modules it imports (#593)", {
+  ctl <- list(calculate_FST.py = c("import genomics", "print(genomics.f())"),
+              genomics.py = c("import numpy as np", "import helper", "def f(): return np.mean([1, 2])"),
+              helper.py = "import scipy", other.py = "import pandas")
+  files <- .repro_py_with_imports("calculate_FST.py", ctl, names(ctl))
+  expect_setequal(files, c("calculate_FST.py", "genomics.py", "helper.py"))
+  d <- repro_dependencies_py(ctl[files])
+  expect_true(all(c("numpy", "scipy") %in% d$package))
+  expect_false("pandas" %in% d$package)
 })
 
 test_that("a file written during the run is found, and copied to where a script looked (#568)", {
@@ -4268,6 +4372,25 @@ test_that("a file the deposit holds elsewhere is copied to where a script looked
   # placed once: the second time there is nothing left to copy
   expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
   expect_equal(.repro_placed_text(placed[0, ]), "")
+})
+
+test_that("of several different files of one name, the one in the folders the path names is placed (#590)", {
+  root <- withr::local_tempdir()
+  for (d in c("zip/output/ADMIXTURE/popmap", "zip/output/RAxML", "code")) dir.create(file.path(root, d), recursive = TRUE)
+  writeLines("A", file.path(root, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt"))
+  writeLines("B", file.path(root, "zip/output/RAxML/popmap_Cm.txt"))
+  before <- .repro_sandbox_names(root)
+  res <- data.frame(file_name = "plot.R", outcome = "errored", stderr = "",
+                    error = "cannot open file 'output/ADMIXTURE/popmap/popmap_Cm.txt': No such file or directory")
+  run_tbl <- data.frame(file_name = "plot.R", run_dir = file.path(root, "code"))
+  placed <- .repro_place_from_deposit(res, run_tbl, root, before)
+  expect_equal(placed$from, "zip/output/ADMIXTURE/popmap/popmap_Cm.txt")
+  expect_equal(readLines(file.path(root, "code/output/ADMIXTURE/popmap/popmap_Cm.txt")), "A")
+  # only the file name in common with both: no choice
+  res$error <- "cannot open file 'other/popmap_Cm.txt': No such file or directory"
+  expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
+  expect_equal(.repro_path_tail_match("output/RAxML/popmap_HC.txt",
+                                      c("x/output/RAxML/popmap_HC.txt", "y/popmap_HC.txt")), c(3L, 1L))
 })
 
 test_that("the files sf and terra could not open are read from their errors (#575, item 2)", {
@@ -4696,6 +4819,11 @@ test_that("match_reported_output leaves out a single value that cannot be told f
   expect_false(match_reported_output(e[1, ], o2)$found)
   o3 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0231"))
   expect_true(match_reported_output(e[1, ], o3)$found)
+  # every test weak, with output: the empty result, not an error (#707)
+  none <- match_reported_output(e[2:3, ], o)
+  expect_equal(nrow(none), 0)
+  expect_true(all(c("reported", "found", "confidence") %in% names(none)))
+  expect_equal(attr(none, "summary")$n_tests, 0L)
 })
 
 test_that("a test none of whose values is evidence takes no part in the comparison (#648)", {

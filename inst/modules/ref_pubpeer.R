@@ -44,7 +44,19 @@ ref_pubpeer <- function(paper) {
       summary_text = "PubPeer could not be reached (the request failed), so the references were not checked for comments."
     ))
   }
-  pp <- pp[pp$total_comments > 0 & pp$users != "Statcheck", ]
+  # Statcheck posted one automatic comment on each paper it scanned. Where others
+  # commented too, that comment was in the count, so "excluding Statcheck" held
+  # only for papers Statcheck alone commented on: 14 rows in the Meta-Psychology
+  # run (#695, point 14). PubPeer gives the commenters and the total, not a count
+  # per commenter, so one comment is taken off, and Statcheck off the commenters.
+  by_statcheck <- vapply(strsplit(pp$users %||% rep(NA_character_, nrow(pp)), ","),
+                         function(u) "statcheck" %in% tolower(trimws(u)), logical(1))
+  pp$total_comments <- pp$total_comments - by_statcheck
+  pp$users <- vapply(strsplit(pp$users %||% rep(NA_character_, nrow(pp)), ","), function(u) {
+    u <- trimws(u)
+    paste(u[!is.na(u) & tolower(u) != "statcheck"], collapse = ", ")
+  }, character(1))
+  pp <- pp[pp$total_comments > 0, ]
   # pubpeer_comments() gives one row per DOI looked up, so a DOI cited three
   # times joined to three rows each (9 rows); each commented DOI counts once
   # per paper (U118)
@@ -88,11 +100,12 @@ ref_pubpeer <- function(paper) {
     ## report_table ----
     # every commented reference, with a link where PubPeer gives one: rows
     # without a url were left out, and without a url column this stopped (U118)
-    cols <- c("text", "total_comments", "url")
+    cols <- c("text", "total_comments", "users", "url")
     report_table <- table[, cols]
     report_table$url <- ifelse(is.na(report_table$url), "",
                                link(report_table$url, "link"))
-    names(report_table) <- c("Reference", "Comments", "PubPeer Link")
+    # who commented, so a reader can tell a discussion from a single remark (#695)
+    names(report_table) <- c("Reference", "Comments", "Commenters", "PubPeer Link")
 
     ## report ----
     report <- c(report_text, scroll_table(report_table, maxrows = 10))

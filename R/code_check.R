@@ -107,6 +107,47 @@ code_read <- function(file_path) {
   return(file_lines)
 }
 
+# A code file without a local copy, fetched from its web address into a
+# temporary file that stops at `max_file_size` MB, so that code_check's read
+# from the web stays within the download limits: it read the whole file into
+# memory, also a file left out for its size (#699). Returns the temporary
+# file's path, or `url` itself when it is not a web address; stops with the
+# reason when the file cannot be fetched, worded as code_read()'s errors.
+# The file keeps its extension, which the readers of .Rmd, .qmd and .ipynb
+# files use.
+.code_fetch_capped <- function(url, file_name, max_file_size = Inf,
+                               skip_on_api_limit = FALSE) {
+  # A file inside an archive has no address of its own: it was read as the
+  # address "NA", which waited 10 seconds for the name to be looked up
+  if (is.na(url) || !nzchar(url)) {
+    stop("it has no web address of its own (such as a file inside an archive), ",
+         "so it is read only when downloaded (download = TRUE)", call. = FALSE)
+  }
+  if (!grepl("^https?://", url)) return(url)
+  max_bytes <- if (is.numeric(max_file_size) && length(max_file_size) == 1 &&
+                   is.finite(max_file_size)) max_file_size * 1024 * 1024 else Inf
+  ext <- tools::file_ext(file_name %||% "")
+  tmp <- tempfile(fileext = if (!is.na(ext) && nzchar(ext)) paste0(".", ext) else "")
+  err <- .download_capped(url, tmp, max_bytes = max_bytes,
+                          skip_on_api_limit = skip_on_api_limit)
+  if (identical(attr(err, "over_cap"), TRUE)) {
+    stop(sprintf("it was not read, because it is larger than the %s MB per-file limit (max_file_size)",
+                 .cap_num(max_file_size)), call. = FALSE)
+  }
+  # an empty file is read as no lines, as code_read() reads it
+  if (identical(err, "empty response")) {
+    file.create(tmp)
+    return(tmp)
+  }
+  if (!is.na(err)) {
+    if (grepl("^HTTP [0-9]+$", err))
+      stop(sprintf("cannot open URL '%s': HTTP status was %s", url, sub("^HTTP ", "", err)),
+           call. = FALSE)
+    stop(sprintf("cannot open URL '%s': %s", url, err), call. = FALSE)
+  }
+  tmp
+}
+
 
 # The language a Jupyter notebook's code cells are written in.
 #
@@ -268,6 +309,29 @@ code_read <- function(file_path) {
   "R"
 }
 
+# Why a file named as code is not code, from its first bytes, or NA when it
+# is text. A file was taken for what its name says: saved R data and a PNG
+# image named .R showed 0 code lines and no error, and an HTML page named .py
+# was read as Python (#700). A file starting with a byte order mark of
+# UTF-16 is text (it has zero bytes between its letters).
+.code_not_text <- function(path) {
+  b <- tryCatch(readBin(path, "raw", 8192L), error = function(e) raw(0))
+  if (!length(b)) return(NA_character_)
+  starts <- function(m) length(b) >= length(m) && identical(b[seq_along(m)], m)
+  if (starts(as.raw(c(0xff, 0xfe))) || starts(as.raw(c(0xfe, 0xff)))) return(NA_character_)
+  if (starts(as.raw(c(0x1f, 0x8b))) || starts(as.raw(c(0x42, 0x5a, 0x68))) ||
+      starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a))))
+    return("it is a compressed file (such as saved R data), not code")
+  if (starts(as.raw(c(0x89, 0x50, 0x4e, 0x47)))) return("it is a PNG image, not code")
+  if (starts(charToRaw("%PDF"))) return("it is a PDF file, not code")
+  if (starts(as.raw(c(0x50, 0x4b, 0x03, 0x04)))) return("it is a zip archive, not code")
+  if (any(b == as.raw(0))) return("it holds binary data, not text")
+  head_txt <- rawToChar(b[seq_len(min(length(b), 1024L))])
+  if (grepl("^[[:space:]]*<(!doctype html|html)", head_txt, ignore.case = TRUE, useBytes = TRUE))
+    return("it is an HTML page, not code")
+  NA_character_
+}
+
 #' Detect Code Language
 #'
 #' Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata, Mplus).
@@ -290,7 +354,9 @@ code_lang <- function(file_name) {
     return(character(0))
   }
 
-  ext <- tolower(tools::file_ext(file_name))
+  # a space at the end of a name ("analysis.R ", which Windows cannot even
+  # store) hid the extension (#700)
+  ext <- tolower(tools::file_ext(trimws(file_name, which = "right")))
   # ".ipynb" is a Jupyter notebook: JSON holding source in its code cells,
   # recovered by code_extract_py()/code_extract_r() the way an .Rmd/.qmd is
   # purled. Jupyter runs MANY kernels, so the extension alone does NOT fix the
@@ -454,16 +520,15 @@ code_lang <- function(file_name) {
     has_target
   if (!any(need_dl)) return(all_files)
 
-  # TRUE per-repo row count in the FULL listing, not just the need_dl subset
-  # passed below -- see download_repo_files()'s own repo_file_counts roxygen
+  # The FULL listing (for the file count and the choice of files for the budget, #699), not just the need_dl subset
+  # passed below -- see download_repo_files()'s own repo_listing roxygen
   # for why an oversized repo can otherwise slip through max_files_per_repo.
-  repo_file_counts <- table(all_files$repo_url)
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
                         max_download_size = max_download_size,
                         max_files_per_repo = max_files_per_repo,
-                        repo_file_counts = repo_file_counts, cache = cache,
+                        repo_listing = all_files, cache = cache,
                         skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
@@ -497,15 +562,14 @@ code_lang <- function(file_name) {
   spv_files <- all_files[is_spv, , drop = FALSE]
   need_dl <- is.na(spv_files$file_location) | !nzchar(spv_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(spv_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # spv-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # spv-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(spv_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
@@ -561,15 +625,14 @@ code_lang <- function(file_name) {
   smcl_files <- all_files[is_smcl, , drop = FALSE]
   need_dl <- is.na(smcl_files$file_location) | !nzchar(smcl_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(smcl_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # smcl-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # smcl-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(smcl_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
@@ -622,15 +685,14 @@ code_lang <- function(file_name) {
   out_files <- all_files[is_out, , drop = FALSE]
   need_dl <- is.na(out_files$file_location) | !nzchar(out_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(out_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # out-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # out-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(out_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
@@ -692,15 +754,14 @@ code_lang <- function(file_name) {
   html_files <- all_files[is_html, , drop = FALSE]
   need_dl <- is.na(html_files$file_location) | !nzchar(html_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(html_files)) {
-    # TRUE per-repo row count in the FULL listing (all_files), not just this
-    # html-only subset -- see download_repo_files()'s repo_file_counts roxygen.
-    repo_file_counts <- table(all_files$repo_url)
+    # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+    # html-only subset -- see download_repo_files()'s repo_listing roxygen.
     dl <- tryCatch(
       download_repo_files(html_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
                           max_files_per_repo = max_files_per_repo,
-                          repo_file_counts = repo_file_counts,
+                          repo_listing = all_files,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
@@ -761,9 +822,10 @@ code_lang <- function(file_name) {
 # For every UNEXPANDED ".zip" row in `all_files` (the archive still appears as
 # one row, never downloaded), peek inside it (zip_peek(), R/zip-peek.R -- the
 # same remote-range-request mechanism repo_check's own peek_zips uses) and
-# fetch ONLY the members code_lang() recognises as code, via
-# .zip_fetch_members()/.zip_member_fetch() -- a per-member byte-range fetch
-# that never downloads the rest of the archive. One new row is appended per
+# fetch ONLY the members code_lang() recognises as code, through
+# download_repo_files()'s archive members (a per-member byte-range fetch that
+# never downloads the rest of the archive, or one download of the whole zip
+# when that is cheaper), within the repository's budget (#699). One new row is appended per
 # recovered code file, exactly like .code_expand_spv()/_smcl()/_html(); the
 # original ".zip" row is left in place (code_lang(".zip") is NA, so it is
 # never itself checked as code).
@@ -794,7 +856,8 @@ code_lang <- function(file_name) {
 # which will fetch the whole archive and (if data_check expands it) recover
 # its contents that way instead.
 .code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE,
-                             max_download_size = 500) {
+                             max_download_size = 500, max_file_size = 100,
+                             max_files_per_repo = Inf) {
   has_url <- !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
   # A zip already on disk (a ResearchBox box is downloaded and unpacked whole
   # by repo_check, so a zip inside it has file_location set and the box's web
@@ -806,7 +869,7 @@ code_lang <- function(file_name) {
   is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) & has_url
   if (!any(is_zip)) return(all_files)
 
-  new_rows <- list()
+  req <- list()
   for (i in which(is_zip)) {
     url <- if (!is.na(local_src[i])) local_src[i] else all_files$file_url[i]
     # The listing's own size, where it gave one, saves a HEAD request per
@@ -817,44 +880,91 @@ code_lang <- function(file_name) {
                      error = function(e) NULL)
     if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
 
-    # renv's own files are left out of code_check, so they are not fetched
-    is_code <- !is.na(code_lang(peek$name)) &
-      !.in_renv_folder(data.frame(file_path = peek$name))
+    # renv's own files are left out of code_check, so they are not fetched.
+    # A zip inside the zip is fetched too, and its code files are taken out
+    # of it below (zips inside zips were not opened, #700).
+    in_renv <- .in_renv_folder(data.frame(file_path = peek$name))
+    is_code <- (!is.na(code_lang(peek$name)) | .is_zip(peek$name)) & !in_renv
     if (!any(is_code)) next
 
-    dest <- .repo_cache_path(all_files$repo_url[i],
-                             paste0(all_files$file_path[i] %||% all_files$file_name[i],
-                                    ".contents"),
-                             cache = cache, storage = all_files$provider[i] %||% NA_character_)
-    # An archive within the download budget may be fetched whole, once,
-    # instead of by byte range, whenever that is cheaper (see
-    # .zip_fetch_members()) -- this used to be done for Dryad only. Dryad
-    # takes the archive whenever it fits the budget (`request_bytes = Inf`),
-    # because its strict daily request quota otherwise stalls the run (issue
-    # #471). Kept at the zip's own cache path, where the ordinary download
-    # would also put it, so it is not requested again.
-    whole_bytes <- max_download_size * 1024 * 1024
-    request_bytes <- if (grepl("datadryad\\.org", url, ignore.case = TRUE)) Inf else 1048576
-    fetched <- tryCatch(
-      .zip_fetch_members(url, names = peek$name[is_code], dest = dest,
-                        cache = cache, skip_on_api_limit = skip_on_api_limit,
-                        max_whole_bytes = whole_bytes,
-                        archive_path = sub("\\.contents$", "", dest),
-                        request_bytes = request_bytes, size = zip_size),
-      error = function(e) NULL)
-    if (is.null(fetched) || !any(fetched$ok)) next
-
-    got <- fetched[fetched$ok, , drop = FALSE]
-    rows <- all_files[rep(i, nrow(got)), , drop = FALSE]
-    rows$file_name <- basename(got$name)
-    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i], got$name)
-    rows$file_location <- got$path
+    # One row per code file in the zip, as repo_check makes for the zips it
+    # opens (inst/modules/repo_check.R, "look inside .zip archives"), for
+    # download_repo_files() to fetch.
+    rows <- all_files[rep(i, sum(is_code)), , drop = FALSE]
+    rows$file_name <- basename(peek$name[is_code])
+    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i],
+                                peek$name[is_code])
     rows$file_url <- NA_character_   # a member has no download URL of its own
-    rows$file_size <- got$size
-    new_rows[[length(new_rows) + 1L]] <- rows
+    rows$file_size <- peek$size[is_code]
+    rows$file_location <- NA_character_
+    rows$archive_url <- url
+    rows$archive_member <- peek$name[is_code]
+    rows$archive_format <- "zip"
+    rows$archive_size <- if (is.null(zip_size)) NA_real_ else suppressWarnings(as.numeric(zip_size))
+    req[[length(req) + 1L]] <- rows
   }
-  if (!length(new_rows)) return(all_files)
-  dplyr::bind_rows(all_files, new_rows)
+  if (!length(req)) return(all_files)
+
+  # The code files are fetched by download_repo_files(), so that they share
+  # the repository's budget with every other download (#699): fetched here on
+  # their own, they were held to no budget, only a whole copy of the zip to
+  # max_file_size. download_repo_files() holds each to max_file_size, takes
+  # them smallest first from what is left after the repository's choice of
+  # files (they are not in the listing), and fetches a zip whole instead of
+  # by byte range when that is cheaper and the copy fits too.
+  req <- dplyr::bind_rows(req)
+  dl <- download_repo_files(req, max_file_size = max_file_size,
+                            max_download_size = max_download_size,
+                            max_files_per_repo = max_files_per_repo,
+                            repo_listing = all_files, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit)
+  got <- !is.na(dl$file_location)
+  if (!any(got)) return(all_files)
+  # Added in the shape they had before: no archive columns, so that later
+  # calls make the same choice of files from this listing as data_check
+  # makes from its own.
+  rows <- dl[got, intersect(names(all_files), names(dl)), drop = FALSE]
+  inner <- .is_zip(rows$file_name)
+  rows <- dplyr::bind_rows(rows[!inner, , drop = FALSE],
+                           .code_expand_inner_zips(rows[inner, , drop = FALSE], all_files,
+                                                   cache = cache, max_file_size = max_file_size,
+                                                   max_download_size = max_download_size))
+  dplyr::bind_rows(all_files, rows)
+}
+
+# The code files inside zips that are themselves inside a zip (`zips`: rows of
+# zips on disk, fetched by .code_expand_zip()), taken out on disk two more
+# levels deep (#700), as data_check opens them: code and inner zips only, each
+# file no larger than max_file_size, within what is left of the repository's
+# budget (.repo_budget(), from `listing`). Returns the code files' rows.
+.code_expand_inner_zips <- function(zips, listing, cache = FALSE, max_file_size = 100,
+                                    max_download_size = 500, levels = 2L) {
+  out <- list()
+  max_bytes <- if (is.finite(max_file_size)) max_file_size * 1024^2 else Inf
+  skip <- c("data", "documentation", "materials", "output", "unknown")
+  for (level in seq_len(levels)) {
+    if (!NROW(zips)) break
+    nxt <- list()
+    for (j in seq_len(nrow(zips))) {
+      z <- zips[j, , drop = FALSE]
+      left <- Inf
+      if (.in_download_folder(z$file_location) && !is.na(z$repo_url))
+        left <- .budget_free(.repo_budget(z$repo_url, listing, cache = cache,
+                                          max_file_size = max_file_size,
+                                          max_download_size = max_download_size %||% Inf))
+      ex <- tryCatch(.expand_zip(z$file_location, z, skip_types = skip, max_bytes = max_bytes,
+                                 max_total = left),
+                     error = function(e) z[0, , drop = FALSE])
+      ex <- ex[!is.na(ex$file_location), , drop = FALSE]
+      if (!nrow(ex)) next
+      is_inner <- .is_zip(ex$file_name)
+      out[[length(out) + 1L]] <- ex[!is_inner & !is.na(code_lang(ex$file_name)), , drop = FALSE]
+      nxt[[length(nxt) + 1L]] <- ex[is_inner, , drop = FALSE]
+    }
+    zips <- dplyr::bind_rows(nxt)
+  }
+  if (!length(out)) return(zips[0, , drop = FALSE])
+  dplyr::bind_rows(out)
 }
 
 #' Convert Rmd/qmd files to R code only
@@ -2058,7 +2168,14 @@ code_library_names <- function(code_text,
   }
   char_only <- "character\\.only\\s*=\\s*(TRUE|T)\\b"
 
-  for (ln in seq_along(code_text)) {
+  # Only a line with one of these words can hold a hit below: one test over
+  # all lines finds them, and only those go through the patterns one line at a
+  # time. On every line, the patterns took most of code_check's time, 0.3 ms a
+  # line: minutes for a script of 800,000 lines (#700).
+  maybe <- if (lang == "R") grepl("library|require|p_load|install|::", code_text, useBytes = TRUE) else
+    grepl("^\\s*(?:from|import)\\s", code_text, perl = TRUE, useBytes = TRUE)
+
+  for (ln in which(maybe)) {
     L <- code_text[ln]
 
     if (lang == "R") {
@@ -2169,6 +2286,31 @@ code_library_names <- function(code_text,
       ln <- nchar(gsub("[^\n]", "", substr(joined, 1L, m[[1]][i]))) + 1L
       add(sub("@.*$", "", sub("^.*/", "", pkgs)), "groundhog", ln)
     }
+    line_of <- function(pos) nchar(gsub("[^\n]", "", substr(joined, 1L, pos))) + 1L
+    # c("a", "b") given straight to lapply()/sapply() with library or require,
+    # not through a variable (#695, point 34)
+    m <- gregexpr(paste0("\\b(?:lapply|sapply|vapply|walk|map)\\s*\\(\\s*(c\\s*\\([^()]*\\))\\s*,\\s*",
+                         "(?:FUN\\s*=\\s*)?(?:function\\s*\\([^)]*\\)\\s*\\{?\\s*)?(library|require)\\b"),
+                  joined, perl = TRUE)
+    calls <- regmatches(joined, m)[[1]]
+    for (i in seq_along(calls)) {
+      vec <- sub("(?s)^[^(]*\\(\\s*(c\\s*\\([^()]*\\)).*$", "\\1", calls[i], perl = TRUE)
+      fn <- sub("(?s)^.*\\b(library|require)$", "\\1", calls[i], perl = TRUE)
+      add(.code_literal_strings(vec), fn, line_of(m[[1]][i]))
+    }
+    # the script's own install-and-load functions, called with a variable or a
+    # literal vector (see .code_loader_functions())
+    for (f in .code_loader_functions(code_text)) {
+      m <- gregexpr(sprintf("(?<![\\w.])%s\\s*\\(\\s*(c\\s*\\([^()]*\\)|[.A-Za-z][.A-Za-z0-9_]*)\\s*[,)]",
+                            gsub(".", "\\.", f, fixed = TRUE)), joined, perl = TRUE)
+      calls <- regmatches(joined, m)[[1]]
+      for (i in seq_along(calls)) {
+        arg <- trimws(sub(sprintf("(?s)^%s\\s*\\(\\s*(.*?)\\s*[,)]$", gsub(".", "\\.", f, fixed = TRUE)),
+                          "\\1", calls[i], perl = TRUE))
+        pkgs <- if (grepl("^c\\s*\\(", arg)) .code_literal_strings(arg) else vars[[arg]] %||% character(0)
+        add(pkgs, "loader", line_of(m[[1]][i]))
+      }
+    }
   }
 
   if (length(hits) == 0) return(empty)
@@ -2212,7 +2354,63 @@ code_library_names <- function(code_text,
       sprintf("\\(\\s*(%s)\\s+in\\s+(%s)\\s*\\)", id, id), l, perl = TRUE))[[1]]
     if (!is.null(out[[parts[3]]])) out[[parts[2]]] <- out[[parts[3]]]
   }
+  # a loop over a literal vector, `for (p in c("fGarch", "dplyr"))` (#695, point 34)
+  lit_loops <- regmatches(joined, gregexpr(
+    sprintf("\\bfor\\s*\\(\\s*(%s)\\s+in\\s+c\\s*\\([^()]*\\)\\s*\\)", id), joined, perl = TRUE))[[1]]
+  for (l in lit_loops) {
+    v <- sub(sprintf("^for\\s*\\(\\s*(%s)\\s+in.*$", id), "\\1", l, perl = TRUE)
+    strs <- .code_literal_strings(sub("^[^(]*\\(\\s*[^ ]+\\s+in\\s+", "", l, perl = TRUE))
+    if (length(strs)) out[[v]] <- strs
+  }
   out
+}
+
+# The quoted strings of a literal c("a", "b") (or "a"), when it holds nothing
+# else; character(0) otherwise.
+.code_literal_strings <- function(x) {
+  value <- sub("(?s)^\\s*c\\s*\\((.*)\\)\\s*\\)?\\s*$", "\\1", x, perl = TRUE)
+  strs <- regmatches(value, gregexpr("(['\"])[^'\"\n]*\\1", value, perl = TRUE))[[1]]
+  rest <- gsub("(['\"])[^'\"\n]*\\1", "", value, perl = TRUE)
+  if (!length(strs) || grepl("[^[:space:],)]", rest)) return(character(0))
+  gsub("^['\"]|['\"]$", "", strs)
+}
+
+# Functions a script defines that load or install the packages they are given:
+# a paper's own install-and-load helper, `ipak <- function(pkg) { ...
+# install.packages(new.pkg); sapply(pkg, require, character.only = TRUE) }`. Its
+# body calls library(), require(), install.packages() or p_load() on its argument
+# rather than on a name (character.only, or install.packages() of a variable).
+# Gmisc and epitools, given to such a function in mp20212909, were never
+# installed (#695, point 34). Returns the functions' names.
+.code_loader_functions <- function(code_text) {
+  joined <- paste(code_text, collapse = "\n")
+  id <- "[.A-Za-z][.A-Za-z0-9_]*"
+  defs <- gregexpr(sprintf("(%s)\\s*(?:<-|=)\\s*function\\s*\\(", id), joined, perl = TRUE)[[1]]
+  if (defs[1] < 0) return(character(0))
+  starts <- as.integer(defs)
+  lens <- attr(defs, "match.length")
+  chars <- strsplit(joined, "", fixed = TRUE)[[1]]
+  out <- character(0)
+  for (k in seq_along(starts)) {
+    name <- sub(sprintf("^(%s).*$", id), "\\1", substr(joined, starts[k], starts[k] + lens[k] - 1), perl = TRUE)
+    # the body: from the first "{" after the arguments to its matching "}", or
+    # the rest of the line for a body without braces; at most 5,000 characters
+    from <- starts[k] + lens[k]
+    to <- min(length(chars), from + 5000L)
+    seg <- chars[from:to]
+    open <- which(seg == "{")[1]
+    nl <- which(seg == "\n")[1]
+    body <- if (!is.na(open) && (is.na(nl) || open < nl + 200)) {
+      depth <- cumsum((seg == "{") - (seg == "}"))
+      end <- which(depth == 0 & seq_along(seg) > open)[1]
+      paste(seg[open:(if (is.na(end)) length(seg) else end)], collapse = "")
+    } else paste(seg[seq_len(if (is.na(nl)) length(seg) else nl)], collapse = "")
+    loads_arg <- grepl("(?:library|require)\\s*\\([^)]*character\\.only\\s*=\\s*(?:TRUE|T)\\b", body, perl = TRUE) ||
+      grepl("\\b(?:lapply|sapply|vapply|walk|map)\\s*\\([^,]+,\\s*(?:library|require)\\b", body, perl = TRUE) ||
+      grepl("\\binstall\\.packages\\s*\\(\\s*[.A-Za-z][.A-Za-z0-9_]*\\s*[,)\\[]", body, perl = TRUE)
+    if (loads_arg) out <- c(out, name)
+  }
+  unique(out)
 }
 
 #' Distinct packages from a code_check table
@@ -2353,16 +2551,15 @@ code_packages <- function(packages) {
     need_dl <- (is.na(renv_rows$file_location) | !nzchar(renv_rows$file_location %||% "")) &
       !is.na(renv_rows$file_url) & nzchar(renv_rows$file_url %||% "")
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing (all_files), not just this
-      # renv.lock-only subset -- see download_repo_files()'s repo_file_counts
+      # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
+      # renv.lock-only subset -- see download_repo_files()'s repo_listing
       # roxygen.
-      repo_file_counts <- table(all_files$repo_url)
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
-                            repo_file_counts = repo_file_counts,
+                            repo_listing = all_files,
                             cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
@@ -2409,16 +2606,15 @@ code_packages <- function(packages) {
     need_dl <- (is.na(si_rows$file_location) | !nzchar(si_rows$file_location %||% "")) &
       !is.na(si_rows$file_url) & nzchar(si_rows$file_url %||% "")
     if (any(need_dl)) {
-      # TRUE per-repo row count in the FULL listing (all_files), not just this
+      # The FULL listing (for the file count and the choice of files for the budget, #699) (all_files), not just this
       # sessionInfo/README-only subset -- see download_repo_files()'s
-      # repo_file_counts roxygen.
-      repo_file_counts <- table(all_files$repo_url)
+      # repo_listing roxygen.
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
-                            repo_file_counts = repo_file_counts,
+                            repo_listing = all_files,
                             cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
@@ -2855,7 +3051,12 @@ code_packages <- function(packages) {
   for (i in seq_len(nrow(code_files))) {
     refs <- code_files$loaded_refs[[i]]
     if (is.na(refs)) next
-    refs <- base(strsplit(refs, "\u001f", fixed = TRUE)[[1]])
+    refs <- strsplit(refs, "\u001f", fixed = TRUE)[[1]]
+    # a file read from a web address is not one the repository should hold:
+    # read.spss("http://journal.sjdm.org/.../study1.sav") was reported as the
+    # missing file study1.sav (#695), as .repro_ref_checkable() also leaves out.
+    # A Windows drive written as "C://" is a path, not a web address (#723).
+    refs <- base(refs[!.is_web_address(refs)])
     # a piece, and a name with a placeholder ("Ax1_s{seed}.jsonl"), are no
     # file names, as reproducibility_check also leaves them out (.repro_ref_checkable())
     refs <- refs[nzchar(refs) & !grepl("^[._-]", refs) & !grepl(.code_placeholder_re, refs, perl = TRUE)]

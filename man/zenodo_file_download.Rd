@@ -7,8 +7,8 @@
 zenodo_file_download(
   zenodo_id,
   download_to,
-  max_file_size = 10,
-  max_download_size = 100,
+  max_file_size = 100,
+  max_download_size = 500,
   unzip_types = NULL,
   pb = NULL
 )
@@ -42,7 +42,7 @@ the members rather than the archive Zenodo published a size and MD5 for.
 Creates a directory for the Zenodo ID and downloads all of the files using a folder structure from the Zenodo project nodes and file storage structure. Returns (invisibly) a data frame with file info.
 }
 \details{
-You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+You can limit downloads to only files under a specific size (defaults to 100 MB) and to a maximum download size (defaults to 500 MB): the smallest files are kept while they fit and the rest omitted, as in \code{\link[=download_repo_files]{download_repo_files()}}. Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
 
 A \code{.zip} in the record is normally fetched whole and left as a zip. Set
 \code{unzip_types} to pull only the files you want out of it instead: Zenodo

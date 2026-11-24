@@ -64,6 +64,8 @@ test_that("seq_archive_info reads GEO, ENA and ArrayExpress records (#660)", {
                           "https://www.ebi.ac.uk/ena/browser/view/PRJNA770129",
                           "https://www.ebi.ac.uk/ena/browser/view/SRR7416431",
                           "https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-6487"))
+  # an archive that did not answer during the run is not a fault here
+  skip_if(any(i$error %in% "unreachable"), "an archive did not answer")
   expect_true(all(is.na(i$error)))
   expect_match(i$creators[1], "Walser", fixed = TRUE)
   expect_match(i$related[1], "IsSupplementTo:10.1371/journal.pbio.3001317", fixed = TRUE)
@@ -101,4 +103,29 @@ test_that("code_check names the archive deposit when files the code reads are mi
   # without an archive deposit, no such sentence
   q <- module_run(test_paper(), "code_check", local_path = test_path("fixtures", "code_files"))
   expect_no_match(paste(unlist(q$report), collapse = " "), "deposited raw data", fixed = TRUE)
+})
+
+test_that("a record whose archive did not answer is 'unreachable', not 'unfound'", {
+  # GEO answered with a server error: the deposit may well exist
+  local_mocked_bindings(req_perform = function(req, ...) httr2::response(status_code = 503),
+                        .package = "httr2")
+  got <- .seq_fetch("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1")
+  expect_null(got$text)
+  expect_true(got$unreachable)
+  i <- seq_archive_info(c("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE149523",
+                          "https://www.ebi.ac.uk/ena/browser/view/PRJNA770129",
+                          "https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-6487"))
+  expect_equal(i$error, rep("unreachable", 3))
+
+  # no answer at all (no connection or a time-out)
+  local_mocked_bindings(req_perform = function(req, ...) stop("Timeout was reached"),
+                        .package = "httr2")
+  expect_true(.seq_fetch("https://www.ebi.ac.uk/x")$unreachable)
+
+  # the archive answered that it has no such record
+  local_mocked_bindings(req_perform = function(req, ...) httr2::response(status_code = 404),
+                        .package = "httr2")
+  expect_false(.seq_fetch("https://www.ebi.ac.uk/x")$unreachable)
+  i <- seq_archive_info("https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-6487")
+  expect_equal(i$error, "unfound")
 })

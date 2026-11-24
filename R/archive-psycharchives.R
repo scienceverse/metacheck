@@ -136,9 +136,37 @@ dspace_links <- function(paper) {
   other_ds <- text_search(paper, ds_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  dplyr::bind_rows(found_href, other_ds) |>
+  dplyr::bind_rows(found_href, other_ds, .dspace_legacy_doi_links(paper)) |>
     dplyr::mutate(href = sub("/+$", "", href)) |>
     unique()
+}
+
+# PsychArchives' DOIs (prefix 10.23668), each replaced by the address it is
+# registered with when that is on a legacy-DSpace host (#695). A paper may
+# give its data only as a DOI ("doi.org/10.23668/psycharchives.12959"), and
+# the number in the DOI is not the item's handle: that DOI leads to
+# www.psycharchives.org/jspui/handle/20.500.12034/8459 (DataCite, checked
+# 2026-11-19), so the address has to be looked up, as invenio_links() does
+# for DOIs of InvenioRDM installations. A DOI that leads elsewhere, that
+# DataCite calls a publication (#637; .repo_doi_url(), R/repo-kind.R), or
+# that could not be looked up, gives no row.
+.dspace_legacy_doi_links <- function(paper) {
+  href <- text <- NULL
+  doi_rx <- "(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?(10\\.23668/[-._;()/:A-Za-z0-9]+[A-Za-z0-9])"
+  in_url <- paper_table(paper, "url")
+  in_url <- in_url[grepl(doi_rx, in_url$href, perl = TRUE, ignore.case = TRUE), , drop = FALSE]
+  in_text <- text_search(paper, doi_rx, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+  found <- dplyr::bind_rows(in_url, in_text)
+  if (nrow(found) == 0) return(found)
+  doi <- regmatches(found$href, regexpr(doi_rx, found$href, perl = TRUE, ignore.case = TRUE))
+  doi <- sub(doi_rx, "\\1", doi, perl = TRUE, ignore.case = TRUE)
+  host_regex <- .dspace_legacy_host_regex()
+  found$href <- vapply(doi, \(d) {
+    u <- .repo_doi_url(d)$url
+    if (!is.na(u) && grepl(host_regex, u, ignore.case = TRUE, perl = TRUE)) u else NA_character_
+  }, character(1), USE.NAMES = FALSE)
+  found[!is.na(found$href), , drop = FALSE]
 }
 
 #' Find PsychArchives Links in Papers
@@ -178,7 +206,10 @@ psycharchives_links <- function(paper) {
   # a bare body-text mention of the same repo commonly differ only by a
   # trailing slash, and left un-normalized that turns one repo into two
   # throughout repo_check.
-  dplyr::bind_rows(found_href, other_pa) |>
+  # a PsychArchives DOI, by the address it is registered with (#695)
+  by_doi <- .dspace_legacy_doi_links(paper)
+  by_doi <- by_doi[grepl("psycharchives\\.org", by_doi$href, ignore.case = TRUE), , drop = FALSE]
+  dplyr::bind_rows(found_href, other_pa, by_doi) |>
     dplyr::mutate(href = sub("/+$", "", href)) |>
     unique()
 }

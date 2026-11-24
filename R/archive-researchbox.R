@@ -1001,13 +1001,25 @@ rbox_search <- function(q, type = c("data", "code", "paper"), limit = 100,
 #'   table of contents (see [rbox_files()]) instead of asking ResearchBox
 #'   again. If `FALSE` (the default), the files are kept in a temporary folder
 #'   that R removes when the session ends; within the session they are reused.
+#' @param max_file_size largest single file to download, in MB (default `Inf`,
+#'   no limit). Applied only with an API key, which lists each file's size
+#'   before the download.
+#' @param max_download_size largest total download per box, in MB (default
+#'   `Inf`, no limit). With an API key, the box's file list (one more request,
+#'   kept for the session, and in the lasting cache with `cache = TRUE`) gives
+#'   the sizes, and only the smallest files up to this total are downloaded.
+#'   Without a key the sizes are not known: the download is stopped once it
+#'   passes this size, and the box is then recorded as failed. A box already
+#'   downloaded is reused as it is.
 #'
 #' @returns a data frame with one row per file (`rb_url`, `name`,
 #'   `file_location`, `size`, `isdir`, `checksum_ok`, plus the file type
 #'   columns of [file_types]), and a `"failed"` attribute: a data frame with
 #'   `rb_url`, `name` (`NA` when the whole box failed) and `error` for each box
 #'   or file that could not be retrieved. An error starting "API rate limit
-#'   exhausted: " is expected to succeed when run again later.
+#'   exhausted: " is expected to succeed when run again later. A
+#'   `"limit_refused"` attribute lists the files the limits left out (`rb_url`,
+#'   `name`, `size`, `reason`).
 #' @export
 #'
 #' @examples
@@ -1022,7 +1034,9 @@ rbox_search <- function(q, type = c("data", "code", "paper"), limit = 100,
 #' }
 rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
                                subfolders = c("type", "section"),
-                               cache = FALSE) {
+                               cache = FALSE,
+                               max_file_size = Inf,
+                               max_download_size = Inf) {
   subfolders <- match.arg(subfolders)
 
   if (is.null(pb)) {
@@ -1048,7 +1062,13 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
 
     box_lists <- lapply(pick, rbox_file_download, pb = pb,
                         file_ids = file_ids, subfolders = subfolders,
-                        cache = cache)
+                        cache = cache, max_file_size = max_file_size,
+                        max_download_size = max_download_size)
+    limit_refused <- lapply(seq_along(unique_rb), \(k) {
+      lr <- attr(box_lists[[match(box[[k]], boxes)]], "limit_refused")
+      if (!is.null(lr) && nrow(lr) > 0) lr$rb_url <- unique_rb[[k]]
+      lr
+    }) |> dplyr::bind_rows()
     file_lists <- lapply(seq_along(unique_rb), \(k) {
       tbl <- box_lists[[match(box[[k]], boxes)]]
       failed <- attr(tbl, "failed")
@@ -1061,10 +1081,15 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
     info <- do.call(dplyr::bind_rows, args = file_lists)
     # every link failed: no rows; the join below stopped on a table without
     # columns ("Join columns in `y` must be present", U43)
-    if (nrow(info) == 0) return(.rbox_no_files(failed))
+    if (nrow(info) == 0) {
+      out <- .rbox_no_files(failed)
+      attr(out, "limit_refused") <- limit_refused
+      return(out)
+    }
     orig <- data.frame(rb_url = rb_url)
     df <- dplyr::left_join(orig, info, by = "rb_url")
     attr(df, "failed") <- failed
+    attr(df, "limit_refused") <- limit_refused
 
     return(df)
   }
@@ -1079,27 +1104,80 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
   # A download of only some files, or in folders by section, is a different
   # set of files and is cached separately.
   all_files <- identical(as.character(file_ids), "all")
-  # Keyed by the box, so every link to it (a peer-review link, or the box's
-  # link written differently) reuses one download; a plain link keeps the
-  # folder it had.
-  cache_key <- if (is.na(.rbox_id(rb_url))) rb_url else paste0("https://researchbox.org/", .rbox_id(rb_url))
-  if (!all_files || subfolders != "type") {
-    cache_key <- paste(cache_key, subfolders, paste(sort(file_ids), collapse = "-"))
+  # Where a download of the box (or of some of its files) is kept, and whether
+  # an earlier one can be reused
+  box_paths <- function(all_files, file_ids) {
+    # Keyed by the box, so every link to it (a peer-review link, or the box's
+    # link written differently) reuses one download; a plain link keeps the
+    # folder it had.
+    cache_key <- if (is.na(.rbox_id(rb_url))) rb_url else paste0("https://researchbox.org/", .rbox_id(rb_url))
+    if (!all_files || subfolders != "type") {
+      cache_key <- paste(cache_key, subfolders, paste(sort(file_ids), collapse = "-"))
+    }
+    tmp_dir <- .repo_cache_subdir(cache_key, cache = cache)
+    out_dir <- file.path(tmp_dir, "unzipped")
+    # the checksum results of the download, so a reused box keeps them, and a
+    # box with a missing or damaged file is downloaded again
+    check_path <- file.path(tmp_dir, "checksums.rds")
+    # Reuse a previous successful download/unzip when present.
+    checks <- if (file.exists(check_path)) tryCatch(readRDS(check_path), error = \(e) NULL)
+    list(tmp_dir = tmp_dir, zip_path = file.path(tmp_dir, "archive.zip"),
+         out_dir = out_dir, check_path = check_path, checks = checks,
+         already_unzipped = dir.exists(out_dir) &&
+           length(list.files(out_dir, recursive = TRUE)) > 0 &&
+           !(nrow(checks$failed %||% data.frame()) > 0))
   }
-  tmp_dir <- .repo_cache_subdir(cache_key, cache = cache)
+  p <- box_paths(all_files, file_ids)
+
+  # The download limits (#699). With an API key, the box's file list gives
+  # each file's size before anything is downloaded, so only the smallest
+  # files up to max_download_size are asked for (files over max_file_size
+  # are left out), as for the files of other repositories. A box already on
+  # disk is reused as it is: nothing new is downloaded. Without a key the
+  # sizes are not known; the web page download below is then stopped at
+  # max_download_size.
+  limit_refused <- data.frame(rb_url = character(0), name = character(0),
+                              size = numeric(0), reason = character(0))
+  limited <- is.finite(max_file_size) || is.finite(max_download_size)
+  if (!p$already_unzipped && limited && all_files && subfolders == "type" &&
+      .rbox_use_api(rb_url)) {
+    sized <- .rbox_sized_files(rb_url, cache = cache)
+    if (is.null(sized)) {
+      paste0("- ResearchBox did not list the files of ", rb_url,
+             ", so their sizes are not known; the whole box is downloaded") |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+    } else if (nrow(sized) > 0) {
+      reason <- .rbox_limit_choice(sized$size, max_file_size, max_download_size)
+      if (any(!is.na(reason))) {
+        out <- !is.na(reason)
+        limit_refused <- data.frame(rb_url = rb_url, name = sized$name[out],
+                                    size = sized$size[out], reason = reason[out])
+        .cap_report(sprintf(paste0(
+          "ResearchBox box %s: %d of its %d file%s not downloaded, because of ",
+          "max_file_size (%s MB) or the %s MB budget (max_download_size)."),
+          rb_url, sum(out), length(out), plural(length(out)),
+          .cap_num(max_file_size), .cap_num(max_download_size)))
+        if (all(out)) {
+          failed <- data.frame(rb_url = rb_url, name = NA_character_,
+                               error = "every file of the box is over the download limits")
+          out_tbl <- .rbox_no_files(failed)
+          attr(out_tbl, "limit_refused") <- limit_refused
+          return(out_tbl)
+        }
+        file_ids <- sized$file_id[!out]
+        all_files <- FALSE
+        p <- box_paths(all_files, file_ids)
+      }
+    }
+  }
+  tmp_dir <- p$tmp_dir
+  zip_path <- p$zip_path
+  out_dir <- p$out_dir
+  check_path <- p$check_path
+  checks <- p$checks
+  already_unzipped <- p$already_unzipped
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
-
-  zip_path <- file.path(tmp_dir, "archive.zip")
-  out_dir  <- file.path(tmp_dir, "unzipped")
-  # the checksum results of the download, so a reused box keeps them, and a
-  # box with a missing or damaged file is downloaded again
-  check_path <- file.path(tmp_dir, "checksums.rds")
-
-  # Reuse a previous successful download/unzip when present.
-  checks <- if (file.exists(check_path)) tryCatch(readRDS(check_path), error = \(e) NULL)
-  already_unzipped <- dir.exists(out_dir) &&
-    length(list.files(out_dir, recursive = TRUE)) > 0 &&
-    !(nrow(checks$failed %||% data.frame()) > 0)
 
   if (!already_unzipped) {
     use_api <- .rbox_use_api(rb_url)
@@ -1133,7 +1211,9 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
           list(what = _) |>
           pb$tick(0, tokens = _)
       }
-      dl <- .rbox_download_page(rb_url, zip_path, pb = pb)
+      dl <- .rbox_download_page(rb_url, zip_path, pb = pb,
+                                max_bytes = if (is.finite(max_download_size))
+                                  max_download_size * 1024^2 else Inf)
       # both failed: the API's reason first, so a refusal a later run will get
       # past keeps its "API rate limit exhausted: " start
       if (!dl$ok && !is.null(api_error) && api_error != "unfound")
@@ -1250,8 +1330,62 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
       if (nrow(failed) == 1) "it" else "them"), call. = FALSE)
   }
   attr(rb_file_info, "failed") <- failed
+  attr(rb_file_info, "limit_refused") <- limit_refused
 
   return(rb_file_info)
+}
+
+# Which files of a ResearchBox box the download limits allow, from the sizes
+# in its file list (bytes): the smallest files first, until the next would
+# pass max_download_size (MB), and none over max_file_size (MB), as
+# download_repo_files() chooses (#699). Returns the reason a file is left
+# out, NA for each file that is downloaded. A file without a listed size
+# cannot be held to the limits and is left out, as download_repo_files()
+# does for an archive member without a size.
+.rbox_limit_choice <- function(size, max_file_size = Inf, max_download_size = Inf) {
+  mb <- 1024^2
+  size <- suppressWarnings(as.numeric(size))
+  reason <- rep(NA_character_, length(size))
+  reason[is.na(size)] <- "its size is not listed"
+  if (is.finite(max_file_size)) {
+    reason[is.na(reason) & size > max_file_size * mb] <- sprintf(
+      "larger than the %s MB per-file limit (max_file_size)", .cap_num(max_file_size))
+  }
+  if (is.finite(max_download_size)) {
+    used <- 0
+    for (i in which(is.na(reason))[order(size[is.na(reason)])]) {
+      if (used + size[i] <= max_download_size * mb) {
+        used <- used + size[i]
+      } else {
+        reason[i] <- sprintf("the %s MB budget for the box was spent (max_download_size)",
+                             .cap_num(max_download_size))
+      }
+    }
+  }
+  reason
+}
+
+# A box's file list from the API, with sizes, for .rbox_limit_choice(): kept
+# for the session, so that every check that downloads the box asks for it
+# once (ResearchBox limits how often one box's files are listed per hour);
+# with `cache = TRUE` also taken from and kept in the lasting cache. NULL when
+# ResearchBox does not list them.
+.rbox_list_memo <- new.env(parent = emptyenv())
+.rbox_sized_files <- function(rb_url, cache = FALSE) {
+  rb_id <- .rbox_id(rb_url)
+  if (is.na(rb_id)) return(NULL)
+  if (exists(rb_id, envir = .rbox_list_memo, inherits = FALSE)) {
+    return(get(rb_id, envir = .rbox_list_memo, inherits = FALSE))
+  }
+  listed <- if (isTRUE(cache)) .rbox_cached_files(rb_id)
+  if (is.null(listed)) {
+    listing <- .rbox_api("list_files", box_id = rb_id, code = .rbox_code(rb_url))
+    if (!listing$ok) return(NULL)
+    listed <- .rbox_file_table(listing$body$files)
+    if (isTRUE(cache)) .repo_info_cache_put("researchbox_files", rb_id, listed)
+  }
+  assign(rb_id, listed, envir = .rbox_list_memo)
+  listed
 }
 
 # The table rbox_file_download() returns when no file could be retrieved: no
@@ -1294,8 +1428,9 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
 # Download a whole box through its web page, as ResearchBox's own "download
 # all" button does. Returns list(ok, error, single_name), where single_name is
 # the name of the box's only file (the page may send that file itself rather
-# than a zip).
-.rbox_download_page <- function(rb_url, zip_path, pb = NULL) {
+# than a zip). `max_bytes` stops the download once it passes that many bytes
+# (Inf: no limit).
+.rbox_download_page <- function(rb_url, zip_path, pb = NULL, max_bytes = Inf) {
   # ResearchBox no longer serves a static zip URL (the old
   # s3.wasabisys.com guess in earlier versions of this function now 404s,
   # see issue #186). The site instead generates the zip on request from a
@@ -1319,14 +1454,40 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
   # nothing was downloaded. Numeric ids (older pages) are still sent as
   # numbers. A JSON array even for one file (I()).
   ids <- if (all(grepl("^[0-9]+$", file_ids))) as.numeric(file_ids) else as.character(file_ids)
+  req <- .mc_request("https://researchbox.org/download_files.php", low_speed_time = 300) |>
+    httr2::req_headers(!!!.rbox_headers()) |>
+    httr2::req_body_json(list(
+      files = I(ids),
+      box_id = info$box_id,
+      reference = info$reference
+    ))
+
+  # The page gives no file sizes, so with a limit the box is downloaded like
+  # any file of unknown size: up to `max_bytes`, and refused when it is larger
+  # (#699). Its download is also its list of files, so a refused box has none.
+  if (is.finite(max_bytes)) {
+    err <- .download_capped(req, zip_path, max_bytes = max_bytes)
+    if (identical(attr(err, "over_cap"), TRUE)) {
+      return(list(ok = FALSE, error = sprintf(
+        "the box is larger than the %s MB download budget (max_download_size)",
+        .cap_num(max_bytes / 1024^2))))
+    }
+    # a 429 from this page is its request for a captcha (see below)
+    if (identical(err, "HTTP 429")) {
+      return(list(ok = FALSE, error = paste(
+        "API rate limit exhausted: ResearchBox refused more downloads from its",
+        "web page (HTTP 429), as it does when it asks for a captcha; an API key",
+        "(see ?rbox_token) avoids this")))
+    }
+    if (!is.na(err)) {
+      return(list(ok = FALSE, error = paste0("download failed (", err, ")")))
+    }
+    return(list(ok = TRUE, error = NA_character_,
+                single_name = if (length(file_ids) == 1) info$files[[1]]$name[[1]] else NA_character_))
+  }
+
   dl_status <- tryCatch({
-    resp <- .mc_request("https://researchbox.org/download_files.php", low_speed_time = 300) |>
-      httr2::req_headers(!!!.rbox_headers()) |>
-      httr2::req_body_json(list(
-        files = I(ids),
-        box_id = info$box_id,
-        reference = info$reference
-      )) |>
+    resp <- req |>
       httr2::req_error(is_error = \(resp) FALSE) |>
       httr2::req_perform(path = zip_path)
     httr2::resp_status(resp)

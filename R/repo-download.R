@@ -224,6 +224,92 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   list(report = report, summary = summary)
 }
 
+# Paths of one repository that differ only in capital letters ("data.csv",
+# "Data.csv", "DATA.CSV") are one file on Windows and macOS: every row was
+# given the first one's copy, so the others silently carried its content
+# (#700). The second and later of each such set get a name of their own on
+# disk, "~2", "~3" before the extension ("data~2.csv"), in the order of their
+# paths, so the first keeps its name. Done on every system, as .portable_name()
+# is, so a result does not depend on the computer. The sets are found in the
+# full listing (`listing`, else the rows themselves), so every call gives a
+# file the same name. `repo` and `rel` are the rows' repositories and paths;
+# returns the paths to store them under.
+.case_clash_rename <- function(repo, rel, listing = NULL) {
+  if (!length(rel)) return(rel)
+  if (NROW(listing) && "repo_url" %in% names(listing)) {
+    lp <- listing$file_path %||% listing$file_name
+    lp <- ifelse(is.na(lp), listing$file_name, lp)
+    all_repo <- c(listing$repo_url, repo)
+    all_rel <- c(lp, rel)
+  } else {
+    all_repo <- repo
+    all_rel <- rel
+  }
+  ok <- !is.na(all_rel) & !is.na(all_repo)
+  for (r in unique(repo[!is.na(repo)])) {
+    p <- sort(unique(all_rel[ok & all_repo == r]), method = "radix")
+    low <- tolower(gsub("\\\\", "/", p))
+    clash <- low %in% low[duplicated(low)]
+    if (!any(clash)) next
+    p <- p[clash]
+    k <- stats::ave(seq_along(p), low[clash], FUN = seq_along)
+    ext <- tools::file_ext(p)
+    stem <- ifelse(nzchar(ext), substr(p, 1L, nchar(p) - nchar(ext) - 1L), p)
+    new <- ifelse(k == 1L, p, paste0(stem, "~", k, ifelse(nzchar(ext), paste0(".", ext), "")))
+    at <- which(repo %in% r)
+    hit <- match(rel[at], p)
+    rel[at[!is.na(hit)]] <- new[hit[!is.na(hit)]]
+  }
+  rel
+}
+
+# The message for a repository refused because it holds more files than
+# max_files_per_repo, the same in download_repo_files(), data_check and
+# code_check.
+.repo_count_message <- function(repo, n, max_files_per_repo) {
+  sprintf(paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
+                 "skipped entirely (not size-capped, file-count-capped). ",
+                 "Raise `max_files_per_repo` to include it."),
+          repo, as.integer(n), as.integer(max_files_per_repo))
+}
+
+# The repositories of `listing` (a file table with repo_url, a repository's
+# full listing) that hold more files than max_files_per_repo, as a data frame
+# repo_url, n_files, message (0 rows when none). data_check and code_check
+# refuse them before their first step on each file (#702): refused only by
+# download_repo_files(), a repository of 369,548 files was first classified
+# and grouped file by file, which took hours.
+.repos_over_count <- function(listing, max_files_per_repo) {
+  none <- data.frame(repo_url = character(0), n_files = integer(0),
+                     message = character(0))
+  if (!is.finite(max_files_per_repo) || !NROW(listing) ||
+      !"repo_url" %in% names(listing)) return(none)
+  n <- table(listing$repo_url)
+  over <- n[n > max_files_per_repo]
+  if (!length(over)) return(none)
+  data.frame(repo_url = names(over), n_files = as.integer(over),
+             message = .repo_count_message(names(over), over, max_files_per_repo))
+}
+
+# The repositories an earlier check refused for their number of files (data_check's
+# or code_check's `count_refused`), added to a check's own (#706): data_check's
+# `structure` no longer has their rows, so a later check that counts its files
+# cannot see them, and code_check reported "0 code files" as if there were none.
+.count_refused_add <- function(own, earlier) {
+  if (!is.data.frame(earlier) || !nrow(earlier) || !"repo_url" %in% names(earlier)) return(own)
+  as.data.frame(dplyr::bind_rows(own, earlier[!earlier$repo_url %in% own$repo_url, , drop = FALSE]))
+}
+
+# A check that found nothing to check names the repositories an earlier check
+# refused for their number of files, and is then yellow, not "na" (#706). `text`
+# is its own sentence; returns list(summary_text, traffic_light), or NULL when
+# none was refused.
+.count_refused_note <- function(text, refused) {
+  if (!is.data.frame(refused) || !nrow(refused) || !"message" %in% names(refused)) return(NULL)
+  list(summary_text = paste("\n- ", c(text, refused$message), collapse = ""),
+       traffic_light = "yellow")
+}
+
 # The report section and summary sentence for repositories repo_check could
 # not list in full (#681), for code_check and data_check: OSF projects listed
 # only in part (repo_check's `partial_repos`, with `reason` "request limit"
@@ -297,10 +383,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 
 # Which files of a dataset the size limits leave out (MB), for the
 # *_file_download() functions: over `max_file_size` each, then the largest
-# until the rest fits `max_download_size`. `exempt` (zips read member by
-# member) are never left out. Returns a logical vector; the files stay in the
-# caller's table with downloaded = FALSE, as documented -- they were removed
-# from it (U36). Each omission is reported on `pb`, as before.
+# until the rest fits `max_download_size`. What is kept is the smallest files
+# that fit, the same files download_repo_files() keeps (#699). A file of
+# unknown size is not left out. `exempt` (zips read member by member) are
+# never left out. Returns a logical vector; the files stay in the caller's
+# table with downloaded = FALSE, as documented -- they were removed from it
+# (U36). Each omission is reported on `pb`, as before.
 .omit_for_size <- function(size, name, exempt, max_file_size, max_download_size, pb) {
   size <- suppressWarnings(as.numeric(size))
   omit <- rep(FALSE, length(size))
@@ -1022,12 +1110,22 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # into place only when complete, as in .download_one(). Returns NA on success,
 # else the reason; a file over the limit returns "over the byte limit" with
 # attributes over_cap = TRUE and bytes (how many had arrived).
+# `url` may also be a prepared httr2 request (with its own method, headers and
+# body, such as ResearchBox's download from a box's web page), so that every
+# download of unknown size goes through this one function (#699); it is sent
+# as it is.
 .download_capped <- function(url, dest, max_bytes = Inf, timeout_s = 120,
                              skip_on_api_limit = FALSE) {
-  # a space or other character an address may not hold, encoded (#667);
-  # a file on disk is left as it is
-  web <- !is.na(url) & grepl("^https?://", url)
-  url[web] <- utils::URLencode(url[web])
+  if (inherits(url, "httr2_request")) {
+    req <- url
+    url <- req$url
+  } else {
+    # a space or other character an address may not hold, encoded (#667);
+    # a file on disk is left as it is
+    web <- !is.na(url) & grepl("^https?://", url)
+    url[web] <- utils::URLencode(url[web])
+    req <- httr2::request(url) |> .auth_for_url()
+  }
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   final <- dest
   dest <- paste0(final, ".part")
@@ -1038,8 +1136,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   timeout_s <- .zip_timeout_for_size(timeout_s,
                                      if (is.finite(max_bytes)) max_bytes else NA_real_)
   resp <- tryCatch(
-    httr2::request(url) |>
-      .auth_for_url() |>
+    req |>
       httr2::req_error(is_error = function(r) FALSE) |>
       # non-blocking, so a stalled read cannot defeat the deadline below (see
       # .download_zip_to_cache())
@@ -1656,6 +1753,157 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   (!media | whole_archive) & !.in_renv_folder(files)
 }
 
+# The files of a listing that count for a repository's download budget: the
+# kinds the checks download, judged by name only, so that every check, in any
+# order, makes the same choice from the same listing (#699). Code (and the
+# output files code_check recovers code from: .spv, .smcl, .out, .html), what
+# data_check downloads with download = "data" (tabular data, codebooks and
+# readmes, .txt and .iqdat, archives that can be opened) and, when the code
+# will run, what the run needs. Without the language-model step of
+# data_check: a file it later calls data is downloaded from what is left of
+# the budget after these. renv's own folder is left out, as in code_check.
+# Kept for the session per listing: download_repo_files() asks for it in each
+# call, code_check makes about ten, and sorting repo_from_hell's 10,158
+# entries takes 5 seconds.
+.budget_counted_memo <- new.env(parent = emptyenv())
+.budget_counted <- function(listing) {
+  if (is.null(listing) || !nrow(listing)) return(logical(0))
+  name <- as.character(listing$file_name %||% basename(listing$file_path))
+  path <- as.character(listing$file_path %||% name)
+  key <- digest::digest(list(name, path, as.character(listing$repo_url),
+                             as.character(listing$file_url), .download_for_run()),
+                        algo = "sha1")
+  if (!is.null(.budget_counted_memo[[key]])) return(.budget_counted_memo[[key]])
+  type <- data_classify_files(name, path, group = listing$repo_url)
+  ext <- tolower(tools::file_ext(name))
+  counted <- type %in% c("code", "output") | !is.na(code_lang(name)) |
+    (type %in% "data" & data_format(ext) %in% "tabular") |
+    (type %in% "documentation" & .data_doc_role(name) %in% c("codebook", "readme")) |
+    grepl("[.](txt|iqdat|html?)$", name, ignore.case = TRUE) |
+    .is_readable_archive(name)
+  if (.download_for_run()) counted <- counted | .run_download_want(listing)
+  counted <- unname(counted & !.in_renv_folder(listing))
+  .budget_counted_memo[[key]] <- counted
+  counted
+}
+
+# The bytes a repository's download folder holds (`dir`, from
+# .repo_cache_subdir()): every file, hidden ones included. Files unpacked from
+# an archive count at their unpacked size, and a copy of the archive kept
+# beside them counts as well, as both are on disk; a member's listed size is
+# its unpacked size too (zip_peek()). Leaving out the unpacked files of an
+# archive in the folder let osf.io/nugzb hold 61 MB under a 50 MB budget:
+# a 7.1 MB zip counted, the 46.8 MB unpacked from it did not (#699).
+.repo_disk_bytes <- function(dir) {
+  if (!dir.exists(dir)) return(0)
+  f <- list.files(dir, recursive = TRUE, full.names = TRUE, all.files = TRUE,
+                  no.. = TRUE)
+  sum(file.size(f), na.rm = TRUE)
+}
+
+# One key per row of a listing, to tell the rows of a repository's choice of
+# files (.repo_budget()) from the others.
+.budget_row_key <- function(df) {
+  n <- nrow(df)
+  col <- function(x) as.character(df[[x]] %||% rep(NA_character_, n))
+  paste(col("repo_url"), col("file_path"), col("file_name"), col("file_url"),
+        col("archive_url"), col("archive_member"), sep = "\r")
+}
+
+# Where the members of an archive at `arc` (its URL, or its path on disk) are
+# kept in `repo`'s download folder (`member_dest`), and where a whole copy of
+# the archive is kept (`arc_path`). See download_repo_files()'s own comment
+# on why this is keyed off the archive's address.
+.archive_member_paths <- function(arc, repo, cache = FALSE) {
+  arc_key <- gsub("^https?://", "", arc)
+  arc_key <- gsub("[^A-Za-z0-9._-]+", "_", arc_key)
+  # shortened below the repository's folder only, so its budget counts them
+  root <- .repo_cache_subdir(repo, cache)
+  arc_path <- .safe_write_path(.repo_cache_path(repo, file.path(".archive_members", arc_key),
+                                                cache = cache), root = root)
+  list(arc_path = arc_path,
+       member_dest = .safe_write_path(paste0(arc_path, ".contents"), root = root))
+}
+
+# The download budget of one repository (#699): from its full listing
+# (`listing`, repo_check()'s table), the files of the kinds the checks
+# download (.budget_counted()), with a known size and none over
+# `max_file_size`, are chosen smallest first until `max_download_size` is
+# reached. Returns an environment, changed in place as files are taken
+# (.budget_take()): `pick` (the keys of the chosen files, .budget_row_key()),
+# `reserve` (the bytes of the chosen files not yet on disk), `disk` (the bytes
+# the repository's folder holds, .repo_disk_bytes(), plus what was taken
+# since) and `cap` (the budget in bytes). A file of the choice may be
+# downloaded while the folder stays within the budget; any other file, or
+# the files unpacked from an archive, only from what is left after the whole
+# choice (.budget_free()), so that no step crowds out a chosen file a later
+# step still has to download. Used by download_repo_files() and by
+# data_check's unpacking of archives.
+.repo_budget <- function(repo, listing, cache = FALSE, max_file_size = 100,
+                         max_download_size = 500) {
+  mb <- 1024 * 1024
+  st <- new.env(parent = emptyenv())
+  st$cap <- if (is.finite(max_download_size)) max_download_size * mb else Inf
+  L <- if (is.null(listing)) data.frame(repo_url = character(0))
+       else listing[listing$repo_url %in% repo, , drop = FALSE]
+  n <- nrow(L)
+  size <- suppressWarnings(as.numeric(L$file_size %||% rep(NA_real_, n)))
+  arc_col <- L$archive_url %||% rep(NA_character_, n)
+  mem_col <- L$archive_member %||% rep(NA_character_, n)
+  is_mem <- !is.na(arc_col) & nzchar(arc_col) & !is.na(mem_col)
+  url_col <- L$file_url %||% rep(NA_character_, n)
+  has_target <- (!is.na(url_col) & nzchar(url_col)) | is_mem
+  restricted <- (L$file_restricted %||% rep(FALSE, n)) %in% TRUE
+  ok <- has_target & !restricted & !is.na(size) & size <= max_file_size * mb &
+    .budget_counted(L)
+  pick <- logical(n)
+  used <- 0
+  keys <- .budget_row_key(L)
+  for (j in which(ok)[order(size[ok], keys[ok])]) {
+    if (used + size[j] <= st$cap) {
+      pick[j] <- TRUE
+      used <- used + size[j]
+    }
+  }
+  # which chosen files are on disk: at their ordinary place, or, for a file
+  # inside an archive, in the folder its archive's members are kept in
+  rel <- L$file_path %||% L$file_name
+  rel <- ifelse(is.na(rel), L$file_name, rel)
+  # under the names download_repo_files() stores them by (#700)
+  rel <- .case_clash_rename(rep(repo, n), rel)
+  storage_col <- L$provider %||% rep(NA_character_, n)
+  on_disk <- vapply(which(pick), function(j) {
+    p <- suppressWarnings(.safe_write_path(
+      .repo_cache_path(repo, rel[j], cache = cache, storage = storage_col[j]),
+      root = .repo_cache_subdir(repo, cache)))
+    if (isTRUE(file.size(p) > 0)) return(TRUE)
+    if (!is_mem[j]) return(FALSE)
+    m <- .zip_member_target(mem_col[j], .archive_member_paths(arc_col[j], repo, cache)$member_dest)
+    !is.na(m) && isTRUE(file.size(m) > 0)
+  }, logical(1))
+  st$pick <- keys[pick]
+  st$reserve <- sum(size[pick][!on_disk])
+  st$disk <- .repo_disk_bytes(.repo_cache_subdir(repo, cache))
+  st
+}
+
+# What a file outside the choice of a repository's budget (.repo_budget())
+# may still use, in bytes
+.budget_free <- function(st) max(st$cap - st$disk - st$reserve, 0)
+
+# Whether a file of `size` bytes may be taken under a repository's budget
+# (.repo_budget()), `chosen` if it is one of the choice; if so, it is counted
+.budget_take <- function(st, size, chosen = FALSE) {
+  if (chosen) {
+    if (st$disk + size > st$cap) return(FALSE)
+    st$reserve <- max(st$reserve - size, 0)
+  } else if (size > .budget_free(st)) {
+    return(FALSE)
+  }
+  st$disk <- st$disk + size
+  TRUE
+}
+
 #' Download the files listed by `repo_check()`
 #'
 #' Fetches the bytes for a table of repository files (as produced by
@@ -1677,19 +1925,34 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
-#' is a budget on the repository's TOTAL cached footprint (already-cached plus
-#' newly-downloaded), not on a single run's increment — already-cached files are
-#' kept for free, then the smallest still-missing files are added until the next
-#' one would exceed the budget, so re-running never grows a repository's cache
-#' past the budget and the canonical "files we ever download" set is fixed.
+#' is a budget per repository, for everything its download folder holds. From
+#' the repository's full listing (`repo_listing`, else the rows of `files`),
+#' the files of the kinds the checks download (code, tabular data, codebooks
+#' and readmes, text files, archives) are chosen smallest first, none over
+#' `max_file_size`, until the budget is reached. The same listing and limits
+#' give the same choice in every call, whichever check calls and in whatever
+#' order, so code files cannot be crowded out by data files fetched earlier.
+#' A requested file outside that choice (another kind, or one of unknown size)
+#' is downloaded only from what is left of the budget after the whole choice.
+#' Whatever the choice, nothing is downloaded once the folder holds
+#' `max_download_size`: files from earlier calls, earlier runs (with
+#' `cache = TRUE`), archive copies and the files unpacked from them all count,
+#' a file unpacked from an archive at its unpacked size (#699).
 #'
 #' @param files a data.frame of files (as returned by `repo_check()`'s
 #'   `table`): needs `repo_url`, `file_url`, and `file_path` or `file_name`
 #' @param max_file_size largest single file to download, in MB
-#' @param max_download_size largest total cached footprint per repository, in MB
+#' @param max_download_size largest total cached footprint per repository, in
+#'   MB. A repository may be fetched as one archive of up to twice this size,
+#'   to save requests; only the wanted files are kept from it, so what stays
+#'   on disk is still held to this budget.
 #' @param max_files_per_repo largest file COUNT a single repository may have
 #'   before it is refused outright (same `"gated"` reporting as the size caps
-#'   above), default `Inf` (no cap). Unlike `max_file_size`/`max_download_size`,
+#'   above), default 100,000 (`Inf` for no cap; it was `Inf` until #702). The
+#'   count is the repository's full listing
+#'   (`repo_file_counts`, else `repo_listing`), files repo_check found inside
+#'   its archives included, and a refused repository has none of its files
+#'   fetched, also none from inside its archives (#699). Unlike `max_file_size`/`max_download_size`,
 #'   this catches a repo whose FILE COUNT (not byte size) makes it impractical
 #'   to process one file at a time -- confirmed live 2026-09-07 against a real
 #'   Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
@@ -1709,7 +1972,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   with no single wait long enough to look like the real problem. When a
 #'   repo's URL is not a name in this vector (e.g. NULL, the default, for a
 #'   caller that has not been updated to pass it), falls back to
-#'   `length(idx)` exactly as before.
+#'   `length(idx)` exactly as before. Worked out from `repo_listing` when
+#'   that is given and this is not.
+#' @param repo_listing optional data.frame, the caller's full listing of the
+#'   repositories (`repo_check()`'s table, before it is filtered to the rows
+#'   still to download), with `repo_url`, `file_name`, `file_path`,
+#'   `file_size`, `file_url` and, for files inside an archive, `archive_url`
+#'   and `archive_member`. The choice of files for the budget is made from
+#'   it (see Details). `NULL` (the default) makes the choice from `files`.
 #' @param zip_timeout_s timeout (seconds) for a whole-repo zip download attempt
 #'   before falling back to file-by-file fetching
 #' @param cache if `TRUE`, write into the lasting cache (see [repo_cache_dir()]; survives
@@ -1748,7 +2018,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   someone at the file directly instead of re-deriving the link. `paper_id`
 #'   is `files$paper_id[i]` when `files` carries that column (e.g. a
 #'   paperlist batch), `NA` otherwise — lets a caller attribute a failure back
-#'   to the paper it belongs to without re-joining on `repo_url`).
+#'   to the paper it belongs to without re-joining on `repo_url`). A fourth
+#'   attribute, `"limit_refused"`, is a character vector with one element per
+#'   row of `files`: why a file was left out by `max_file_size`,
+#'   `max_download_size` or `max_files_per_repo`, and `NA` for every other
+#'   row, so that a caller does not fetch such a file another way (#699).
 #' @export
 #' @keywords internal
 #' @examples
@@ -1766,8 +2040,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 download_repo_files <- function(files,
                                 max_file_size = 100,
                                 max_download_size = 500,
-                                max_files_per_repo = Inf,
+                                max_files_per_repo = 100000,
                                 repo_file_counts = NULL,
+                                repo_listing = NULL,
                                 zip_timeout_s = 120,
                                 cache = FALSE,
                                 skip_on_api_limit = FALSE,
@@ -1799,12 +2074,18 @@ download_repo_files <- function(files,
   # Cache path per file; reuse anything already cached.
   rel_path <- files$file_path %||% files$file_name
   rel_path <- ifelse(is.na(rel_path), files$file_name, rel_path)
+  # a name of its own for each of the paths that differ only in capital
+  # letters, chosen from the full listing (#700)
+  rel_path <- .case_clash_rename(files$repo_url, rel_path, repo_listing)
   files$.cache_path <- vapply(seq_len(nrow(files)), function(i) {
     # Guard the cache path against the OS path-length limit (a deeply nested repo
     # file under a long OneDrive root can exceed ~260 chars). .safe_write_path
     # shortens + warns; using its result for BOTH the download target and the
     # recorded file_location keeps the on-disk name and the record in agreement.
-    .safe_write_path(cache_path(files$repo_url[i], rel_path[i], storage[i]))
+    # Only the part below the repository's folder is shortened, so the
+    # repository's budget, which counts that folder, counts the file (#699).
+    .safe_write_path(cache_path(files$repo_url[i], rel_path[i], storage[i]),
+                     root = .repo_cache_subdir(files$repo_url[i], cache))
   }, character(1))
 
   already <- file.exists(files$.cache_path)
@@ -1817,6 +2098,16 @@ download_repo_files <- function(files,
     file.size(files$.cache_path) %in% 0
   already <- already & !empty_copy
   files$file_location[already] <- files$.cache_path[already]
+  # Why a file was left out by a limit, per row (NA for the others): returned
+  # as the attribute "limit_refused", so that a caller can tell these files
+  # from failed downloads and does not fetch them another way (#699).
+  files$.limit_refused <- rep(NA_character_, nrow(files))
+  refused_size <- sprintf(
+    "it was not downloaded, because it is larger than the %s MB per-file limit (max_file_size)",
+    .cap_num(max_file_size))
+  refused_budget <- sprintf(
+    "it was not downloaded, because the %s MB budget for its repository was spent (max_download_size)",
+    .cap_num(max_download_size))
 
   mb <- 1024 * 1024
   gated <- data.frame(repo_url = character(0), message = character(0),
@@ -1836,6 +2127,103 @@ download_repo_files <- function(files,
                        file_url = character(0), paper_id = character(0),
                        error = character(0), stringsAsFactors = FALSE)
 
+  has_url <- !is.na(files$file_url) & nzchar(files$file_url) &
+    !((files$file_restricted %||% rep(FALSE, nrow(files))) %in% TRUE)
+  cap_bytes <- if (is.finite(max_download_size)) max_download_size * mb else Inf
+
+  # ── One budget per repository, one choice of files (#698, #699) ─────────────
+  # The budget (max_download_size) is shared by archive members and by files
+  # with their own address (#698): it was applied to each archive on its own,
+  # from zero, and a Dryad repository of 10.1111/1365-2435.12871 with many
+  # archives fetched 30 GB in one call under a 2,000 MB budget. It was also
+  # counted per call, over the rows passed in only, and code_check, data_check
+  # and reproducibility_check make several calls each, so one repository
+  # could receive several times the budget; on the Meta-Psychology papers,
+  # four repositories held 51 to 53 MB under a 50 MB budget (#699).
+  #
+  # Now each repository's files are chosen once, from its full listing
+  # (repo_listing, else `files`): the kinds the checks download
+  # (.budget_counted()), with a known size and none over max_file_size,
+  # smallest first, until the budget is reached. Every call makes the same
+  # choice, so the order of the checks does not matter. A file of the choice
+  # is downloaded as long as the folder stays within the budget; any other
+  # file (another kind, a file the listing does not hold, a file of unknown
+  # size) only from what is left after the whole choice, the part not yet on
+  # disk included. What the repository's folder holds counts first
+  # (.repo_disk_bytes()), so no call, rerun or earlier run takes it past the
+  # budget.
+  listing <- repo_listing %||% files
+  if (is.null(repo_file_counts) && !is.null(repo_listing))
+    repo_file_counts <- table(repo_listing$repo_url)
+  files_key <- .budget_row_key(files)
+  budgets <- new.env(parent = emptyenv())
+  # The budget of a repository (.repo_budget()), worked out on first use and
+  # kept for the rest of this call
+  budget_of <- function(repo) {
+    key <- paste0("repo:", repo)
+    if (is.null(budgets[[key]]))
+      budgets[[key]] <- .repo_budget(repo, listing, cache = cache,
+                                     max_file_size = max_file_size,
+                                     max_download_size = max_download_size)
+    budgets[[key]]
+  }
+  free_bytes <- .budget_free
+  take_bytes <- .budget_take
+  # Where the members of an archive are kept. A member's cache destination
+  # must NOT reuse .cache_path (built from the display file_path, which embeds
+  # the archive's own file name as a path component, e.g. ".../SharpRT/
+  # CMV_Spread-v1.0.zip/Program/main.m"): if that same archive was ALSO
+  # downloaded whole by the normal file_url path (a real FILE at
+  # ".../CMV_Spread-v1.0.zip"), creating a directory of the identical name and
+  # path fails on Windows -- confirmed live, "cannot create dir ... reason 'No
+  # such file or directory'" for exactly this collision. Instead, key the
+  # extraction directory off the ARCHIVE's own URL (repo-relative, via the same
+  # cache_path() helper every other file in this function uses, just with a
+  # synthetic relative path that cannot collide with a real file_path),
+  # suffixed ".contents" to match data_check's own zip-expansion convention
+  # (.expand_zip(), R/zip-peek.R: dest <- paste0(zip_path, ".contents")).
+  # `arc_path` is where a whole copy of the archive is kept.
+  # (.archive_member_paths())
+  arc_paths <- function(arc, repo) .archive_member_paths(arc, repo, cache)
+
+  # ── Repositories over max_files_per_repo ────────────────────────────────────
+  # A repo with an extreme file count (e.g. a global multi-site database --
+  # confirmed live 2026-09-07 against a real Zenodo record, SAPFLUXNET, with
+  # ~4000 files) is refused before anything else, before any per-file size
+  # resolution (which would itself mean thousands of HEAD probes / cache-size
+  # checks). Beyond the download cost, data_check's own full-content read of
+  # every file does not scale to this many files for one paper's repo either.
+  #
+  # Counted from repo_file_counts (the TRUE total of the repository, worked
+  # out from repo_listing), not from the rows of `files`: `files` is routinely
+  # a caller-filtered subset (only rows still needing a download), which
+  # undercounts a repository whose remaining rows fall under the cap although
+  # its real size does not (SAPFLUXNET again: slipped through on the row
+  # count, then several hundred files individually hit a host returning a
+  # persistent 403, each retried, compounding into a multi-hour stall).
+  #
+  # Refused here, before the archive members below, for its files inside
+  # archives as well: when the refusal came after them, a repository of 41
+  # files under max_files_per_repo = 20 was reported as "skipped entirely",
+  # while the two scripts in its zip and tar were fetched (#699).
+  count_gated <- character(0)
+  if (is.finite(max_files_per_repo)) {
+    for (repo in unique(files$repo_url)) {
+      idx <- which(files$repo_url == repo)
+      true_n <- if (!is.null(repo_file_counts) && repo %in% names(repo_file_counts))
+        repo_file_counts[[repo]] else length(idx)
+      if (true_n <= max_files_per_repo) next
+      msg <- .repo_count_message(repo, true_n, max_files_per_repo)
+      .cap_report(msg)
+      files$.limit_refused[idx[!already[idx]]] <- sprintf(
+        "it was not downloaded, because its repository holds %d files, more than max_files_per_repo (%s)",
+        true_n, .cap_num(max_files_per_repo))
+      gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
+                                       stringsAsFactors = FALSE))
+      count_gated <- c(count_gated, repo)
+    }
+  }
+
   # ── Archive members (repo_check's zip-peek expansion) ───────────────────────
   # A row from repo_check's zip-peek expansion (inst/modules/repo_check.R,
   # "look inside .zip archives") has file_url = NA -- an entry inside an
@@ -1847,120 +2235,112 @@ download_repo_files <- function(files,
   # archive-*.R platform file already uses for its own zip-vs-file-by-file
   # download decision -- this just reaches it from the OTHER direction, a row
   # that already knows it wants ONE named member rather than "the whole zip,
-  # filtered by type/size". Still gated by cache reuse (`already`, above) and
-  # skipped when it fails (host cannot range-request, member cannot be
-  # located): file_location stays NA and the row is simply never downloaded,
-  # same as any other unresolvable file. Does not touch a row with a real
-  # file_url, so this is purely additive for archive-member rows.
+  # filtered by type/size". Still gated by cache reuse and skipped when it
+  # fails (host cannot range-request, member cannot be located): file_location
+  # stays NA and the row is simply never downloaded, same as any other
+  # unresolvable file. Does not touch a row with a real file_url, so this is
+  # purely additive for archive-member rows.
   if ("archive_url" %in% names(files)) {
-    is_member <- !already & !is.na(files$archive_url) & nzchar(files$archive_url %||% "") &
+    is_arc_row <- !is.na(files$archive_url) & nzchar(files$archive_url %||% "") &
       !is.na(files$archive_member %||% NA_character_)
-    if (any(is_member)) {
-      for (arc in unique(files$archive_url[is_member])) {
-        idx <- which(is_member & files$archive_url == arc)
+    is_member <- is_arc_row & !already
+    # every repository with archive members, also one whose members are all
+    # cached, so that they are counted for its files with their own address
+    for (repo in setdiff(unique(files$repo_url[is_arc_row]), count_gated)) {
+      idx <- which(is_member & files$repo_url == repo)
 
-        # Apply the SAME max_file_size/max_download_size caps the has_url path
-        # applies below -- until this was added, an archive-member row (no
-        # file_url, fetched via .zip_fetch_members()'s byte-range mechanism
-        # instead) was invisible to both caps entirely: confirmed live
-        # 2026-09-09 against a real OSF repository whose zip-peek listing
-        # named several 1-2 GB CSV members, every one of which downloaded in
-        # full (8.1 GB total for one paper) despite max_file_size = 100 (MB)
-        # and max_download_size = 500 (MB), because this block runs before
-        # (and independently of) the per-repo budget loop that enforces those
-        # caps for ordinary file_url downloads. Budgeted per ARCHIVE (this
-        # `arc`'s own members), not per repository like the loop below --
-        # a repo-wide budget shared across archive-member and file_url
-        # downloads would need the two paths unified, which this does not
-        # attempt; scoped here to close the specific gap that let one
-        # archive's members bypass sizing entirely.
-        member_sizes <- as.numeric(files$file_size[idx])
-        over <- !is.na(member_sizes) & member_sizes > max_file_size * mb
-        if (any(over)) {
-          oversize_skipped <- rbind(oversize_skipped, data.frame(
-            repo_url  = files$repo_url[idx[over]],
-            file_name = files$file_name[idx[over]],
-            file_size = member_sizes[over],
-            stringsAsFactors = FALSE))
-        }
-        # A member without a size cannot be held to the caps, so it is not
-        # fetched; recorded here so that the reason is not lost.
-        unsized <- idx[is.na(member_sizes)]
-        if (length(unsized) > 0) {
-          failed <- rbind(failed, data.frame(
-            repo_url = files$repo_url[unsized], file_name = files$file_name[unsized],
-            file_url = arc,
-            paper_id = if ("paper_id" %in% names(files)) files$paper_id[unsized] else NA_character_,
-            error = "the archive's list of contents gives no size for this file"))
-        }
-        cand <- idx[!over & !is.na(member_sizes)]
-        cand_size <- member_sizes[!over & !is.na(member_sizes)]
-        if (length(cand) == 0) next
+      # The max_file_size and max_download_size caps: until they were added,
+      # an archive-member row (no file_url, fetched via .zip_fetch_members()'s
+      # byte-range mechanism instead) was invisible to both caps entirely:
+      # confirmed live 2026-09-09 against a real OSF repository whose zip-peek
+      # listing named several 1-2 GB CSV members, every one of which downloaded
+      # in full (8.1 GB total for one paper) despite max_file_size = 100 (MB)
+      # and max_download_size = 500 (MB).
+      member_sizes <- as.numeric(files$file_size[idx])
+      over <- !is.na(member_sizes) & member_sizes > max_file_size * mb
+      files$.limit_refused[idx[over]] <- refused_size
+      if (any(over)) {
+        oversize_skipped <- rbind(oversize_skipped, data.frame(
+          repo_url  = files$repo_url[idx[over]],
+          file_name = files$file_name[idx[over]],
+          file_size = member_sizes[over],
+          stringsAsFactors = FALSE))
+      }
+      # A member without a size cannot be held to the caps, so it is not
+      # fetched; recorded here so that the reason is not lost.
+      unsized <- idx[is.na(member_sizes)]
+      if (length(unsized) > 0) {
+        failed <- rbind(failed, data.frame(
+          repo_url = files$repo_url[unsized], file_name = files$file_name[unsized],
+          file_url = files$archive_url[unsized],
+          paper_id = if ("paper_id" %in% names(files)) files$paper_id[unsized] else NA_character_,
+          error = "the archive's list of contents gives no size for this file"))
+      }
+      ok <- !over & !is.na(member_sizes)
+      cand <- idx[ok]
+      cand_size <- member_sizes[ok]
 
-        cap_bytes <- if (is.finite(max_download_size)) max_download_size * mb else Inf
-        ord <- order(cand_size)
-        used <- 0
-        keep <- logical(length(cand))
-        for (o in ord) {
-          if (used + cand_size[o] <= cap_bytes) {
-            keep[o] <- TRUE
-            used <- used + cand_size[o]
-          }
-        }
-        if (any(!keep) && is.finite(cap_bytes)) {
-          msg <- sprintf(
-            paste0("An archive in repository %s exceeds the %s MB per-repository ",
-                   "budget: fetched the smallest members up to the cap, %d member%s ",
-                   "omitted. Raise `max_download_size` to include more."),
-            files$repo_url[idx[1]], .cap_num(max_download_size),
-            sum(!keep), plural(sum(!keep)))
-          .cap_report(msg)
-          gated <- rbind(gated, data.frame(repo_url = files$repo_url[idx[1]],
-                                           message = msg, stringsAsFactors = FALSE))
-        }
-        idx <- cand[keep]
-        if (length(idx) == 0) next
+      # A member saved by an earlier run is used as it is. `already` above
+      # cannot see it: it looks at .cache_path, and a member is stored under
+      # its archive's ".contents" folder (#561). Without this check every
+      # member is unpacked or fetched from the host again on every run.
+      # (worked out once per archive: an archive can hold thousands of members)
+      cand_arcs <- unique(files$archive_url[cand])
+      arc_dest <- vapply(cand_arcs, \(a) arc_paths(a, repo)$member_dest, character(1),
+                         USE.NAMES = FALSE)
+      dest_of <- arc_dest[match(files$archive_url[cand], cand_arcs)]
+      member_target <- vapply(seq_along(cand), \(j)
+        .zip_member_target(files$archive_member[cand[j]], dest_of[j]), character(1))
+      member_on_disk <- file.size(member_target)
+      saved <- !is.na(member_target) & !is.na(member_on_disk) & member_on_disk > 0 &
+        member_on_disk == cand_size
+      files$file_location[cand[saved]] <- member_target[saved]
 
-        # A member's cache destination must NOT reuse .cache_path (built from
-        # the display file_path, which embeds the archive's own file name as
-        # a path component, e.g. ".../SharpRT/CMV_Spread-v1.0.zip/Program/
-        # main.m"): if that same archive was ALSO downloaded whole by the
-        # normal file_url path (a real FILE at ".../CMV_Spread-v1.0.zip"),
-        # creating a directory of the identical name and path fails on
-        # Windows -- confirmed live, "cannot create dir ... reason 'No such
-        # file or directory'" for exactly this collision. Instead, key the
-        # extraction directory off the ARCHIVE's own URL (repo-relative, via
-        # the same cache_path() helper every other file in this function
-        # uses, just with a synthetic relative path that cannot collide with
-        # a real file_path), suffixed ".contents" to match data_check's own
-        # zip-expansion convention (.expand_zip(), R/zip-peek.R: dest <-
-        # paste0(zip_path, ".contents")).
-        arc_key <- gsub("^https?://", "", arc)
-        arc_key <- gsub("[^A-Za-z0-9._-]+", "_", arc_key)
-        arc_path <- .safe_write_path(cache_path(files$repo_url[idx[1]],
-                                                file.path(".archive_members", arc_key)))
-        member_dest <- .safe_write_path(paste0(arc_path, ".contents"))
+      # What the repository's folder holds counts first; then the missing
+      # members, smallest first: a member of the repository's choice of files
+      # while the folder stays within the budget, any other member from what
+      # is left after the whole choice (see budget_of() above, #699)
+      st <- budget_of(repo)
+      chosen <- files_key[cand] %in% st$pick
+      miss <- which(!saved)
+      miss <- miss[order(cand_size[miss], files$archive_url[cand[miss]],
+                         files$archive_member[cand[miss]])]
+      take <- logical(length(cand))
+      for (o in miss) take[o] <- take_bytes(st, cand_size[o], chosen[o])
+      files$.limit_refused[cand[!saved & !take]] <- refused_budget
+      n_omitted <- sum(!saved & !take)
+      if (n_omitted > 0 && is.finite(cap_bytes)) {
+        msg <- sprintf(
+          paste0("Repository %s exceeds the %s MB per-repository budget: ",
+                 "fetched the smallest archive members up to the cap, %d member%s ",
+                 "omitted. Raise `max_download_size` to include more."),
+          repo, .cap_num(max_download_size), n_omitted, plural(n_omitted))
+        .cap_report(msg)
+        gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
+                                         stringsAsFactors = FALSE))
+      }
+      to_fetch <- cand[take]
+
+      for (arc in unique(files$archive_url[to_fetch])) {
+        idx <- to_fetch[files$archive_url[to_fetch] == arc]
+        ap <- arc_paths(arc, repo)
+        arc_path <- ap$arc_path
+        member_dest <- ap$member_dest
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+        had_copy <- file.exists(arc_path)
 
-        # A member saved by an earlier run is used as it is. `already` above
-        # cannot see it: it looks at .cache_path, and a member is stored here,
-        # under ".contents" (#561). Without this check every member is unpacked
-        # or fetched from the host again on every run.
-        member_target <- vapply(files$archive_member[idx], .zip_member_target, character(1),
-                                dest = member_dest, USE.NAMES = FALSE)
-        member_bytes <- file.size(member_target)
-        saved <- !is.na(member_target) & !is.na(member_bytes) & member_bytes > 0 &
-          member_bytes == as.numeric(files$file_size[idx])
-        files$file_location[idx[saved]] <- member_target[saved]
-        idx <- idx[!saved]
-        if (length(idx) == 0) next
-
-        # An archive within this archive's budget may be downloaded once and
-        # the members extracted locally instead of fetched by byte range
-        # (.zip_fetch_members()'s whole-archive mode). The archive is kept at
-        # `arc_path` (the ".contents" directory's own name without the
-        # suffix, mirroring .expand_zip()) so a restarted run does not
-        # request it again.
+        # An archive may be downloaded once and the members extracted locally
+        # instead of fetched by byte range (.zip_fetch_members()'s
+        # whole-archive mode). The archive is kept at `arc_path` (the
+        # ".contents" directory's own name without the suffix, mirroring
+        # .expand_zip()) so a restarted run does not request it again. As that
+        # copy stays on disk, it is taken only when it fits in what is left of
+        # the repository's budget (#698); it was allowed up to the whole
+        # budget for every archive. The members unpacked from the copy are
+        # counted already (take_bytes() above, at their unpacked size), and
+        # stay on disk beside the copy, so the copy must fit in what is free
+        # after them (#699): counting the copy in place of its members let
+        # osf.io/nugzb hold 61 MB under a 50 MB budget.
         #
         # This used to be done for Dryad only. Every other host fetched
         # member by member, which is far slower whenever many members are
@@ -1973,7 +2353,11 @@ download_repo_files <- function(files,
         # it fits the budget (`request_bytes = Inf`, counting requests only),
         # because Dryad counts every request against a strict daily quota
         # (issue #471).
-        whole_bytes <- cap_bytes
+        # The archive is a file like any other, so it is held to
+        # max_file_size as well (#699): an OSF zip of 20.5 MB, reported as
+        # left out by a 20 MB limit, was still downloaded whole to take its
+        # members. A larger archive has its members fetched by byte range.
+        whole_bytes <- min(free_bytes(st), max_file_size * mb)
         request_bytes <- if (grepl("datadryad\\.org", arc, ignore.case = TRUE)) Inf else 1048576
         # The archive's own size, carried from repo_check's listing, saves
         # zip_peek() a HEAD request when this runs in a new session (within
@@ -2003,6 +2387,10 @@ download_repo_files <- function(files,
                               max_whole_bytes = whole_bytes, archive_path = arc_path,
                               request_bytes = request_bytes, size = arc_size),
           error = function(e) conditionMessage(e))
+        # a whole copy of the archive kept by this fetch counts against the
+        # budget, beside its members (#698, #699)
+        if (!had_copy && file.exists(arc_path))
+          st$disk <- st$disk + file.size(arc_path)
         if (is.character(fetched)) {
           failed <- rbind(failed, data.frame(
             repo_url = files$repo_url[idx[1]], file_name = files$file_name[idx],
@@ -2027,6 +2415,14 @@ download_repo_files <- function(files,
           row <- fetched[fetched$name == files$archive_member[k], , drop = FALSE]
           if (nrow(row) == 0) next
           if (!isTRUE(row$ok[[1]]) || is.na(row$path[[1]])) {
+            # a file whose path would leave its folder ("../escape.txt") is
+            # refused on purpose: reported as "failed after retries ... Re-run
+            # to retry", which cannot help (#700), it is named with its reason
+            # among the files left out, as a limit's are
+            if (grepl("path traversal|leads outside the folder", row$error[[1]] %||% "")) {
+              files$.limit_refused[k] <- "it was not unpacked, because its path leads outside its folder"
+              next
+            }
             failed <- rbind(failed, data.frame(
               repo_url = files$repo_url[k], file_name = files$file_name[k],
               file_url = arc,
@@ -2040,8 +2436,6 @@ download_repo_files <- function(files,
     }
   }
 
-  has_url <- !is.na(files$file_url) & nzchar(files$file_url) &
-    !((files$file_restricted %||% rep(FALSE, nrow(files))) %in% TRUE)
   to_get <- integer(0)
   # the byte limit for a file of unknown size (see below); NA for the others
   files$.byte_cap <- rep(NA_real_, nrow(files))
@@ -2049,53 +2443,16 @@ download_repo_files <- function(files,
   # ── Per-repository budget + per-file size filter ────────────────────────────
   # max_file_size is a PER-FILE filter: files over it are skipped individually,
   # the rest of the repo still downloads. max_download_size is a REPO BUDGET on
-  # the TOTAL cached footprint of the repo (already-cached + newly-downloaded),
-  # NOT on a single run's increment. So re-running never grows a repo's cache
-  # beyond the budget: the canonical set of files "we ever download" is fixed —
-  # already-cached files are kept for free, then the smallest still-missing files
-  # are added until the next one would exceed the budget. A repo whose kept data
-  # is under the budget downloads fully; a larger one downloads its smallest
-  # files up to the cap (partial fill), the same set every run.
-  #
-  # The budget is computed over ALL kept files (cached + missing), so the loop
-  # runs for every repo with URLs, not only those with missing files.
+  # everything the repository's folder holds, NOT on a single run's increment
+  # (see budget_of() above, #699). A repo whose chosen files fit the budget
+  # downloads them all; a larger one downloads its smallest files up to the
+  # cap (partial fill), the same set every run and every call.
   for (repo in unique(files$repo_url[has_url])) {
     idx <- which(files$repo_url == repo & has_url)
     if (length(idx) == 0) next
-
-    # A repo with an extreme file count (e.g. a global multi-site database --
-    # confirmed live 2026-09-07 against a real Zenodo record, SAPFLUXNET, with
-    # ~4000 files) is gated immediately, before any per-file size resolution
-    # (which would itself mean thousands of HEAD probes / cache-size checks).
-    # Beyond the download cost, data_check's own full-content read of every
-    # file (needed for its checks) does not scale to this many files for one
-    # paper's repo either. Uses the same gated/cap_report reporting shape as
-    # the size-based caps below, so it surfaces the same way in messages and
-    # manifests.
-    #
-    # Gated on repo_file_counts[[repo]] (the TRUE total for this repo) when
-    # the caller provided it, not length(idx) -- `files` is routinely a
-    # caller-filtered subset (only rows still needing a download), which
-    # undercounts a repo whose remaining/wanted rows happen to fall under the
-    # cap even though its real size does not. See this parameter's own
-    # roxygen for the live incident this closes (SAPFLUXNET again: slipped
-    # through on `length(idx)`, then several hundred files individually hit
-    # a host returning a persistent 403, each retried, compounding into a
-    # multi-hour stall with no single wait long enough to look like the
-    # actual problem).
-    true_n <- if (!is.null(repo_file_counts) && repo %in% names(repo_file_counts))
-      repo_file_counts[[repo]] else length(idx)
-    if (is.finite(max_files_per_repo) && true_n > max_files_per_repo) {
-      msg <- sprintf(
-        paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
-               "skipped entirely (not size-capped, file-count-capped). ",
-               "Raise `max_files_per_repo` to include it."),
-        repo, true_n, max_files_per_repo)
-      .cap_report(msg)
-      gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
-                                       stringsAsFactors = FALSE))
-      next
-    }
+    # refused above for its number of files (see "Repositories over
+    # max_files_per_repo")
+    if (repo %in% count_gated) next
 
     is_cached <- already[idx]
 
@@ -2120,6 +2477,7 @@ download_repo_files <- function(files,
             else rep(FALSE, length(idx))
     if (any(over & !is_cached)) {
       o <- over & !is_cached
+      files$.limit_refused[idx[o]] <- refused_size
       oversize_skipped <- rbind(oversize_skipped, data.frame(
         repo_url  = repo,
         file_name = files$file_name[idx[o]],
@@ -2136,22 +2494,19 @@ download_repo_files <- function(files,
     c_size   <- sizes[cand]
     c_cached <- is_cached[cand]
 
-    # Canonical "ever-download" set under the budget. Cached files are kept for
-    # free (never re-downloaded, never re-counted against a run), then the
-    # smallest still-missing files are added until the budget is spent. This
-    # makes the set deterministic and idempotent: the same repo yields the same
-    # set every run, so re-running only tops up toward the cap, never past it.
-    cap_bytes <- if (is.finite(repo_total_cap)) repo_total_cap * mb else Inf
-    used <- sum(c_size[c_cached])                       # cached footprint (kept)
+    # What the repository's folder holds counts first (cached files, archive
+    # members and archive copies, those fetched above included); then the
+    # missing files, smallest first: a file of the repository's choice while
+    # the folder stays within the budget, any other file from what is left
+    # after the whole choice (see budget_of() above, #698, #699)
+    st <- budget_of(repo)
+    chosen <- files_key[c_idx] %in% st$pick
     missing_order <- which(!c_cached)
     missing_order <- missing_order[order(c_size[missing_order],
                                          files$.cache_path[c_idx[missing_order]])]
     take_missing <- integer(0)
     for (k in missing_order) {
-      if (used + c_size[k] <= cap_bytes) {
-        take_missing <- c(take_missing, k)
-        used <- used + c_size[k]
-      }
+      if (take_bytes(st, c_size[k], chosen[k])) take_missing <- c(take_missing, k)
       # keep scanning: a later, smaller file may still fit under the budget
     }
 
@@ -2162,15 +2517,19 @@ download_repo_files <- function(files,
     # was left out without any record (#583). It is downloaded with a limit
     # instead: the per-file cap, or what the budget has left if that is less.
     # .download_capped() stops the transfer once the limit is passed, and the
-    # file is then reported as over the limit.
+    # file is then reported as over the limit. Such a file is outside the
+    # choice (its size is not known), so it may use what is left after the
+    # whole choice; the limit is worked out again for each file as it is
+    # downloaded, so that together they stay within it (#699).
     unknown <- idx[!over & is.na(sizes) & !is_cached]
     if (length(unknown) > 0) {
-      left <- max(cap_bytes - used, 0)
+      left <- free_bytes(st)
       lim <- min(if (is.finite(repo_file_cap)) repo_file_cap * mb else Inf, left)
       if (lim > 0) {
         files$.byte_cap[unknown] <- lim
         to_get <- c(to_get, unknown)
       } else {
+        files$.limit_refused[unknown] <- refused_budget
         msg <- sprintf(
           paste0("Repository %s: %d file%s of unknown size not downloaded, ",
                  "because the %s MB per-repository budget is spent. ",
@@ -2185,6 +2544,7 @@ download_repo_files <- function(files,
     # Report a partial fill: some kept files were left out because the budget was
     # reached (distinct from the per-file oversize skips reported separately).
     omitted <- setdiff(missing_order, take_missing)
+    files$.limit_refused[c_idx[omitted]] <- refused_budget
     if (length(omitted) > 0 && is.finite(cap_bytes)) {
       msg <- sprintf(
         paste0("Repository %s exceeds the %s MB per-repository budget: ",
@@ -2209,7 +2569,9 @@ download_repo_files <- function(files,
         nrow(sub), plural(nrow(sub)), repo, .cap_num(max_file_size),
         if (nrow(sub) == 1) "was" else "were",
         paste(sprintf("%s (%s MB)", sub$file_name[order(-sub$file_size)][1],
-                      .cap_num(round(max(sub$file_size) / mb))))))
+                      # rounded up to 0.1 MB: rounded to whole MB, a 1.4 MB
+                      # file over a 1 MB limit read "(1 MB)" (#699)
+                      .cap_num(ceiling(max(sub$file_size) / mb * 10) / 10)))))
     }
   }
 
@@ -2599,6 +2961,17 @@ download_repo_files <- function(files,
       }
 
       for (i in remaining_seq) {
+        # A file of unknown size gets what is left after the files of
+        # unknown size before it (#699)
+        st_i <- if (!is.na(files$.byte_cap[i])) budget_of(files$repo_url[i])
+        if (!is.null(st_i)) {
+          files$.byte_cap[i] <- min(files$.byte_cap[i], free_bytes(st_i))
+          if (files$.byte_cap[i] <= 0) {
+            files$.limit_refused[i] <- refused_budget
+            if (!is.null(pb)) pb$tick()
+            next
+          }
+        }
         err <- if (!is.na(files$.byte_cap[i])) {
           .download_capped(files$file_url[i], files$.cache_path[i],
                            max_bytes = files$.byte_cap[i],
@@ -2610,7 +2983,10 @@ download_repo_files <- function(files,
         }
         if (identical(attr(err, "over_cap"), TRUE)) {
           # a file of unknown size that passed its limit: reported as over the
-          # limit, like a file whose listed size is over it
+          # limit, like a file whose listed size is over it. Its limit was
+          # the per-file limit, or what the budget had left when that is less.
+          files$.limit_refused[i] <-
+            if (files$.byte_cap[i] < max_file_size * mb) refused_budget else refused_size
           oversize_skipped <- rbind(oversize_skipped, data.frame(
             repo_url = files$repo_url[i], file_name = files$file_name[i],
             file_size = attr(err, "bytes"), stringsAsFactors = FALSE))
@@ -2622,6 +2998,8 @@ download_repo_files <- function(files,
             .cap_num(round(files$.byte_cap[i] / mb))))
         } else if (is.na(err)) {
           files$file_location[i] <- files$.cache_path[i]
+          if (!is.null(st_i))
+            st_i$disk <- st_i$disk + sum(file.size(files$.cache_path[i]), na.rm = TRUE)
         } else {
           failed <- rbind(failed, data.frame(
             repo_url = files$repo_url[i], file_name = files$file_name[i],
@@ -2666,9 +3044,14 @@ download_repo_files <- function(files,
 
   files$.cache_path <- NULL
   files$.byte_cap <- NULL
+  limit_refused <- files$.limit_refused
+  # a file that is on disk after all (a copy found later) was not refused
+  limit_refused[!is.na(files$file_location)] <- NA_character_
+  files$.limit_refused <- NULL
   if (!had_size) files$file_size <- NULL
   attr(files, "gated") <- gated
   attr(files, "oversize_skipped") <- oversize_skipped
   attr(files, "failed") <- failed
+  attr(files, "limit_refused") <- limit_refused
   files
 }

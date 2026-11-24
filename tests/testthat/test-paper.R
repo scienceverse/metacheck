@@ -373,3 +373,13 @@ test_that("papers sharing a paper_id are renamed where a list comes in (U208, U1
   expect_warning(mo <- module_run(raw_list, "all_p_values"), "renamed")
   expect_equal(mo$summary_table$paper_id, c("same_id", "same_id~2"))
 })
+
+test_that("the names of known sites broken by a line-end hyphen are joined in the text table (#695, point 4)", {
+  x <- c("see https://aspre-dicted.org/BUC_HUQ).", "code at git-hub.com/a/b and o-sf.io/abc12",
+         "namecensus.com/baby-names", "the co-sf.io thing", "pro-cessmacro.org", NA, "github.com/x/y-z")
+  expect_equal(.known_host_unbroken(x),
+               c("see https://aspredicted.org/BUC_HUQ).", "code at github.com/a/b and osf.io/abc12",
+                 "namecensus.com/baby-names", "the co-sf.io thing", "pro-cessmacro.org", NA, "github.com/x/y-z"))
+  p <- test_paper("Our data are at fig-share.com/articles/123.")
+  expect_match(paper_table(p, "text")$text[1], "figshare.com/articles/123", fixed = TRUE)
+})

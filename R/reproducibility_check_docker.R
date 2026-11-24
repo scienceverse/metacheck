@@ -368,7 +368,14 @@ repro_docker_available <- function() {
     if (is.na(seen$bytes)) next
     rx_prev <- rx
     rx <- seen$bytes
-    if (before + rx > net$max_total) {
+    # Stopped for the total: the script whose download took the paper's scripts
+    # over the limit, or a later script while it downloads (more than 64 KB since
+    # the check before, as for `arriving`). A script that starts after the limit
+    # was reached was stopped at its first check whatever it did, and lost its own
+    # outcome (#593: 17 scripts in 4 BES papers, which stopped on a missing
+    # package or file within seconds).
+    over <- before + rx > net$max_total
+    if (over && (before + rx_prev <= net$max_total || rx - rx_prev > 64 * 1024)) {
       stopped <- sprintf(paste0("stopped: the paper's scripts downloaded %s MB, more than the limit ",
                                 "of %s MB (max_download_size)"),
                          .repro_mb(before + rx), .repro_mb(net$max_total))
@@ -431,10 +438,12 @@ repro_docker_available <- function() {
 #' The part of the install script for packages that are not on CRAN
 #'
 #' A second pass after every package has had its turn, since one time limit
-#' covers the whole install: first Bioconductor, because the fixed list of
+#' covers the whole install: first the deposit's own copy of the package, when
+#' it has one (see `.repro_deposit_packages()`); then Bioconductor, because the fixed list of
 #' `.repro_bioc_packages()` misses many names and some packages moved there,
 #' keeping only an old copy in the CRAN Archive; then the latest version in the
-#' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker. Two rounds,
+#' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker; then a
+#' list of known places, R-Forge and R-universe. Two rounds,
 #' because a package can need another archived one (#568, items 9 and 11).
 #' Runs inside the container, without this package.
 #'
@@ -454,7 +463,17 @@ repro_docker_available <- function() {
     r"(last_log <- character(0))",
     r"(logged <- function(expr) withCallingHandlers(expr, warning = function(w) { last_log <<- c(last_log, conditionMessage(w)); invokeRestart("muffleWarning") }, error = function(e) last_log <<- c(last_log, conditionMessage(e))))",
     r"(bioc_known <- NULL)",
+    # the deposit's own copy of a package, copied to /sandbox by
+    # repro_install_deps_docker() (#588)
+    r"(deposit_pkgs <- if (exists(".repro_docker_deposit")) .repro_docker_deposit else character(0))",
     r"(in_elsewhere <- function(pkg, depth = 1) {)",
+    # First the deposit: a paper's own package, not on CRAN, that its scripts
+    # load (7 papers in the BES run of 0.4.4.27, such as phenotools and TREX)
+    r"(  if (pkg %in% names(deposit_pkgs)) {)",
+    r"(    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
+    r"(    logged(remotes::install_local(deposit_pkgs[[pkg]], lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
+    r"(    if (file.exists(file.path(lib, pkg, "DESCRIPTION"))) return("the deposit"))",
+    r"(  })",
     r"(  if (is.null(bioc_known)) bioc_known <<- tryCatch({)",
     r"(    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = TRUE))",
     r"(    rownames(utils::available.packages(repos = BiocManager::repositories())))",
@@ -507,6 +526,8 @@ repro_docker_available <- function() {
     # Packages only elsewhere (#568, item 12): a table of known places, then
     # R-universe's search for that exact name. A GitHub tarball needs no token.
     paste0("known_places <- ", deparse1(.repro_known_package_places())),
+    r"(rforge <- "https://R-Forge.R-project.org")",
+    r"(rforge_known <- NULL)",
     r"(in_known_place <- function(pkg) {)",
     r"(  place <- unname(known_places[pkg]))",
     r"(  if (!is.na(place) && startsWith(place, "https://")) {)",
@@ -517,6 +538,14 @@ repro_docker_available <- function() {
     r"(    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
     r"(    logged(remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
     r"(    return(paste0("github.com/", place)))",
+    r"(  })",
+    # R-Forge, a repository of packages that R-universe does not search: in the
+    # BES run of 0.4.4.27, countreg (2 papers), gradientForest and extendedForest
+    # were found nowhere, and R-Forge has all three
+    r"(  if (is.null(rforge_known)) rforge_known <<- tryCatch(rownames(utils::available.packages(repos = rforge, type = "source")), error = function(e) character(0)))",
+    r"(  if (pkg %in% rforge_known) {)",
+    r"(    logged(install.packages(pkg, lib = lib, repos = c(rforge, getOption("repos")), type = "source", quiet = TRUE)))",
+    r"(    return(rforge))",
     r"(  })",
     # a search that fails is not a package R-universe lacks (#389); a bare
     # rocker/r-ver image has no jsonlite, so the search always failed there
@@ -544,7 +573,7 @@ repro_docker_available <- function() {
     r"(  if (!usable() && round == 2 && !length(stopped) && length(last_log)) out[[i]]$message <- paste0(out[[i]]$message, "; installing it from ", c(from, tried)[!is.na(c(from, tried))][1], " failed: ", substr(paste(unique(last_log), collapse = " | "), 1, 400)))",
     # Found in none of the places: the code does not say where the package comes
     # from, which authors can act on (#389). See .repro_classify_install_message().
-    r"(  if (!usable() && round == 2 && is.na(tried) && is.na(from)) out[[i]]$message <- paste0(out[[i]]$message, "; found nowhere else: not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe"))",
+    r"(  if (!usable() && round == 2 && is.na(tried) && is.na(from)) out[[i]]$message <- paste0(out[[i]]$message, "; found nowhere else: not on Bioconductor, in the CRAN Archive, in our list of known places, on R-Forge or on R-universe"))",
     r"(  if (usable()) {)",
     r"(    out[[i]]$installed <- TRUE)",
     r"(    out[[i]]$message <- "")",
@@ -667,6 +696,73 @@ repro_docker_available <- function() {
   paste0("rocker/r-ver:", tag)
 }
 
+# The deposit's own copies of packages the code loads (#588): a folder whose
+# DESCRIPTION names the package, or a source tarball <package>_<version>.tar.gz. Of
+# several copies of one package, the highest version. In the BES run of 0.4.4.27,
+# 7 papers' scripts loaded the paper's own package, which is not on CRAN, and the
+# deposit held it, mostly inside the zip of a GitHub release. A named vector of
+# paths under `root`, with the package names as names; empty when there are none.
+.repro_deposit_packages <- function(root, pkgs) {
+  none <- stats::setNames(character(0), character(0))
+  pkgs <- unique(pkgs[!is.na(pkgs)])
+  if (!length(pkgs) || is.null(root) || !dir.exists(root)) return(none)
+  files <- list.files(root, recursive = TRUE, full.names = TRUE)
+  desc <- files[basename(files) == "DESCRIPTION"]
+  found <- lapply(desc, function(f) {
+    d <- tryCatch(read.dcf(f, fields = c("Package", "Version", "Built")), error = function(e) NULL)
+    # an installed package (a renv library in the deposit) has "Built", and is
+    # no source to install from
+    if (is.null(d) || !nrow(d) || is.na(d[1, "Package"]) || !is.na(d[1, "Built"])) return(NULL)
+    data.frame(package = trimws(d[1, "Package"]), version = trimws(d[1, "Version"]),
+               path = dirname(f))
+  })
+  tgz_pat <- "^([A-Za-z][A-Za-z0-9.]*)_([0-9][0-9.-]*)\\.tar\\.gz$"
+  tgz <- files[grepl(tgz_pat, basename(files))]
+  if (length(tgz))
+    found <- c(found, list(data.frame(package = sub(tgz_pat, "\\1", basename(tgz)),
+                                      version = sub(tgz_pat, "\\2", basename(tgz)), path = tgz)))
+  found <- do.call(rbind, found)
+  if (is.null(found)) return(none)
+  found <- found[found$package %in% pkgs, , drop = FALSE]
+  if (!nrow(found)) return(none)
+  ver <- suppressWarnings(numeric_version(found$version, strict = FALSE))
+  best <- vapply(split(seq_len(nrow(found)), found$package), function(i) {
+    v <- ver[i]
+    ok <- !is.na(v)
+    if (!any(ok)) i[1] else i[ok][which(v[ok] == max(v[ok]))[1]]
+  }, integer(1))
+  stats::setNames(found$path[best], found$package[best])
+}
+
+# Copy the deposit's packages (see .repro_deposit_packages()) into the install's
+# own folder, which the container sees as /sandbox: a tarball as it is, a folder
+# with only the parts a package install reads, since a paper's own package can be
+# the whole deposit, with its data beside it. Returns their places in the
+# container, with the package names as names.
+.repro_copy_deposit_packages <- function(deposit_pkgs, sandbox_dir) {
+  out <- stats::setNames(character(0), character(0))
+  if (!length(deposit_pkgs)) return(out)
+  to_dir <- file.path(sandbox_dir, "deposit_pkgs")
+  dir.create(to_dir, showWarnings = FALSE)
+  parts <- c("DESCRIPTION", "NAMESPACE", "R", "src", "inst", "data", "man", "exec",
+             "tools", "demo", "configure", "cleanup", "LICENSE", "LICENCE")
+  for (k in names(deposit_pkgs)) {
+    src <- deposit_pkgs[[k]]
+    if (grepl("\\.tar\\.gz$", src)) {
+      if (file.copy(src, file.path(to_dir, basename(src))))
+        out[k] <- paste0("/sandbox/deposit_pkgs/", basename(src))
+    } else {
+      to <- file.path(to_dir, k)
+      dir.create(to, showWarnings = FALSE)
+      have <- intersect(list.files(src, all.files = TRUE, no.. = TRUE), parts)
+      if ("DESCRIPTION" %in% have &&
+          all(file.copy(file.path(src, have), to, recursive = TRUE)))
+        out[k] <- paste0("/sandbox/deposit_pkgs/", k)
+    }
+  }
+  out
+}
+
 #' Install R dependencies inside a throwaway Docker container
 #'
 #' The Docker-backed twin of [repro_install_deps()]: same return contract,
@@ -690,6 +786,10 @@ repro_docker_available <- function() {
 #' @param timeout per-package-batch timeout in seconds for the whole install
 #'   container run (default 600 — installs can be slow, esp. compiling from
 #'   source)
+#' @param deposit_pkgs the deposit's own copies of packages, as
+#'   `.repro_deposit_packages()` gives them: a named vector of folders or
+#'   source tarballs on the host. A package that is not on CRAN is installed
+#'   from its copy first (#588); `NULL` for none.
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical),
 #'   `message` (error text on failure, else ""), `via_archive` (`TRUE` when the
@@ -709,7 +809,7 @@ repro_docker_available <- function() {
 #' repro_install_deps_docker(deps, file.path(tempdir(), "lib"))
 #' }
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
-                                      timeout = 600) {
+                                      timeout = 600, deposit_pkgs = NULL) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
                       via_archive = logical(0), category = character(0),
@@ -862,6 +962,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   sandbox_dir <- tempfile("repro_docker_install_")
   dir.create(sandbox_dir, recursive = TRUE)
   on.exit(unlink(sandbox_dir, recursive = TRUE), add = TRUE)
+  deposit_container <- .repro_copy_deposit_packages(deposit_pkgs, sandbox_dir)
 
   # The package/source/ref vectors are spliced in as literal R code (not
   # passed as docker run args) so they survive shell quoting untouched --
@@ -892,7 +993,9 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     paste0(".repro_docker_vers <- ", deparse1(as.character(versions))),
     # whether each package is a Bioconductor one, for a failed GitHub or URL
     # install (#598)
-    paste0(".repro_docker_bioc <- ", deparse1(install_deps$package %in% .repro_bioc_packages()))
+    paste0(".repro_docker_bioc <- ", deparse1(install_deps$package %in% .repro_bioc_packages())),
+    # the deposit's own copies of packages, at their place in the container (#588)
+    paste0(".repro_docker_deposit <- ", deparse1(deposit_container))
   )
   script_path <- file.path(sandbox_dir, "install.R")
   # No BOM: writeLines()/UTF-8 without a BOM is R's own default, but Docker

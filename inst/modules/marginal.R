@@ -8,7 +8,7 @@
 #'
 #' Some of the terms identified might not be problematic in some contexts, and there are ways to describe ‘marginal significance’ that are not detected by the module.
 #'
-#' <validation>In a sample of 51 papers with 87 statements, this module correctly identified 38 statements (true positives) and incorrectly flagged 22 statements (false positives). It failed to detect 27 statements. Thus, among all statements flagged by the module, 63% were genuine cases (positive predictive value). However, the module missed 42% of all true statements (false negative rate).</validation>
+#' <validation>In a sample of 51 papers with 87 statements, this module correctly identified 38 statements (true positives) and incorrectly flagged 22 statements (false positives). It failed to detect 27 statements. Thus, among all statements flagged by the module, 63% were genuine cases (positive predictive value). However, the module missed 42% of all true statements (false negative rate). This validation was made with an earlier, looser pattern; the pattern now requires "significant" or "significance" to follow the trigger word closely (#695).</validation>
 #'
 #' @keywords results
 #'
@@ -22,8 +22,31 @@ marginal <- function(paper) {
   if (.paper_is_empty(paper)) return(.empty_input_result(paper))
 
   # table ----
-  pattern <- "margin\\w* (?:\\w+\\s+){0,5}significan\\w*|trend\\w* (?:\\w+\\s+){0,1}significan\\w*|almost (?:\\w+\\s+){0,2}significan\\w*|approach\\w* (?:\\w+\\s+){0,2}significan\\w*|border\\w* (?:\\w+\\s+){0,2}significan\\w*|close to (?:\\w+\\s+){0,2}significan\\w*"
-  table <- text_search(paper, pattern)
+  # "significan..." has to follow the trigger word closely (#695, point 9): the
+  # pattern allowed up to five words between them, so "approach is a significant
+  # contribution", "almost certainly significant", "trends were significant" and
+  # "margins had significantly" were found. Compared on 16 corpora (15,685 papers
+  # across disciplines), this pattern leaves out 243 sentences, all but about 5
+  # not about a nearly significant result, and finds 71 more ("marginally
+  # non-significant", "trend-level significance"), which the hyphen hid. Four more
+  # corpora gave the same picture, and two forms found there were added.
+  stat <- "(?:statistical(?:ly)?\\s+)?"
+  pattern <- paste0(
+    "(?<!sub)marginal(?:ly)?\\s+(?:(?:above\\s+the\\s+threshold\\s+for|failed\\s+to\\s+(?:be|reach)|",
+    "and\\s+probably\\s+not|short\\s+of|or\\s+not|or\\s+non-?|but\\s+not|and\\s+not|above|below|over|",
+    "under|outside|not)\\s*)?(?:the\\s+)?(?:levels?\\s+of\\s+)?", stat, "(?:non-?)?significan\\w*|",
+    "\\btrend(?:s|ed|ing)?\\s+(?:towards?|to)\\s+", stat, "significan\\w*|",
+    "\\b(?:a|the)\\s+trend\\s+(?:of|for)\\s+", stat, "significan\\w*|",
+    "\\btrend(?:-|\\s)?level\\s+", stat, "significan\\w*|\\btrending\\s+(?:towards?\\s+)?", stat, "significan\\w*|",
+    "\\bapproach(?:ed|ing)\\s+(?:a\\s+|the\\s+)?(?:(?:conventional|nominal|genome-?wide|traditional)\\s+)?",
+    "(?:levels?\\s+of\\s+)?", stat, "significan\\w*|",
+    "\\bapproach(?:es)?\\s+", stat, "significance\\b(?!\\s+test)|",
+    "\\bborderline\\s+(?:of\\s+)?(?:the\\s+)?", stat, "(?:non-?)?significan\\w*|",
+    "\\bborder(?:ed|ing)?\\s+(?:on|at|of|to)\\s+(?:the\\s+)?(?:level\\s+of\\s+)?", stat, "significan\\w*|",
+    "\\bborder(?:ed|ing)\\s+", stat, "significance\\b|",
+    "\\balmost\\s+(?:reach(?:ed|ing)?\\s+|achiev(?:ed|ing)\\s+|attain(?:ed|ing)\\s+)?", stat, "significan\\w*|",
+    "\\bclose\\s+to\\s+(?:reaching\\s+|achieving\\s+|being\\s+|be\\s+)?(?:the\\s+)?", stat, "significan\\w*")
+  table <- text_search(paper, pattern, perl = TRUE)
 
   # summary_table ----
   summary_table <- dplyr::count(table, paper_id, name = "marginal")

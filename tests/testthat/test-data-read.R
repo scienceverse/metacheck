@@ -267,7 +267,11 @@ test_that("data_read_head gives a table from an .rds or .RData file as a plain d
   expect_identical(df$elpd_diff, c(0, -1.1))
   expect_identical(.text_counts(df$elpd_diff)$values, c("0", "-1.1"))
 
-  d <- tibble::tibble(id = 1:3, day = structure(c(19000, 19001, 19002), class = c("IDate", "Date")))
+  # built without tibble(), which (with vctrs >= 0.7) refuses an IDate stored
+  # as decimal numbers; such a column is what the files in the runs hold
+  d <- data.frame(id = 1:3)
+  d$day <- structure(c(19000, 19001, 19002), class = c("IDate", "Date"))
+  class(d) <- c("tbl_df", "tbl", "data.frame")
   saveRDS(d, rds)
   df <- data_read_head(rds, n_rows = Inf)
   expect_identical(class(df), "data.frame")
@@ -413,6 +417,10 @@ test_that("an .rds with a labelled text column is read and counted before haven 
   # <haven_labelled> to <character>", PsyArXiv preprint jev3u_v1). This
   # session has loaded haven already, so the check runs in a new one.
   skip_on_cran()
+  # The coverage run tests a changed copy of the package, which the new
+  # session cannot load (it stopped with status 1); R CMD check and the full
+  # tests run it
+  skip_on_covr()
   skip_if_not_installed("processx")
   skip_if_not_installed("haven")
   wd <- withr::local_tempdir()

@@ -4,47 +4,165 @@ test_that("ethics_check", {
   expect_true(module %in% mods$name)
 })
 
-test_that("approved and needs ethics", {
+
+# a small paper with a title, an abstract and one more part, as the rule
+# weighs where a sentence stands (#695, point 18)
+ds_paper <- function(abstract = character(0), body = character(0),
+                     header = "Method", title = "Test Paper") {
+  p <- test_paper(c(abstract, body))
+  p$text$section_id <- c(rep(0, length(abstract)), rep(1, length(body)))
+  p$section <- dplyr::tibble(
+    section_id = c(0, 1), header = c("Abstract", header),
+    parent_section_id = NA_integer_, section_type = c("abstract", "method"),
+    classification_score = 0
+  )
+  p$info$title <- title
+  p
+}
+
+test_that("the authors' own data, with and without a statement", {
   module <- "ethics_check"
-  paper <- test_paper(c(
-    "Participants were recruited from a local community sample and gave informed consent.",
-    "This study was approved by the institutional review board."
-  ))
-  mo <- module_run(paper, module)
+  own <- "Participants were recruited online and gave informed consent."
+  mo <- module_run(ds_paper(body = own, header = "Participants"), module)
+  expect_equal(mo$summary_table$data_source, "own")
+  expect_equal(mo$summary_table$needs_ethics, TRUE)
+  expect_equal(mo$summary_table$ethics_approved, FALSE)
+  expect_equal(mo$traffic_light, "yellow")   # yellow, not red (#695, point 2)
+  expect_match(mo$summary_table$data_source_signs, "consent; recruitment", fixed = TRUE)
+  expect_equal(mo$summary_table$data_source_statements[[1]], own)
+  expect_match(mo$report, "collected from people or animals, but we found no ethics statement", fixed = TRUE)
+  expect_match(mo$report, "describe someone else's study in the same words", fixed = TRUE)
+  expect_match(mo$report, own, fixed = TRUE)
+
+  mo <- module_run(ds_paper(body = c(own, "This study was approved by the institutional review board."),
+                            header = "Participants"), module)
   expect_equal(mo$summary_table$ethics_approved, TRUE)
-  expect_equal(mo$summary_table$needs_ethics, TRUE)
   expect_equal(mo$traffic_light, "green")
-
-  live_statements <- mo$summary_table$live_data_statements[[1]]
-  expect_true(grepl("Participants were recruited", live_statements))
-  expect_match(mo$report, "we would expect an ethics approval statement, and it was present", fixed = TRUE)
-  expect_match(mo$report, "Participants were recruited", fixed = TRUE)
+  expect_match(mo$report, "and it has an ethics statement", fixed = TRUE)
   expect_match(mo$report, "institutional review board", fixed = TRUE)
+  # "this study was approved" is not listed as a reason for the class "own"
+  expect_no_match(mo$summary_table$data_source_signs, "records")
 })
 
-test_that("not approved but needs ethics", {
+test_that("one sign of data collection needs a method part or a second sign", {
   module <- "ethics_check"
-  paper <- test_paper("Participants were recruited from a local community sample and gave informed consent.")
-  mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$ethics_approved, FALSE)
-  expect_equal(mo$summary_table$needs_ethics, TRUE)
-  expect_equal(mo$traffic_light, "red")
-
-  live_statements <- mo$summary_table$live_data_statements[[1]]
-  expect_true(grepl("Participants were recruited", live_statements))
-  expect_match(mo$report, "we would expect an ethics approval statement, but it was not present", fixed = TRUE)
-  expect_match(mo$report, "Participants were recruited", fixed = TRUE)
+  s <- "Participants were recruited online."
+  mo <- module_run(ds_paper(body = s, header = "Participants"), module)
+  expect_equal(mo$summary_table$data_source, "own")
+  mo <- module_run(ds_paper(body = s, header = "Discussion"), module)
+  expect_equal(mo$summary_table$data_source, "none")
+  expect_equal(mo$traffic_light, "na")
+  expect_match(mo$report, "at most one sign that the authors collected data", fixed = TRUE)
+  # a negation near a participant phrase is no statement that there are no data
+  mo <- module_run(ds_paper(body = c(s, "No participants were excluded."), header = "Participants"), module)
+  expect_equal(mo$summary_table$data_source, "own")
 })
 
-test_that("not approved and does not need ethics", {
+test_that("sentences about other people's studies are not the authors' own (#695, point 18)", {
   module <- "ethics_check"
-  paper <- test_paper("This paper presents a theoretical model of decision-making.")
-  mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$ethics_approved, FALSE)
+  mo <- module_run(ds_paper(body = "For instance, in a study by Mazar and Zhong (2010, study 3) participants were recruited online and gave informed consent.",
+                            header = "Introduction"), module)
+  expect_equal(mo$summary_table$data_source, "none")
+  # a year is not a citation
+  mo <- module_run(ds_paper(body = "In 2021, participants were recruited online and gave informed consent.",
+                            header = "Introduction"), module)
+  expect_equal(mo$summary_table$data_source, "own")
+})
+
+test_that("papers without data about people need no statement", {
+  module <- "ethics_check"
+  mo <- module_run(ds_paper(abstract = "We conducted a systematic review and meta-analysis of 35 studies.",
+                            body = c("Databases were searched in May 2024.",
+                                     "The 21 included studies enrolled a total of 7,035 participants who gave informed consent.")), module)
+  expect_equal(mo$summary_table$data_source, "none")
   expect_equal(mo$summary_table$needs_ethics, FALSE)
-  expect_true(is.na(mo$summary_table$live_data_statements[[1]]))
+  expect_match(mo$report, "a review or meta-analysis named in the title or abstract", fixed = TRUE)
+
+  mo <- module_run(ds_paper(abstract = "In this commentary, we argue that preregistration is useful.",
+                            body = "Participants were recruited online in the original study (Smith, 2019)."), module)
+  expect_equal(mo$summary_table$data_source, "none")
+
+  mo <- module_run(ds_paper(body = c("No human subjects were involved in this study.",
+                                     "We analysed country-level mortality data.",
+                                     "Aggregate data were taken from Eurostat.")), module)
+  expect_equal(mo$summary_table$data_source, "none")
+  expect_match(mo$summary_table$data_source_signs, "figures about groups", fixed = TRUE)
+
+  mo <- module_run(test_paper("This paper presents a theoretical model of decision-making."), module)
+  expect_equal(mo$summary_table$data_source, "none")
   expect_true(is.na(mo$summary_table$ethics_statements[[1]]))
   expect_equal(mo$traffic_light, "na")
+})
+
+test_that("open resources need no statement; obtained records do", {
+  module <- "ethics_check"
+  for (src in c("UK Biobank", "British Cohort Study")) {
+    mo <- module_run(ds_paper(abstract = paste("We analysed data from the", src, "."),
+                              body = c(paste("Data were obtained from the", src, "resource."),
+                                       "Participants had a mean age of 56 years.")), module)
+    expect_equal(mo$summary_table$data_source, "open_resource", info = src)
+    expect_equal(mo$summary_table$needs_ethics, FALSE, info = src)
+    expect_match(mo$report, "open resource, which needs no ethics statement", fixed = TRUE)
+  }
+
+  mo <- module_run(ds_paper(abstract = "This retrospective cohort study used electronic health records.",
+                            body = c("We retrospectively reviewed the records of 412 patients treated at the university hospital.",
+                                     "Consent was waived because the data were anonymised.")), module)
+  expect_equal(mo$summary_table$data_source, "existing_records")
+  expect_equal(mo$summary_table$needs_ethics, TRUE)
+  expect_equal(mo$traffic_light, "yellow")
+  expect_match(mo$report, "records about individual people that the authors obtained for this study", fixed = TRUE)
+
+  # existing data from a source the module cannot identify: the report says so
+  mo <- module_run(ds_paper(abstract = "This is a secondary analysis of existing data.",
+                            body = c("We used data from the Healthy Minds Study.",
+                                     "The analytic sample comprised 2,004 students.")), module)
+  expect_equal(mo$summary_table$data_source, "existing_unclear")
+  expect_equal(mo$summary_table$needs_ethics, TRUE)
+  expect_match(mo$report, "we could not tell where the data came from", fixed = TRUE)
+  expect_match(mo$report, "UK Biobank or NHANES", fixed = TRUE)
+})
+
+test_that("protocols, uncertain papers and papers without text", {
+  module <- "ethics_check"
+  mo <- module_run(ds_paper(body = "Participants will be recruited online and will be asked to give informed consent."), module)
+  expect_equal(mo$summary_table$data_source, "own")
+  expect_match(mo$summary_table$data_source_signs, "future tense", fixed = TRUE)
+
+  mo <- module_run(ds_paper(body = "We tested the model on new data."), module)
+  expect_equal(mo$summary_table$data_source, "uncertain")
+  expect_true(is.na(mo$summary_table$needs_ethics))
+  expect_equal(mo$traffic_light, "yellow")
+  expect_match(mo$report, "We could not tell whether this paper reports data about people or animals", fixed = TRUE)
+  expect_match(mo$summary_text, "we could not tell whether it reports data", fixed = TRUE)
+
+  mo <- module_run(paper("empty"), module)
+  expect_equal(mo$summary_table$data_source, "no_text")
+  expect_equal(mo$traffic_light, "na")
+})
+
+test_that("ethics_check reads the results of modules that ran before it", {
+  p <- ds_paper(body = c("Participants were recruited online.",
+                         "The groups differed, t(28) = 2.40, p = .023."),
+                header = "Participants")
+  out <- report_module_run(p, c("stat_check", "ethics_check"))
+  expect_match(out$ethics_check$summary_table$data_source_signs,
+               "results of other modules", fixed = TRUE)
+})
+
+test_that("ethics_check paperlist", {
+  module <- "ethics_check"
+  paper <- paperlist(
+    ds_paper(body = c("Participants were recruited and gave informed consent.",
+                      "This study was approved by the ethics committee."),
+             header = "Participants"),
+    test_paper("This paper presents a theoretical model of decision-making.")
+  )
+  mo <- module_run(paper, module)
+  expect_equal(nrow(mo$summary_table), 2)
+  expect_equal(mo$summary_table$ethics_approved, c(TRUE, FALSE))
+  expect_equal(mo$summary_table$needs_ethics, c(TRUE, FALSE))
+  expect_equal(mo$traffic_light, "green")
 })
 
 test_that("approved but does not need ethics", {
@@ -122,21 +240,6 @@ test_that("approval phrasing without a leading ethics/irb/institutional word", {
   expect_equal(mo2$summary_table$ethics_approved, c(FALSE, FALSE, FALSE))
 })
 
-test_that("ethics_check paperlist", {
-  module <- "ethics_check"
-  paper <- paperlist(
-    test_paper(c(
-      "Participants were recruited and gave informed consent.",
-      "This study was approved by the ethics committee."
-    )),
-    test_paper("This paper presents a theoretical model of decision-making.")
-  )
-  mo <- module_run(paper, module)
-  expect_equal(nrow(mo$summary_table), 2)
-  expect_equal(mo$summary_table$ethics_approved, c(TRUE, FALSE))
-  expect_equal(mo$summary_table$needs_ethics, c(TRUE, FALSE))
-})
-
 test_that("error: argument is of length zero", {
   module <- "ethics_check"
   paper <- psychsci$`0956797617714811`
@@ -155,31 +258,29 @@ test_that("ethics_check quotes a statement once, and keeps a paper with an empty
   expect_equal(paper_id(pl)[1], "empty")
 })
 
-test_that("a paper that states no human participants took part needs no ethics statement (dq96z_v2)", {
+
+test_that("more committee names and exemptions count as statements (#695, point 18)", {
   module <- "ethics_check"
-  # dq96z_v2: the participant phrase "subjects recruited" is in the sentence
-  # that says the professionals were not subjects
-  paper <- test_paper("The professionals described their own work as collaborators in the projects, not as subjects recruited for a study.")
-  mo <- module_run(paper, module)
-  expect_false(mo$summary_table$needs_ethics)
-  expect_true(mo$summary_table$states_no_participants)
-  expect_equal(mo$traffic_light, "na")
-  expect_match(mo$report, "The paper states that no human or animal participants took part", fixed = TRUE)
-  expect_match(mo$report, "not as subjects recruited", fixed = TRUE)
-  for (s in c("No human subjects were involved in this study.",
-              "As this study did not involve human subjects, institutional review board approval was not required.",
-              "Ethics Statement: No animals nor human participants were involved in the production and analysis of the data used for this article.")) {
-    mo <- module_run(test_paper(c("Participants were recruited online.", s)), module)
-    expect_false(mo$summary_table$needs_ethics, info = s)
-  }
-  # a negation near a participant phrase reports a study with participants
-  for (s in c("No participants were excluded.", "No participants were minors.",
-              "Only children without G6PD deficiency were enrolled in the study.",
-              "This study would not have been possible without our participants.",
-              "No participant was included more than once across training samples.")) {
-    mo <- module_run(test_paper(c("Participants were recruited online.", s)), module)
-    expect_true(mo$summary_table$needs_ethics, info = s)
-    expect_false(mo$summary_table$states_no_participants, info = s)
-    expect_equal(mo$traffic_light, "red", info = s)
-  }
+  approved <- paperlist(
+    test_paper("This study was evaluated and approved by the ETH Zurich Ethics Commission as proposal EK-2023-N-258."),
+    test_paper("The empirical study was approved by the Bioethics Commission of the university."),
+    test_paper("It was approved by the Regional Committees for Medical and Health Research Ethics (2017/2205)."),
+    test_paper("All procedures were approved by the University of Nebraska-Lincoln Internal Review Board."),
+    test_paper("The Swedish Ethical Review Authority approved the study protocol."),
+    test_paper("The data were collected under a protocol approved by the Office for Human Subjects Protection at Florida State University."),
+    test_paper("This secondary analysis did not require further ethical review."),
+    test_paper("As such, this work was exempt from formal human research ethics review."),
+    test_paper("This study was approved by the XXX University ethics committee."),
+    test_paper("The study received ethical approval from the institutional review board (EK 227052019). [INSERT TABLE 1 HERE]")
+  )
+  mo <- module_run(approved, module)
+  expect_equal(mo$summary_table$ethics_approved, rep(TRUE, 10))
+
+  # a technical standard and a template line are not statements
+  not_approved <- paperlist(
+    test_paper("B was the IEC 62471 blue-light hazard function."),
+    test_paper("RT was recorded in milliseconds. [Add ethics approval, recruitment, and stimulus details here.]")
+  )
+  mo2 <- module_run(not_approved, module)
+  expect_equal(mo2$summary_table$ethics_approved, c(FALSE, FALSE))
 })

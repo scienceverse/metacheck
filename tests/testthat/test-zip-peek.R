@@ -1266,6 +1266,59 @@ test_that(".expand_zip and .expand_tar unpack only kept members within the limit
   }
 })
 
+test_that("archives unpack their files within what is left of the budget, smallest first (#699)", {
+  # the budget counted an archive at its packed size only: a 7.1 MB zip of
+  # osf.io/nugzb unpacked to 46.8 MB and the folder held 61 MB under 50 MB
+  d <- withr::local_tempdir()
+  src <- file.path(d, "src"); dir.create(src)
+  writeLines(.big_csv_472(), file.path(src, "big.csv"))
+  writeLines(c("a,b", "1,2"), file.path(src, "small.csv"))
+  writeLines("# Read me, a longer line", file.path(src, "README.md"))
+  members <- c("big.csv", "small.csv", "README.md")
+  row <- .archive_row_472()
+  room <- file.size(file.path(src, "small.csv"))   # the smallest file only
+
+  z <- file.path(d, "data.zip")
+  withr::with_dir(src, utils::zip(z, members, flags = "-q"))
+  skip_if_not(file.exists(z), "zip utility unavailable")
+  archives <- c(zip = z, tar = file.path(d, "data.tar"), tgz = file.path(d, "data.tar.gz"))
+  withr::with_dir(src, {
+    utils::tar(archives[["tar"]], members, compression = "none", tar = "internal")
+    utils::tar(archives[["tgz"]], members, compression = "gzip", tar = "internal")
+  })
+  for (a in archives) {
+    rows <- if (grepl("zip$", a))
+      metacheck:::.expand_zip(a, row, max_bytes = 100 * 1024, max_total = room)
+    else metacheck:::.expand_tar(a, row, max_bytes = 100 * 1024, max_total = room)
+    expect_equal(list.files(metacheck:::.archive_dest(a)), "small.csv")
+    expect_setequal(rows$file_name, c("small.csv", "README.md", "big.csv"))
+    expect_true(is.na(rows$file_location[rows$file_name == "README.md"]))
+    # both reasons are kept: big.csv is over the per-file limit, README.md
+    # did not fit in what was left of the budget
+    expect_equal(attr(rows, "oversize")$file_name, "big.csv")
+    expect_equal(attr(rows, "over_budget")$file_name, "README.md")
+    # a file unpacked by an earlier call is used as it is, with no room left
+    again <- if (grepl("zip$", a)) metacheck:::.expand_zip(a, row, max_total = 0)
+             else metacheck:::.expand_tar(a, row, max_total = 0)
+    expect_true(file.exists(again$file_location[again$file_name == "small.csv"]))
+  }
+
+  # a single compressed file stops at what is left of the budget
+  gz <- file.path(d, "results.csv.gz")
+  con <- gzfile(gz, "w"); writeLines(.big_csv_472(), con); close(con)
+  rows <- metacheck:::.expand_compressed(gz, row, max_total = 1024)
+  expect_false(file.exists(file.path(metacheck:::.archive_dest(gz), "results.csv")))
+  expect_true(is.na(rows$file_location))
+  expect_equal(attr(rows, "over_budget")$file_name, "results.csv")
+  expect_null(attr(rows, "oversize"))
+})
+
+test_that(".fit_budget() takes files smallest first while they fit (#699)", {
+  expect_equal(metacheck:::.fit_budget(c(5, 1, 3, NA), 4), c(FALSE, TRUE, TRUE, FALSE))
+  expect_equal(metacheck:::.fit_budget(c(5, NA), Inf), c(TRUE, TRUE))
+  expect_equal(metacheck:::.fit_budget(numeric(0), 10), logical(0))
+})
+
 test_that("zip_peek asks for exactly the central directory a short first tail lacks (#473)", local({
   # A first tail too short for the central directory used to be followed by a
   # fixed 1 MB tail: too much on a slow host (Zenodo range requests at
@@ -1411,4 +1464,21 @@ test_that("an encrypted zip member is named as not unpacked, and data_check's re
   expect_equal(txt$summary, "1 file in the repository's archives could not be unpacked, so the checks did not see it.")
   expect_null(.unzip_failed_text(NULL)$report)
   expect_null(.unzip_failed_text(uf[0, ])$summary)
+})
+
+test_that("an archive that cannot be opened is named by .unzip_failed_text() (#703)", {
+  d <- file.path(tempdir(), "zp_703"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  bad <- file.path(d, "bad.zip")
+  writeBin(as.raw(c(0x50, 0x4b, 0x03, 0x04, rep(0, 40))), bad)
+  row <- data.frame(file_name = "bad.zip", file_path = "bad.zip", repo_url = "r")
+  out <- .expand_zip(bad, row)
+  expect_equal(nrow(out), 0)
+  uf <- attr(out, "unpack_failed")
+  expect_equal(uf$archive, "bad.zip")
+  expect_true(is.na(uf$file_name))
+  txt <- .unzip_failed_text(rbind(uf, data.frame(archive = "b.zip", file_name = "x.csv",
+                                                 reason = "encrypted")))
+  expect_match(txt$summary, "^1 archive in the repository could not be opened, so the checks did not see its files; 1 file in the repository's archives could not be unpacked")
+  expect_true("- `bad.zip` could not be opened (it is damaged or incomplete)." %in% txt$report)
 })

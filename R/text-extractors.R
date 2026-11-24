@@ -48,6 +48,11 @@ extract_urls <- function(paper) {
   "\u03c7\u00b2?2?|lrt|wald|log.?rank|t.?test|welch|dunn|games.?howell|",
   "spearman|pearson)(?![\\w])")
 
+# The sides of a test, written after the p, in brackets or not: "p one-sided
+# = .014", "p (two-tailed) = .048" (#695). extract_p_values() gave no row for
+# them, and the statistics reader took "one-sided = .014" for a statistic.
+.p_sides <- "(?:\\(?\\s*(?i:one|two|1|2)[\\s-]?(?i:sided|tailed)\\s*\\)?\\s*)"
+
 # The correction or test name after the p of each p-value, as
 # extract_p_values() matched it ("FWE" in "pFWE < .05", "adj" in "p adj =
 # .03"); NA for a plain p (#642)
@@ -171,6 +176,7 @@ extract_p_values <- function(paper) {
     "(?:", .eta_p_prefix, "|", .p_symbol_prefix, ")?",
     "\\b[pP](?:-?values?|s|['\u2019]s)?", # ways to write p (or P)
     "(?:[\\s_-]?", .p_subscripts, ")?\\s*", # pFWE, p adj
+    .p_sides, "?", # "p one-sided", "p (two-tailed)" (#695)
     "[", operators, "]{1,2}\\s*", # 1-2 operators
     "(", number, ")", # ns or valid numbers
     if (!negative) paste0(
@@ -366,6 +372,9 @@ extract_eq <- function(paper) {
   # statistic: the name was "adj" (#642)
   bare_subscript <- paste0(bare_subscript, "|\\b[pP]s?[\\s_-]", .p_subscripts,
                            "(?=\\s*[", op, "])")
+  # and a p with the sides of its test, "p one-sided = .014" (#695)
+  bare_subscript <- paste0(bare_subscript, "|\\b[pP]s?\\s*", .p_sides,
+                           "(?=[", op, "])")
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "(?:", bare_subscript, "|",
@@ -471,113 +480,4 @@ extract_eq <- function(paper) {
     dplyr::arrange(paper_id, text_id, grp_id)
 
   return(eq)
-}
-
-
-#' Detect Live Data Collection
-#'
-#' Search a paper or paperlist for sentences indicating that data were collected
-#' directly from human or animal participants. Returns a table of matching
-#' sentences in the same format as [text_search()].
-#'
-#' Patterns cover:
-#' - Participant/subject/volunteer actions ("participants were recruited", "were randomised")
-#' - Researcher actions ("we recruited", "we collected data from participants")
-#' - Informed consent ("gave informed consent", "signed consent", "consent was obtained")
-#' - Online recruitment platforms (MTurk, Prolific, SONA, CloudResearch)
-#' - Student participant pools
-#' - Inclusion/exclusion criteria combined with participant language
-#' - "Our participants" / "our subjects"
-#' - Animal data collection ("mice were housed", "were anesthetized")
-#'
-#' Patterns intentionally avoid:
-#' - "respondents" alone (common in economics/social science secondary survey analysis)
-#' - "were tested" alone (triggers on algorithm/model evaluation in CS/AI papers)
-#' - "we conducted experiments" (triggers on computational experiments in AI/CS)
-#' - "data were collected from" alone (triggers on existing database/dataset studies)
-#' - "our sample" alone (too generic; present in all empirical work including meta-analyses)
-#'
-#' Used by the `ethics_check` module to determine whether an ethics statement is expected.
-#'
-#' @param paper a paper object or paperlist object
-#'
-#' @returns a data frame of matching sentences (same structure as [text_search()])
-#' @keywords internal
-.detect_live_data <- function(paper) {
-  live_words <- c(
-    # participant/subject/volunteer actions — strong verbs indicating direct recruitment
-    "(participants?|subjects?|volunteers?)\\s+(were|are|had|gave|provided|completed|filled|signed|took\\s+part|participated|recruited|paid|compensated|randomly\\s+assigned|assigned\\s+to|enrolled|debriefed)",
-    # respondents only with strong recruitment verbs (not just "were asked" / "were grouped")
-    "respondents?\\s+(were|are)\\s+(recruited|interviewed|enrolled|randomly\\s+assigned|compensated|paid|debriefed)",
-    # researcher actively recruiting
-    "we\\s+(recruited|enrolled|debriefed|ran\\s+(participants?|subjects?))",
-    # researcher collecting data from live humans (require participant/subject/human qualifier)
-    "we\\s+collected\\s+data\\s+from\\s+(participants?|subjects?|volunteers?|humans?|patients?|children|students?)",
-    "we\\s+conducted\\s+(the\\s+)?(study|survey|interview|clinical\\s+trial)",
-    "were\\s+recruited",
-    "were\\s+enrolled",
-    "were\\s+debriefed",
-    "were\\s+randomis(ed|ing)",
-    "were\\s+randomiz(ed|ing)",
-    # consent
-    "(gave|give|given|signed|provided)\\s+(written\\s+|oral\\s+|verbal\\s+)?informed\\s+consent",
-    "signed\\s+(informed\\s+)?consent",
-    "consent\\s+was\\s+obtained",
-    "informed\\s+consent\\s+was\\s+(obtained|provided|given|collected)",
-    # online recruitment platforms — imply live, direct recruitment
-    "\\bmturk\\b",
-    "mechanical\\s+turk",
-    "prolific\\s+academic",
-    "\\bprolific\\b",
-    "cloudresearch",
-    "turkprime",
-    "sona\\s+systems?",
-    "research\\s+participation\\s+scheme",
-    "(subject|participant)\\s+pool",
-    # student samples
-    "(undergraduate|graduate|university|college)\\s+students?\\s+(who|were|participated|completed|filled|took\\s+part)",
-    # inclusion/exclusion criteria paired with participant/patient language
-    "(participant|patient|subject)\\s+(inclusion|exclusion)\\s+criteri",
-    "(inclusion|exclusion)\\s+criteri.{0,60}(participants?|patients?|subjects?)",
-    # "our participants" / "our subjects" (not "our sample" alone — too generic)
-    "our\\s+(participants?|subjects?|volunteers?)",
-    # animal data collection
-    "(mice|rats?|monkeys?|pigeons?|zebrafish|ferrets?|rabbits?|hamsters?|gerbils?|guinea\\s+pigs?|macaques?|marmosets?)\\s+(were|had)\\s+(used|housed|trained|tested|implanted|injected|anesthetized|anaesthetized|sacrificed|perfused|killed)",
-    "were\\s+(implanted|surgically\\s+prepared|injected|anesthetized|anaesthetized|sacrificed|perfused)"
-  )
-
-  text_search(paper, live_words)
-}
-
-#' Detect a Statement That No Participants Took Part
-#'
-#' Search a paper or paperlist for sentences stating that no human or animal
-#' subjects took part in the study: "no human subjects were involved", "did
-#' not involve human participants", "no animals nor human participants were
-#' involved", or that people took part "not as subjects" (PsyArXiv dq96z_v2:
-#' "The professionals described their own work as collaborators in the
-#' projects, not as subjects recruited for a study."). Such a statement
-#' overrides [.detect_live_data()] in the `ethics_check` module.
-#'
-#' A negation near a participant phrase is not enough: "No participants were
-#' excluded", "only children without G6PD deficiency were enrolled" and "No
-#' participants were minors" report studies with participants. In 17 local
-#' collections (13,706 papers), a negation in the three words before a
-#' participant phrase would have changed the verdict of 18 papers, 6 of them
-#' wrongly; these patterns, which require "human" or "animal" (or "not as
-#' subjects"), matched 15 statements, all of papers without participants,
-#' and in the 85 PsyArXiv reports only dq96z_v2's.
-#'
-#' @param paper a paper object or paperlist object
-#'
-#' @returns a data frame of matching sentences (same structure as [text_search()])
-#' @keywords internal
-.detect_no_participants <- function(paper) {
-  none_words <- c(
-    "\\bno\\s+(identifiable\\s+)?(human|animal)\\s+(research\\s+)?(subjects?|participants?|volunteers?)\\s+(were|was|are|is)\\s+(involved|used)",
-    "\\b(did|does|do)\\s+not\\s+(involve|include)\\s+(any\\s+)?(human|animal)\\s+(subjects?|participants?)",
-    "\\bno\\s+(animals|humans)\\s+(nor|or|and)\\s+(human\\s+)?(participants?|subjects?)\\s+were\\s+involved",
-    "\\bnot\\s+as\\s+(research\\s+)?(subjects?|participants?)\\b"
-  )
-  text_search(paper, none_words, perl = TRUE)
 }

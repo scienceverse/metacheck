@@ -881,6 +881,17 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
     obj$error <- "parse_error"
     return(obj)
   }
+  # A 200 answer without the record's title, DOI and files is a failed lookup,
+  # not an empty record: 4TU answered so for 10.4121/14199176 on 2026-11-20,
+  # the empty listing was saved in the cache, and the paper had no data or code
+  # in every later run, while the record has 6 files (#711)
+  if (!nzchar(rec$title %empty_or% "") && !nzchar(rec$doi %empty_or% "") &&
+      !length(rec$files %||% list())) {
+    warning(figshare_id, ": ", host, " answered without the record's title, DOI or files",
+            call. = FALSE)
+    obj$error <- "empty_response"
+    return(obj)
+  }
 
   authors_field <- rec$authors
   authors <- if (is.list(authors_field)) {
@@ -1091,8 +1102,9 @@ figshare_pat <- function(pat = NULL) {
 #' zip unless `unzip_types` asks for only specific members out of it.
 #'
 #' You can limit downloads to only files under a specific size (defaults to
-#' 10MB) and only a maximum download size (largest files will be omitted until
-#' total size is under the limit). Omitted files will be listed as messages in
+#' 100 MB) and to a maximum download size (defaults to 500 MB): the smallest
+#' files are kept while they fit and the rest omitted, as in
+#' [download_repo_files()]. Omitted files will be listed as messages in
 #' verbose mode, and included in the returned data frame with the `downloaded`
 #' column value set to FALSE.
 #'
@@ -1131,8 +1143,8 @@ figshare_pat <- function(pat = NULL) {
 #' }
 figshare_file_download <- function(figshare_id,
                                    download_to,
-                                   max_file_size = 10,
-                                   max_download_size = 100,
+                                   max_file_size = 100,
+                                   max_download_size = 500,
                                    unzip_types = NULL,
                                    host = "api.figshare.com",
                                    pb = NULL) {
@@ -1435,7 +1447,7 @@ figshare_file_download <- function(figshare_id,
 #' @keywords internal
 .figshare_zip_members <- function(url, dest,
                                   keep_types = c("data", "documentation"),
-                                  max_file_size = 10, size = NULL) {
+                                  max_file_size = 100, size = NULL) {
   listing <- tryCatch(zip_peek(url, size = size), error = \(e) NULL)
   if (is.null(listing) || nrow(listing) == 0) return(NULL)
 

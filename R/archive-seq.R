@@ -104,13 +104,30 @@ seq_archive_links <- function(paper, max_n = 25) {
   out
 }
 
-# A text answer from an archive (NULL when it fails)
-.seq_get <- function(url) {
+# A text answer from an archive: `text` (NULL when it fails) and
+# `unreachable`, TRUE when the archive did not answer (no connection, a
+# time-out, too many requests or a server error) rather than answering that
+# it has no such record. A deposit whose archive did not answer was recorded
+# as "unfound", which reads as a deposit that does not exist.
+.seq_fetch <- function(url) {
   r <- tryCatch(.mc_request(url) |> httr2::req_error(is_error = \(e) FALSE) |>
                   httr2::req_timeout(60) |> httr2::req_retry(max_tries = 3) |> httr2::req_perform(),
                 error = \(e) NULL)
-  if (is.null(r) || httr2::resp_status(r) != 200) return(NULL)
-  httr2::resp_body_string(r)
+  status <- if (is.null(r)) NA_integer_ else httr2::resp_status(r)
+  if (is.na(status) || status != 200) {
+    return(list(text = NULL,
+                unreachable = is.na(status) || status %in% c(408L, 429L) || status >= 500L))
+  }
+  list(text = httr2::resp_body_string(r), unreachable = FALSE)
+}
+
+# A text answer from an archive (NULL when it fails)
+.seq_get <- function(url) .seq_fetch(url)$text
+
+# The error of a record that could not be read: "unreachable" when the
+# archive did not answer, else "unfound"
+.seq_not_read <- function(fetched) {
+  if (isTRUE(fetched$unreachable)) "unreachable" else "unfound"
 }
 
 # PubMed ids -> DOIs (one request for all)
@@ -145,9 +162,10 @@ seq_archive_links <- function(paper, max_n = 25) {
                     creators = NA_character_, organisation = NA_character_, publication_date = NA_character_,
                     description = NA_character_, resource_type = "Dataset", related = NA_character_,
                     error = NA_character_)
-  txt <- .seq_get(paste0("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=", acc,
-                         "&targ=self&form=text&view=brief"))
-  if (is.null(txt) || !grepl("!Series_title", txt, fixed = TRUE)) { obj$error <- "unfound"; return(obj) }
+  got <- .seq_fetch(paste0("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=", acc,
+                           "&targ=self&form=text&view=brief"))
+  txt <- got$text
+  if (is.null(txt) || !grepl("!Series_title", txt, fixed = TRUE)) { obj$error <- .seq_not_read(got); return(obj) }
   tag <- function(t) {
     m <- regmatches(txt, gregexpr(paste0("(?m)^!", t, " = (.*)$"), txt, perl = TRUE))[[1]]
     unique(trimws(sub(paste0("^!", t, " = "), "", m)))
@@ -178,16 +196,16 @@ seq_archive_links <- function(paper, max_n = 25) {
     # a run, experiment, sample or submission: its study
     q <- if (grepl("^[SED]RA", acc)) paste0("search?result=read_run&query=submission_accession=%22", acc, "%22")
          else paste0("filereport?accession=", acc, "&result=read_run")
-    t <- .seq_get(paste0(portal, q, "&fields=study_accession&limit=1&format=tsv"))
-    tab <- tryCatch(utils::read.delim(text = t %||% "", colClasses = "character"), error = \(e) NULL)
+    got <- .seq_fetch(paste0(portal, q, "&fields=study_accession&limit=1&format=tsv"))
+    tab <- tryCatch(utils::read.delim(text = got$text %||% "", colClasses = "character"), error = \(e) NULL)
     study <- if (is.data.frame(tab) && nrow(tab)) tab$study_accession[[1]] else NA_character_
-    if (is.na(study)) { obj$error <- "unfound"; return(obj) }
+    if (is.na(study)) { obj$error <- .seq_not_read(got); return(obj) }
   }
-  t <- .seq_get(paste0(portal, "search?result=study&query=study_accession=%22", study,
-                       "%22%20OR%20secondary_study_accession=%22", study,
-                       "%22&fields=study_accession,secondary_study_accession,study_title,study_description,center_name,first_public&format=tsv"))
-  tab <- tryCatch(utils::read.delim(text = t %||% "", colClasses = "character", quote = ""), error = \(e) NULL)
-  if (!is.data.frame(tab) || !nrow(tab)) { obj$error <- "unfound"; return(obj) }
+  got <- .seq_fetch(paste0(portal, "search?result=study&query=study_accession=%22", study,
+                           "%22%20OR%20secondary_study_accession=%22", study,
+                           "%22&fields=study_accession,secondary_study_accession,study_title,study_description,center_name,first_public&format=tsv"))
+  tab <- tryCatch(utils::read.delim(text = got$text %||% "", colClasses = "character", quote = ""), error = \(e) NULL)
+  if (!is.data.frame(tab) || !nrow(tab)) { obj$error <- .seq_not_read(got); return(obj) }
   obj$study <- tab$study_accession[[1]]
   obj$title <- tab$study_title[[1]]
   obj$description <- substr(tab$study_description[[1]] %||% NA_character_, 1, 2000)
@@ -203,9 +221,9 @@ seq_archive_links <- function(paper, max_n = 25) {
                     creators = NA_character_, organisation = NA_character_, publication_date = NA_character_,
                     description = NA_character_, resource_type = "Dataset", related = NA_character_,
                     error = NA_character_)
-  txt <- .seq_get(paste0("https://www.ebi.ac.uk/biostudies/api/v1/studies/", acc))
-  j <- tryCatch(jsonlite::fromJSON(txt %||% "", simplifyVector = FALSE), error = \(e) NULL)
-  if (is.null(j)) { obj$error <- "unfound"; return(obj) }
+  got <- .seq_fetch(paste0("https://www.ebi.ac.uk/biostudies/api/v1/studies/", acc))
+  j <- tryCatch(jsonlite::fromJSON(got$text %||% "", simplifyVector = FALSE), error = \(e) NULL)
+  if (is.null(j)) { obj$error <- .seq_not_read(got); return(obj) }
   # attributes are name/value pairs, on the study and in its subsections
   attrs <- function(a) vapply(a %||% list(), \(x) paste0(x$name %||% "", "\r", x$value %||% ""), "")
   val <- function(a, nm) { a <- attrs(a); sub("^[^\r]*\r", "", a[startsWith(a, paste0(nm, "\r"))]) }
@@ -254,7 +272,8 @@ seq_archive_links <- function(paper, max_n = 25) {
 #'   `organisation` (the submitting institute), `publication_date`,
 #'   `description`, `resource_type`, `related` (`IsSupplementTo:<DOI>` for
 #'   each paper the record belongs to), and `error` ("unfound" when the
-#'   archive has no such record)
+#'   archive has no such record, "unreachable" when the archive did not
+#'   answer: no connection, a time-out, too many requests or a server error)
 #' @export
 #'
 #' @examples

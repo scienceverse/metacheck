@@ -232,6 +232,27 @@ test_that(".safe_write_path makes each part portable but keeps a drive (#557)", 
   expect_equal(.safe_write_path("x/a.txt"), "x/a.txt")
 })
 
+test_that(".safe_write_path keeps the folders of `root`, unless that is not enough (#699)", {
+  skip_on_os(c("mac", "linux", "solaris"))   # the 250-character limit is Windows' only
+  base <- file.path(gsub("\\\\", "/", tempdir()), strrep("b", 50))
+  root <- file.path(base, paste0("repo_", strrep("r", 50)))   # a folder name over 40
+  path <- file.path(root, strrep("m", 100), paste0(strrep("f", 80), ".csv"))
+  # without root, the repository's folder is shortened too
+  p0 <- suppressWarnings(.safe_write_path(path))
+  expect_false(startsWith(p0, paste0(root, "/")))
+  # with root, only the part below it
+  p1 <- suppressWarnings(.safe_write_path(path, root = root))
+  expect_true(startsWith(p1, paste0(root, "/")))
+  expect_lte(nchar(normalizePath(p1, winslash = "/", mustWork = FALSE)), .max_path_chars)
+  expect_match(p1, "[.]csv$")
+  # a root that alone is too long: shortened as before
+  long_root <- file.path(base, strrep("q", 250))
+  p2 <- suppressWarnings(.safe_write_path(file.path(long_root, "a.csv"), root = long_root))
+  expect_false(startsWith(p2, paste0(long_root, "/")))
+  # a path not below root: shortened as before
+  expect_equal(suppressWarnings(.safe_write_path(path, root = file.path(tempdir(), "other"))), p0)
+})
+
 test_that(".url_decode keeps a % that starts no code, where URLdecode dropped or stopped", {
   # utils::URLdecode() warned, made "50%" "50" and "a%2" "a", and stopped on
   # "bad%zz.png" and "%00"
@@ -339,4 +360,20 @@ test_that(".meta_col and its helpers turn a deposit's people and text into one s
   # text without HTML, shortened
   expect_equal(metacheck:::.meta_text("<p>We analysed&nbsp;the   field</p>"), "We analysed the field")
   expect_equal(nchar(metacheck:::.meta_text(strrep("a", 2000), 100)), 100)
+})
+
+test_that(".lfs_pointer_size() tells a Git LFS pointer from other files (#700)", {
+  d <- file.path(tempdir(), "lfs700"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines(c("version https://git-lfs.github.com/spec/v1",
+               "oid sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393",
+               "size 734003200"), file.path(d, "large_data.csv"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:ab"), file.path(d, "nosize.csv"))
+  writeLines(c("a,b", "1,2"), file.path(d, "real.csv"))
+  f <- file.path(d, c("large_data.csv", "nosize.csv", "real.csv", "absent.csv"))
+  expect_equal(.lfs_pointer_size(f), c(734003200, -1, NA, NA))
+  txt <- .lfs_pointer_text("git_lfs/large_data.csv", 734003200)
+  expect_match(txt$summary, "^1 file is a Git LFS pointer")
+  expect_true("- `git_lfs/large_data.csv` (the file itself is 700.0 MB)" %in% txt$report)
+  expect_null(.lfs_pointer_text(character(0), numeric(0))$summary)
 })

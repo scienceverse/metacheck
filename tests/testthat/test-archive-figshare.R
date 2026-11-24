@@ -380,3 +380,24 @@ test_that("figshare_links keeps a '/' inside an institution's DOI (#634)", {
   expect_setequal(sub("[.]$", "", obs$href),
                   c("https://doi.org/10.15482/USDA.ADC/1529590", "10.5522/04/14484084.v1"))
 })
+
+test_that("a Figshare/4TU answer without title, DOI or files is a failed lookup, not an empty record (#711)", {
+  empty <- httr2::response(status_code = 200, headers = list(`Content-Type` = "application/json"),
+                           body = charToRaw('{"files": [], "authors": []}'))
+  local_mocked_bindings(.batch_query = function(...) list(empty))
+  info <- suppressWarnings(.figshare_info("14199176", host = "data.4tu.nl"))
+  expect_equal(info$error, "empty_response")
+  expect_false(.repo_info_ok(info))
+})
+
+test_that("a listing without title, DOI and files is not kept in the cache (#711)", {
+  blank <- data.frame(figshare_id = "1", title = NA_character_, doi = NA_character_)
+  blank$files <- list(data.frame())
+  expect_false(.repo_info_ok(blank))
+  full <- blank; full$title <- "A data set"
+  expect_true(.repo_info_ok(full))
+  with_files <- blank; with_files$files <- list(data.frame(name = "a.csv"))
+  expect_true(.repo_info_ok(with_files))
+  expect_false(.repo_info_ok(data.frame(title = "x", error = "unfound")))
+  expect_true(.repo_info_ok(data.frame(id = 1)))
+})

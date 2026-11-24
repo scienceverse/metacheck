@@ -552,16 +552,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (mod == "data_check") {
       args$model <- model; args$params <- params
     }
+    # The size limits go to code_check too: it used its own defaults whatever
+    # this module was given (#699).
     if (mod %in% c("data_check", "code_check")) {
       args$cache <- cache
       args$skip_on_api_limit <- skip_on_api_limit
+      args$max_file_size <- max_file_size
+      args$max_download_size <- max_download_size
     }
     if (mod == "data_check") {
       args$download <- download
       args$skip_types <- skip_types
       args$peek_zips <- peek_zips
-      args$max_file_size <- max_file_size
-      args$max_download_size <- max_download_size
     }
 
     # This module's own execution/matching logic never depends on LLM-refined
@@ -581,10 +583,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     do.call(module_run, args)
   }
-  if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
+  # repositories data_check or code_check refused for their number of files: a
+  # paper with no code left says so, not only "no code files" (#706)
+  count_refused <- .count_refused_add(get_prev_outputs("code_check", "count_refused"),
+                                      get_prev_outputs("data_check", "count_refused"))
+  if (is.null(structure_df)) {
+    dc <- run_missing("data_check"); structure_df <- dc$structure
+    count_refused <- .count_refused_add(count_refused, dc$count_refused)
+  }
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
+    count_refused <- .count_refused_add(count_refused, cc$count_refused)
   }
   # Deposits linked in the paper that hold other people's work or the authors'
   # earlier work are not checked (repo_check's `table_not_checked`, #648), but
@@ -600,8 +610,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # by its path in the deposit (`file_path_deposit`) (#648)
   # the files any code file of the paper writes or downloads, in any language
   # (code_check's files_written), so a file a script makes is not missing (#648)
-  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl))
-    unique(unlist(strsplit(code_tbl$files_written[!is.na(code_tbl$files_written)], ",[[:space:]]*"))) else character(0)
+  # as.character(): a column of NA only, when no code file was read (a paper with
+  # only a JASP file), is logical, and strsplit() stopped on it with "non-character
+  # argument" (#695, point 41, mp20202538)
+  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl)) {
+    fw <- as.character(code_tbl$files_written)
+    unique(unlist(strsplit(fw[!is.na(fw)], ",[[:space:]]*")))
+  } else character(0)
   up <- .repro_unpack_archives(structure_df, code_tbl)
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
@@ -674,7 +689,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   has_sav <- any(grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE))
   has_sps <- any(grepl("\\.sps$", c(fnames_all, code_fnames), ignore.case = TRUE))
   has_selfcontained <- any(grepl("\\.(omv|jasp|spv)$", fnames_all, ignore.case = TRUE))
-  spss_red <- has_sav && !has_sps
+  # An SPSS or Stata data file the deposit's own code reads (read_sav(),
+  # read.dta(), rio::import(), ...) is data for that code, not a sign that the
+  # analysis was left out: three Meta-Psychology papers were red although every
+  # script ran, because their R code read a .sav (#695, point 42).
+  read_code_txt <- if (!is.null(code_tbl) && "file_location" %in% names(code_tbl)) {
+    locs <- as.character(code_tbl$file_location)
+    locs <- locs[!is.na(locs) & file.exists(locs)]
+    unlist(lapply(locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
+  } else character(0)
+  sav_files <- fnames_all[grepl("\\.(sav|zsav|por)$", fnames_all, ignore.case = TRUE)]
+  sav_unread <- length(sav_files) > 0 && !all(.repro_named_in_code(sav_files, read_code_txt))
+  spss_red <- sav_unread && !has_sps
   spss_report <- if (has_sav) {
     rec <- if (!has_selfcontained)
       paste0(" Consider depositing the analysis in **jamovi** (`.omv`) or ",
@@ -683,7 +709,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "the file itself.") else
       paste0(" (A jamovi/JASP/SPSS-Viewer file is also present, which is ",
              "self-reproducible.)")
-    if (!has_sps) c("#### SPSS data without syntax", paste0(
+    if (!has_sps && !sav_unread) c("#### SPSS data", paste0(
+      "The SPSS data file", plural(length(sav_files)), " (`.sav`/`.por`) ",
+      plural(length(sav_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in SPSS syntax."))
+    else if (!has_sps) c("#### SPSS data without syntax", paste0(
       "An SPSS data file (`.sav`/`.por`) is present but **no SPSS syntax file ",
       "(`.sps`) was found**, so the analysis that produced the results cannot be ",
       "reproduced from the deposit. This is treated as a reproducibility failure ",
@@ -704,9 +734,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # only "deposit the .do file (or the .smcl log it can be recovered from)".
   has_dta <- any(grepl("\\.dta$", fnames_all, ignore.case = TRUE))
   has_do  <- any(grepl("\\.(do|ado)$", c(fnames_all, code_fnames), ignore.case = TRUE))
-  stata_red <- has_dta && !has_do
+  dta_files <- fnames_all[grepl("\\.dta$", fnames_all, ignore.case = TRUE)]
+  dta_unread <- length(dta_files) > 0 && !all(.repro_named_in_code(dta_files, read_code_txt))
+  stata_red <- dta_unread && !has_do
   stata_report <- if (has_dta) {
-    if (!has_do) c("#### Stata data without syntax", paste0(
+    if (!has_do && !dta_unread) c("#### Stata data", paste0(
+      "The Stata data file", plural(length(dta_files)), " (`.dta`) ",
+      plural(length(dta_files), "is", "are"), " read by the deposit's own code, so the ",
+      "analysis is in that code, not in a Stata do-file."))
+    else if (!has_do) c("#### Stata data without syntax", paste0(
       "A Stata data file (`.dta`) is present but **no Stata syntax file (`.do`) ",
       "or output log (`.smcl`) was found**, so the analysis that produced the ",
       "results cannot be reproduced from the deposit. This is treated as a ",
@@ -1275,9 +1311,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # return, same as before Python support existed.
   if (is.null(code_tbl) || nrow(code_tbl) == 0 ||
       !"language" %in% names(code_tbl))
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.", non_r_note),
-      tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   r_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "R", ,
                       drop = FALSE]
@@ -1301,9 +1337,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # runs. ───────────────────────────────────────────────────────────────────
   .dbg <- function(...) message("[repro] ", ...)
   if (!has_r && !has_py)
-    return(empty(paste0(
-      "We found no R or Python code files to assess for reproducibility.",
-      non_r_note), tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
+    return(empty(.repro_no_code_text(non_r_note, count_refused),
+      tl = if (identical(empty_tl, "na") && NROW(count_refused)) "yellow" else empty_tl,
+      extra_report = c(spss_report, stata_report, nonr_report)))
 
   if (has_r && isTRUE(execute) && sandbox == "process" &&
       !requireNamespace("callr", quietly = TRUE))
@@ -1613,8 +1649,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # "parses"; it is looked at too, else it was run as a script (#568:
   # 10.1111/2041-210X.13967's 109 MB Training_Dataset_1.r)
   is_binary <- vapply(seq_len(n_code), function(i) !is.null(attr(raw_text_list[[i]], "binary")), logical(1))
-  if (any(parse_error_raw | is_binary)) {
-    for (i in which(parse_error_raw | is_binary)) {
+  # code_check does not parse a JAGS or BUGS model saved as .R (0.4.4.33): its
+  # parse_error is NA ("not checked"), not TRUE, so such a file was not looked
+  # at here and was run as an R script. A file code_check did not check is
+  # looked at too, but only to find a model; a model found that way counts as
+  # not parsing, as code_check had it before, so it is not run as R either
+  # (runs_as_r, below).
+  not_checked <- if ("parse_error" %in% names(r_files)) is.na(r_files$parse_error) else rep(FALSE, n_code)
+  look <- parse_error_raw | is_binary | not_checked
+  if (any(look)) {
+    for (i in which(look)) {
       raw <- raw_text_list[[i]]
       fn  <- r_files$file_name[i]
       jags_hit <- .repro_is_jags_model(
@@ -1622,8 +1666,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (jags_hit) {
         sniff_type[i] <- "jags_model"
         sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
+        if (not_checked[i]) parse_error_raw[i] <- TRUE
         next
       }
+      if (!parse_error_raw[i] && !is_binary[i]) next
       # a file that is not text, such as R data saved as .R (#568)
       path_i <- resolve_row_path(i)
       detected <- if (!is.na(path_i)) .repro_binary_kind(path_i) else NA_character_
@@ -1931,7 +1977,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                             recorded = !is.null(recorded))
       install_results <- if (sandbox == "docker") {
         repro_install_deps_docker(to_install, lib_dir, image = docker_image,
-                                  timeout = install_limit)
+                                  timeout = install_limit,
+                                  deposit_pkgs = .repro_deposit_packages(sandbox_root, to_install$package))
       } else {
         .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
         # as before, no limit unless one was asked for or versions are recorded
@@ -2297,6 +2344,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # A script whose write stopped on a folder the deposit does not have runs
     # once more after the folder is made (#591; see .repro_make_failed_write_folders())
     r_folders_made <- data.frame(script = character(0), folder = character(0))
+    # packages named in errors that were installed now, for the scripts that ran
+    # again with them (#587)
+    r_pkgs_tried <- character(0)
+    r_pkgs_installed <- data.frame(script = character(0), package = character(0))
     for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
@@ -2310,10 +2361,64 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       made <- .repro_make_failed_write_folders(run_results, run_tbl, sandbox_root,
                                                split(r_folders_made$folder, r_folders_made$script))
       r_folders_made <- rbind(r_folders_made, made)
-      redo <- unique(c(names(later), from_deposit$script, made$script))
+      # A script that now stops on a function no script defines gets library()
+      # lines for it, as the corrective run gives them for the first run's errors
+      # only (#592; see .repro_more_library_lines()).
+      more_libs <- .repro_more_library_lines(
+        run_results, code_text_list, unique(c(deps$package %||% character(0), .repro_common_pkgs())),
+        unavailable = if (!install_r && sandbox != "docker")
+          failed_deps[!nzchar(vapply(failed_deps, function(p) system.file(package = p), ""))]
+          else failed_deps,
+        injected = library_injections)
+      for (s in names(more_libs)) library_injections[[s]] <- c(library_injections[[s]], more_libs[[s]])
+      if (length(more_libs)) {
+        prepend_lines <- .repro_run_after_lines(run_after, run_tbl, sandbox_root)
+        for (f in names(old_defaults_used))
+          prepend_lines[[f]] <- c(.repro_old_default_lines(old_defaults_used[[f]]), prepend_lines[[f]])
+        run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
+                                       inject_libs = library_injections,
+                                       script_paths = r_script_places,
+                                       writes_in_place = TRUE,
+                                       replace_env_calls = replace_env_calls,
+                                       run_dirs = r_run_dirs,
+                                       prepend = prepend_lines)
+      }
+      # A script that stops on a package no script loads, which another package
+      # needs for one of its functions, gets it installed (#587; see
+      # .repro_missing_pkg_names()). Each package is tried once.
+      pkg_redo <- character(0)
+      if (install_r && !.repro_short_of_time(total_timeout, 120)) {
+        named <- .repro_missing_pkg_names(paste(run_results$error, run_results$stderr))
+        stopped_pkg <- run_results$outcome %in% "errored" & !is.na(named)
+        new_pkgs <- setdiff(unique(named[stopped_pkg]), c(install_results$package, r_pkgs_tried))
+        if (length(new_pkgs)) {
+          r_pkgs_tried <- c(r_pkgs_tried, new_pkgs)
+          .dbg("installing ", length(new_pkgs), " package(s) named in scripts' errors: ",
+               paste(new_pkgs, collapse = ", "))
+          more <- data.frame(package = new_pkgs, source = "cran", ref = NA_character_)
+          more_limit <- .repro_install_limit(install_timeout, timeout, total_timeout)
+          got <- if (sandbox == "docker")
+            repro_install_deps_docker(more, lib_dir, image = docker_image, timeout = more_limit,
+                                      deposit_pkgs = .repro_deposit_packages(sandbox_root, new_pkgs))
+            else repro_install_deps(more, lib_dir, cran_to_main_lib = cran_install_main,
+                                    deadline = if (inherits(total_timeout, "POSIXct")) Sys.time() + more_limit)
+          install_results <- dplyr::bind_rows(install_results, got)
+          failed_deps <- unique(c(failed_deps, got$package[!got$installed]))
+          ok <- stopped_pkg & named %in% got$package[got$installed]
+          pkg_redo <- run_results$file_name[ok]
+          r_pkgs_installed <- rbind(r_pkgs_installed,
+                                    data.frame(script = pkg_redo, package = named[ok]))
+          # a package that could not be installed: the script could not run here
+          no <- stopped_pkg & named %in% got$package[!got$installed]
+          run_results$outcome[no] <- "dependency_unavailable"
+          run_results$error_type[no] <- "dependency_unavailable"
+        }
+      }
+      redo <- unique(c(names(later), from_deposit$script, made$script, names(more_libs), pkg_redo))
       if (!length(redo)) break
       .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
-           "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
+           "the deposit holds elsewhere, a folder a write needed, a missing function or a ",
+           "package installed now: ", paste(redo, collapse = ", "))
       res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
                             c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
       ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
@@ -3202,6 +3307,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
       later_rows <- rbind(later_rows, data.frame(file_name = r_folders_made$script, change_type = "folder_made",
         detail = sprintf("made the folder %s, where the script writes, and ran it once more", r_folders_made$folder)))
+    if (exists("r_pkgs_installed", inherits = FALSE) && nrow(r_pkgs_installed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_pkgs_installed$script, change_type = "package_installed",
+        detail = sprintf("installed %s, which the error named and no script loads, and ran it once more",
+                         r_pkgs_installed$package)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, lib_loc_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      screen_rows_mod, slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
@@ -3793,7 +3902,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!isTRUE(keep_sandbox)) on.exit(.repro_docker_lib_remove(py2_lib_dir), add = TRUE)
         py2_failed_deps <- character(0)
         if (isTRUE(install_missing)) {
-          py2_deps <- repro_dependencies_py(py_code_text_list[py2_names], manifest_text = py_manifest_text)
+          # the packages of the local modules these scripts import as well, and of
+          # the modules those import: numpy, imported only by genomics.py, was
+          # installed for Python 3 alone, and calculate_FST.py stopped on "No
+          # module named numpy" (10.1111/2041-210X.13324; #593)
+          py2_code <- .repro_py_with_imports(py2_names, py_code_text_list, py_files$file_path)
+          py2_deps <- repro_dependencies_py(py_code_text_list[py2_code], manifest_text = py_manifest_text)
           py2_deps <- py2_deps[!py2_deps$base & !py2_deps$package %in% py_local_modules, , drop = FALSE]
           .dbg("[repro/py] installing ", nrow(py2_deps), " Python 2 dependenc(y/ies): ",
                paste(py2_deps$package, collapse = ", "))
@@ -4779,7 +4893,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # default, which this worker was not given.
         err <- tryCatch(paste(.utf8_lines(readLines(err_files[[pid]], warn = FALSE)), collapse = "\n"),
                         error = function(e) "")
-        res <- list(traffic_light = "error",
+        # named as the module, or module_run()'s output names it by its
+        # position ("module_1", R/module.R) and the error lost its check (#695)
+        res <- list(module = "reproducibility_check",
+                    traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",
                                           if (nzchar(err)) err else "unknown error"),
                     table = data.frame(),

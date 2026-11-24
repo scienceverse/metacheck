@@ -1843,3 +1843,131 @@ test_that("a page of an R package's website is not taken for a rendered analysis
                "<pre class=\"r\"><code>plot(1)</code></pre></body></html>"), p)
   expect_equal(metacheck:::.html_sniff_kind(p), "rmd")
 })
+
+test_that("data_check finishes when the only file is an archive that cannot be opened (#703)", {
+  d <- file.path(tempdir(), "dc_703"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  csv <- file.path(d, "a.csv"); zip <- file.path(tempdir(), "dc_703_full.zip")
+  writeLines(paste(1:5000, collapse = ","), csv)
+  utils::zip(zip, csv, flags = "-j -q")
+  unlink(csv)
+  # cut off: no central directory, as the zip of 10.5061/dryad.2959s
+  writeBin(readBin(zip, "raw", 300), file.path(d, "data and scripts.zip"))
+  unlink(zip)
+  mo <- suppressMessages(module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE))
+  expect_equal(nrow(mo$table), 0)
+  expect_equal(mo$traffic_light, "yellow")
+  expect_match(mo$summary_text, "1 archive in the repository could not be opened")
+  expect_match(mo$summary_text, "We found no files to analyse.")
+  expect_true(any(grepl("`data and scripts.zip` could not be opened (it is damaged or incomplete)",
+                        mo$report, fixed = TRUE)))
+  expect_equal(nrow(mo$summary_table), 1)
+})
+
+test_that("data_check and code_check refuse a repository over max_files_per_repo before reading its files (#702)", {
+  d <- file.path(tempdir(), "dc_702"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  for (i in 1:5) writeLines(c("a,b", "1,2"), file.path(d, sprintf("d%d.csv", i)))
+  writeLines("x <- 1", file.path(d, "a.R"))
+  dc <- suppressMessages(suppressWarnings(
+    module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE, max_files_per_repo = 3)))
+  expect_equal(nrow(dc$table), 0)
+  expect_equal(dc$traffic_light, "yellow")
+  expect_match(dc$summary_text, "holds 6 files, exceeding the 3-file cap")
+  cc <- suppressMessages(suppressWarnings(
+    module_run(test_paper("x"), "code_check", local_path = d, local_only = TRUE, max_files_per_repo = 3)))
+  expect_equal(nrow(cc$table), 0)
+  expect_equal(cc$traffic_light, "yellow")
+  expect_match(cc$summary_text, "holds 6 files, exceeding the 3-file cap")
+  # under the default (100,000) nothing is refused
+  dc <- suppressMessages(module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE))
+  expect_gt(nrow(dc$table), 0)
+  expect_equal(nrow(.repos_over_count(data.frame(repo_url = c("a", "a", "b")), 1)), 1)
+  expect_equal(nrow(.repos_over_count(data.frame(repo_url = "a"), Inf)), 0)
+})
+
+test_that("the checks after data_check name a repository it refused for its number of files (#706)", {
+  p <- test_paper("x")
+  msg <- .repo_count_message("https://doi.org/10.5281/zenodo.3826426", 369548, 100000)
+  refused <- data.frame(repo_url = "https://doi.org/10.5281/zenodo.3826426", n_files = 369548L, message = msg)
+  none <- data.frame(paper_id = character(0), file_name = character(0), file_path = character(0),
+                     repo_url = character(0), file_url = character(0), file_location = character(0),
+                     file_size = numeric(0))
+  dc <- structure(list(module = "data_check", paper = p, table = none, structure = none,
+                       count_refused = refused, traffic_light = "yellow",
+                       summary_table = data.frame(paper_id = p$paper_id), prev_outputs = list()),
+                  class = "metacheck_module_output")
+  cc <- suppressMessages(module_run(dc, "code_check", download = FALSE))
+  expect_equal(cc$traffic_light, "yellow")
+  expect_match(cc$summary_text, "holds 369548 files, exceeding the 100000-file cap", fixed = TRUE)
+  expect_equal(cc$count_refused$repo_url, refused$repo_url)
+  cb <- suppressMessages(module_run(dc, "codebook_check"))
+  expect_equal(cb$traffic_light, "yellow")
+  expect_match(cb$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  ps <- suppressMessages(module_run(dc, "psychds_check"))
+  expect_equal(ps$traffic_light, "yellow")
+  expect_match(ps$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  rc <- suppressMessages(module_run(cc, "reproducibility_check", execute = FALSE))
+  expect_equal(rc$traffic_light, "yellow")
+  expect_match(rc$summary_text, "exceeding the 100000-file cap", fixed = TRUE)
+  # nothing refused: as before
+  expect_null(.count_refused_note("x", refused[0, ]))
+  expect_equal(nrow(.count_refused_add(refused, refused)), 1)
+  expect_equal(nrow(.count_refused_add(refused[0, ], NULL)), 0)
+})
+
+test_that("reproducibility_check runs when code_check's files_written holds only NA (#695, point 41)", {
+  # a paper with only a JASP file: the column is logical, and strsplit() stopped
+  # on it with "non-character argument" (mp20202538)
+  p <- test_paper("x")
+  ct <- data.frame(paper_id = p$paper_id, file_name = "a.jasp", file_path = "a.jasp",
+                   repo_url = "r", language = "JASP", files_written = NA)
+  cc <- structure(list(module = "code_check", paper = p, table = ct,
+                       summary_table = data.frame(paper_id = p$paper_id), prev_outputs = list()),
+                  class = "metacheck_module_output")
+  expect_no_error(rc <- suppressMessages(module_run(cc, "reproducibility_check", execute = FALSE)))
+  expect_false(identical(rc$traffic_light, "fail"))
+})
+
+test_that(".data_group_from_path() reads only paths that can hold a study label, with the same results (#702)", {
+  p <- c("Study 1/data.csv", "pilot/x.csv", "Pilot Study 1A/a.csv", "exp2/b.csv", "text1.csv",
+         "study2_2019.csv", "a/b/c", NA, "", "index2.csv", "Study 1/data.csv")
+  expect_equal(.data_group_from_path(p),
+               c("ex1", "pilot1", "pilot1a", "ex2", NA, "ex2", NA, NA, NA, NA, "ex1"))
+  expect_equal(.data_group_from_path(character(0)), character(0))
+})
+
+test_that("data_check names Git LFS pointers and opens zips inside zips (#700)", {
+  d <- file.path(tempdir(), "dc700"); unlink(d, recursive = TRUE); dir.create(d)
+  withr::defer(unlink(d, recursive = TRUE))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:ab", "size 734003200"),
+             file.path(d, "large_data.csv"))
+  # nested.zip holds level1.csv and level1.zip, which holds level2.csv
+  w <- file.path(tempdir(), "dc700_build"); unlink(w, recursive = TRUE); dir.create(w)
+  withr::defer(unlink(w, recursive = TRUE))
+  writeLines(c("a,b", "1,2"), file.path(w, "level2.csv"))
+  writeLines(c("c,d", "3,4"), file.path(w, "level1.csv"))
+  withr::with_dir(w, {
+    utils::zip("level1.zip", "level2.csv", flags = "-q")
+    utils::zip(file.path(d, "nested.zip"), c("level1.csv", "level1.zip"), flags = "-q")
+  })
+  dc <- suppressMessages(module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE))
+  expect_match(dc$summary_text, "1 file is a Git LFS pointer")
+  expect_equal(dc$traffic_light, "yellow")
+  expect_true(all(c("level1.csv", "level2.csv") %in% dc$structure$file_name))
+})
+
+test_that("unnamed, empty columns at the right end of a table are left out (#695, point 31)", {
+  d <- data.frame(a = 1:3, b = c("x", NA, ""), V3 = NA, V4 = c("", " ", NA))
+  out <- .drop_trailing_blank_cols(d)
+  expect_equal(names(out), c("a", "b"))
+  expect_equal(attr(out, "blank_cols_dropped"), 2)
+  # one with a name or a value stops it; so does a column in the middle
+  expect_equal(names(.drop_trailing_blank_cols(data.frame(a = 1:3, V2 = NA, keep = 1:3, V4 = NA))),
+               c("a", "V2", "keep"))
+  expect_equal(names(.drop_trailing_blank_cols(data.frame(a = 1:3, named_empty = NA))), c("a", "named_empty"))
+  # read from a file, as a spreadsheet export with every column gives it
+  f <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c(paste0("id,score", strrep(",", 50)), paste0("1,3", strrep(",", 50)), paste0("2,4", strrep(",", 50))), f)
+  expect_equal(ncol(data_read_head(f, n_rows = Inf)), 2)
+})

@@ -834,10 +834,11 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 
 # TRUE when `x` names an existing local file rather than a URL. A URL scheme
 # ("https://", "file://") is never treated as a path, so a file:// URL still
-# goes through the HTTP code like any other URL.
+# goes through the HTTP code like any other URL. A Windows drive written as
+# "C://" is a path (#723).
 .is_local_file <- function(x) {
   length(x) == 1 && !is.na(x) && nzchar(x) &&
-    !grepl("^[A-Za-z][A-Za-z0-9+.-]*://", x) &&
+    !.is_web_address(x) &&
     file.exists(x) && !dir.exists(x)
 }
 
@@ -1599,23 +1600,43 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # could not unpack (encrypted, or compressed with a method metacheck cannot
 # unpack): before, they were named only in a message during the run, and the
 # checks did not see them. `failed` has the columns archive, file_name and
-# reason (.expand_zip()'s attribute "unpack_failed"). Returns list(report,
-# summary), NULL when none.
+# reason (.expand_zip()'s attribute "unpack_failed"); a row whose file_name is
+# NA is a whole archive that could not be opened (.archive_unopened()).
+# Returns list(report, summary), NULL when none.
 .unzip_failed_text <- function(failed) {
   none <- list(report = NULL, summary = NULL)
   if (!is.data.frame(failed) || !nrow(failed)) return(none)
   failed <- failed[!duplicated(paste(failed$archive, failed$file_name)), , drop = FALSE]
-  n <- nrow(failed)
-  lines <- vapply(split(failed, factor(failed$archive, unique(failed$archive))), function(f)
+  whole <- is.na(failed$file_name)
+  arch <- failed[whole, , drop = FALSE]
+  memb <- failed[!whole, , drop = FALSE]
+  n <- nrow(memb)
+  lines <- if (n) vapply(split(memb, factor(memb$archive, unique(memb$archive))), function(f)
     paste0("- ", .unzip_failed_note(data.frame(name = f$file_name, path = NA_character_,
                                                 reason = f$reason), sprintf("`%s`", f$archive[1])), "."),
     character(1))
+  sent <- c(
+    if (nrow(arch)) sprintf("%d archive%s in the repository could not be opened, so the checks did not see %s files",
+                            nrow(arch), plural(nrow(arch)), plural(nrow(arch), "its", "their")),
+    if (n) sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s",
+                   n, plural(n), plural(n, "it", "them")))
   list(report = c("#### Files that could not be unpacked",
-                  sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s:",
-                          n, plural(n), plural(n, "it", "them")),
-                  "", unname(lines)),
-       summary = sprintf("%d file%s in the repository's archives could not be unpacked, so the checks did not see %s.",
-                         n, plural(n), plural(n, "it", "them")))
+                  paste0(paste(sent, collapse = "; "), ":"), "",
+                  sprintf("- `%s` could not be opened (%s).", arch$archive, arch$reason),
+                  unname(lines)),
+       summary = paste0(paste(sent, collapse = "; "), "."))
+}
+
+# An archive that could not be opened at all (damaged, or cut off: a zip
+# without its central directory, #703), as the empty result of .expand_zip(),
+# .expand_tar() or .expand_compressed() with the attribute "unpack_failed":
+# before, it was dropped without a word, and a repository holding only such an
+# archive was reported as having no files.
+.archive_unopened <- function(empty, row, path) {
+  attr(empty, "unpack_failed") <- data.frame(
+    archive = .archive_label(row, path), file_name = NA_character_,
+    reason = "it is damaged or incomplete")
+  empty
 }
 
 # A sentence naming the members .unzip_all() could not write and why, for a
@@ -1697,9 +1718,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   base <- basename(name)
   types <- data_classify_files(base)
   roles <- .data_doc_role(base)
-  (types %in% c("data", "code") |
-     (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
-    !(types %in% skip_types) &
+  # an archive inside the archive is kept too, so data_check opens it in turn
+  # (zips inside zips were not opened, #700)
+  inner_archive <- .is_zip(base) | .is_tar_archive(base) | .is_single_compress(base)
+  (((types %in% c("data", "code") |
+       (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
+      !(types %in% skip_types)) | inner_archive) &
     !grepl("(^|/)__MACOSX/", name) & !.is_useless_file(name)
 }
 
@@ -1709,8 +1733,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # attached as attribute "oversize" (file_name, file_size in bytes, NA when
 # unknown), which data_check adds to its record of files over the limit, so
 # the manifest gives them that reason. `name` is the inner paths.
-.with_oversize <- function(rows, archive_row, label, name, file_size, archive = NA_character_) {
+.with_oversize <- function(rows, archive_row, label, name, file_size, archive = NA_character_,
+                           attr_name = "oversize") {
   if (length(name) == 0) return(rows)
+  # bind_rows() drops the attributes an earlier call set
+  kept <- attributes(rows)[intersect(c("oversize", "over_budget", "unpack_failed"),
+                                     names(attributes(rows)))]
   extra <- archive_row[rep(1, length(name)), , drop = FALSE]
   extra$file_name     <- basename(name)
   extra$file_path     <- file.path(label, name)
@@ -1726,9 +1754,27 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   extra$archive_file_path     <- label
   extra$archive_file_location <- archive
   out <- dplyr::bind_rows(rows, extra)
-  attr(out, "oversize") <- data.frame(file_name = basename(name),
-                                      file_size = as.numeric(file_size))
+  for (a in names(kept)) attr(out, a) <- kept[[a]]
+  attr(out, attr_name) <- data.frame(file_name = basename(name),
+                                     file_size = as.numeric(file_size))
   out
+}
+
+# Which files of sizes `size` fit in `max_total` bytes, taken smallest first
+# (ties by `name`): the files of an archive unpacked within what is left of
+# its repository's download budget (#699). A file of unknown size does not
+# fit unless there is no limit.
+.fit_budget <- function(size, max_total, name = seq_along(size)) {
+  if (!is.finite(max_total)) return(rep(TRUE, length(size)))
+  fit <- logical(length(size))
+  used <- 0
+  for (k in order(size, name)) {
+    if (!is.na(size[k]) && used + size[k] <= max_total) {
+      fit[k] <- TRUE
+      used <- used + size[k]
+    }
+  }
+  fit
 }
 
 # The path an archive's files are listed under: the archive's own path in the
@@ -1863,7 +1909,13 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # anything is written. A member over the limit is reported in the result's
 # "oversize" attribute, like a file too large to download, and a copy left by
 # an earlier run is removed, so the cache never holds more than the limits.
-.expand_zip <- function(zip_path, zip_row, skip_types = "materials", max_bytes = Inf) {
+#
+# The files not yet unpacked are also held to `max_total`, the bytes left in
+# the repository's download budget (#699): taken smallest first, the rest
+# reported in the "over_budget" attribute. The budget counted the zip at its
+# packed size only, so its files could take the folder past the budget.
+.expand_zip <- function(zip_path, zip_row, skip_types = "materials", max_bytes = Inf,
+                        max_total = Inf) {
   empty <- zip_row[0, , drop = FALSE]
   if (is.null(zip_path) || is.na(zip_path) || !file.exists(zip_path)) return(empty)
 
@@ -1873,13 +1925,20 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   # names in valid UTF-8; a member stored under the old DOS characters is
   # taken out by its position (.unzip_all())
   entries <- .unzip_list(zip_path)
-  if (is.null(entries) || nrow(entries) == 0) return(empty)
+  if (is.null(entries)) return(.archive_unopened(empty, zip_row, zip_path))
+  if (nrow(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries$Name), , drop = FALSE]
   keep <- .archive_keep(entries$Name, skip_types)
   over <- keep & entries$Length > max_bytes
   unlink(file.path(dest, entries$Name[over]))
   want <- entries$Name[keep & !over]
   missing <- want[!file.exists(file.path(dest, want))]
+  m_size <- entries$Length[match(missing, entries$Name)]
+  fit <- .fit_budget(m_size, max_total, missing)
+  no_room <- missing[!fit]
+  no_room_size <- m_size[!fit]
+  missing <- missing[fit]
+  want <- setdiff(want, no_room)
   failed <- NULL
   if (length(missing) > 0) {
     part <- paste0(dest, ".part")
@@ -1898,6 +1957,8 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   rows <- if (length(want) > 0) .archive_rows(dest, zip_row, label, skip_types, archive = zip_path)
           else empty
   out <- .with_oversize(rows, zip_row, label, entries$Name[over], entries$Length[over], archive = zip_path)
+  out <- .with_oversize(out, zip_row, label, no_room, no_room_size, archive = zip_path,
+                        attr_name = "over_budget")
   if (!is.null(failed) && nrow(failed) > 0)
     attr(out, "unpack_failed") <- data.frame(archive = label, file_name = failed$name,
                                              reason = failed$reason)
@@ -1916,14 +1977,20 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # its headers (.tar_list_file()) before anything is written. A compressed tar
 # gives only names without reading it all, so its kept members are unpacked
 # and any over the limit removed again straight away.
-.expand_tar <- function(tar_path, tar_row, skip_types = "materials", max_bytes = Inf) {
+#
+# The files not yet unpacked are also held to `max_total`, the bytes left in
+# the repository's download budget, as in .expand_zip() (#699). A compressed
+# tar's files are unpacked first and those that do not fit removed again.
+.expand_tar <- function(tar_path, tar_row, skip_types = "materials", max_bytes = Inf,
+                        max_total = Inf) {
   empty <- tar_row[0, , drop = FALSE]
   if (is.null(tar_path) || is.na(tar_path) || !file.exists(tar_path)) return(empty)
 
   dest <- .archive_dest(tar_path)
   entries <- tryCatch(utils::untar(tar_path, list = TRUE), error = function(e) NULL,
                       warning = function(w) NULL)
-  if (is.null(entries) || length(entries) == 0) return(empty)
+  if (is.null(entries)) return(.archive_unopened(empty, tar_row, tar_path))
+  if (length(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries, useBytes = TRUE)]
   # A tar records no character set for its names: a name that is not valid
   # UTF-8 is read as Latin-1, as other text files are (.utf8_lines()); text
@@ -1943,6 +2010,17 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   unlink(file.path(dest, entries[over]))
   want <- entries[keep & !over]
   missing <- want[!file.exists(file.path(dest, want))]
+  # a plain tar gives the sizes before anything is unpacked
+  no_room <- character(0)
+  no_room_size <- numeric(0)
+  if (length(missing) > 0 && plain) {
+    m_size <- size[match(missing, entries)]
+    fit <- .fit_budget(m_size, max_total, missing)
+    no_room <- missing[!fit]
+    no_room_size <- m_size[!fit]
+    missing <- missing[fit]
+  }
+  new_files <- missing
   if (length(missing) > 0) {
     part <- paste0(dest, ".part")
     k_of <- match(missing, entries)
@@ -1970,11 +2048,24 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     over[match(want[big], entries)] <- TRUE
     unlink(got[big])
   }
+  # a compressed tar: of the files just unpacked, those that do not fit are
+  # removed again
+  if (!plain && length(new_files) > 0 && is.finite(max_total)) {
+    got <- file.path(dest, new_files)
+    there <- file.exists(got)
+    g_size <- ifelse(there, file.size(got), NA_real_)
+    fit <- !there | .fit_budget(g_size, max_total, new_files)
+    no_room <- new_files[!fit]
+    no_room_size <- g_size[!fit]
+    unlink(got[!fit])
+  }
 
   label <- .archive_label(tar_row, tar_path)
   rows <- if (any(keep & !over)) .archive_rows(dest, tar_row, label, skip_types, archive = tar_path)
           else empty
-  .with_oversize(rows, tar_row, label, entries[over], size[over], archive = tar_path)
+  out <- .with_oversize(rows, tar_row, label, entries[over], size[over], archive = tar_path)
+  .with_oversize(out, tar_row, label, no_room, no_room_size, archive = tar_path,
+                 attr_name = "over_budget")
 }
 
 # Expand a downloaded single-file compression (.gz / .bz2 / .xz that is NOT a
@@ -1989,7 +2080,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # the limit is passed, the partial copy is deleted, and the file is reported
 # in the "oversize" attribute (size NA, since only "more than the limit" is
 # known). A copy over the limit left by an earlier run is removed.
-.expand_compressed <- function(gz_path, gz_row, skip_types = "materials", max_bytes = Inf) {
+#
+# Decompression also stops at `max_total`, the bytes left in the repository's
+# download budget (#699); a file stopped there is reported in the
+# "over_budget" attribute instead.
+.expand_compressed <- function(gz_path, gz_row, skip_types = "materials", max_bytes = Inf,
+                               max_total = Inf) {
   empty <- gz_row[0, , drop = FALSE]
   if (is.null(gz_path) || is.na(gz_path) || !file.exists(gz_path)) return(empty)
 
@@ -2019,6 +2115,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
         if (length(chunk) == 0) return("ok")
         written <- written + length(chunk)
         if (written > max_bytes) return("over")
+        if (written > max_total) return("no_room")
         writeBin(chunk, oc)
       }
     }
@@ -2027,7 +2124,11 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     if (!identical(status, "ok")) {
       unlink(dirname(part), recursive = TRUE)
       return(if (identical(status, "over"))
-        .with_oversize(empty, gz_row, .archive_label(gz_row, gz_path), inner_name, NA, archive = gz_path) else empty)
+        .with_oversize(empty, gz_row, .archive_label(gz_row, gz_path), inner_name, NA, archive = gz_path)
+        else if (identical(status, "no_room"))
+          .with_oversize(empty, gz_row, .archive_label(gz_row, gz_path), inner_name, NA,
+                         archive = gz_path, attr_name = "over_budget")
+        else .archive_unopened(empty, gz_row, gz_path))
     }
     .move_extracted(dirname(part), dest, inner_name)
   }
