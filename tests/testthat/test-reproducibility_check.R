@@ -4056,9 +4056,15 @@ test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
   skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
 
   root <- withr::local_tempdir()
-  writeLines(c("import urllib.request",
-               'd = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz").read()',
-               "print(len(d))"), file.path(root, "d.py"))
+  # Any answer from the server shows the internet is on: CRAN refuses Python's
+  # own name ("Python-urllib/3.12") with 429 when too many use it (#730). With
+  # the network off, the address cannot be looked up, a URLError, not caught.
+  writeLines(c("import urllib.request, urllib.error",
+               "try:",
+               '    d = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz", timeout = 60).read()',
+               "    print(len(d))",
+               "except urllib.error.HTTPError as e:",
+               '    print("the server answered", e.code)'), file.path(root, "d.py"))
   writeLines(c("import sys", "sys.exit(3)"), file.path(root, "e.py"))
   run_tbl <- data.frame(file_name = c("d.py", "e.py"), script_path = file.path(root, c("d.py", "e.py")), run_dir = root)
   off <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120)
@@ -4066,7 +4072,7 @@ test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
   on <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120,
                                     net = .repro_download_limits(TRUE))
   # the script's own failure is still a failure
-  expect_equal(on$outcome, c("ran_ok", "errored"))
+  expect_equal(on$outcome, c("ran_ok", "errored"), info = on$error[1])
 })
 
 test_that(".repro_binary_kind tells saved data and other binary files from code (#568)", {
