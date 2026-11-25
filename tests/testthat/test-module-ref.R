@@ -352,6 +352,128 @@ test_that("ref_replication does not suggest the citing paper itself (#695)", {
   expect_true(tolower(row$doi_r) %in% tolower(mo$table$replication_doi[mo$table$paper_id == "B"]))
 })
 
+test_that("ref_replication keeps the individual report's URL in a project paper's reference", {
+  # "Individual report available at <url>" lost its URL, which was taken for a
+  # repeat of the link to the project paper's DOI
+  fl <- FLoRA()
+  row <- fl[grepl("available at https?://[^[:space:]]+$", fl$apa_ref_r), ][1, ]
+  report_url <- sub(".*available at (https?://[^[:space:]]+)$", "\\1", row$apa_ref_r)
+  p <- test_paper("x")
+  local_mocked_bindings(ref_table = function(paper)
+    data.frame(paper_id = p$paper_id, bib_id = 1L, doi = row$doi_o, text = "original"))
+  mo <- module_run(p, "ref_replication")
+  refs <- mo$table$replication_ref[mo$table$replication_doi %in% row$doi_r]
+  expect_true(any(endsWith(refs, report_url)))
+  report <- paste(unlist(mo$report), collapse = " ")
+  expect_match(report, paste0("href='", report_url, "'"), fixed = TRUE)
+})
+
+test_that("ref_replication counts a replication as cited by any DOI FLoRA gives for it", {
+  # an Open Science Collaboration row: doi_r is the project paper, url_r the
+  # study's own report, as a DOI link
+  fl <- FLoRA()
+  rpp <- fl[fl$doi_r %in% "10.1126/science.aac4716" & grepl("doi.org/", fl$url_r), ]
+  orig <- names(which(table(rpp$doi_o) >= 2))[1]
+  rows <- rpp[rpp$doi_o == orig, ]
+  report_doi <- sub("^https?://doi.org/", "", rows$url_r[1])
+  p <- test_paper("x")
+  local_mocked_bindings(ref_table = function(paper)
+    data.frame(paper_id = p$paper_id, bib_id = 1:2, doi = c(orig, tolower(report_doi)),
+               text = c("original", "report")))
+  mo <- module_run(p, "ref_replication")
+  # the cited study report is left out; the other study of the same original stays
+  expect_false(rows$url_r[1] %in% mo$table$replication_url)
+  expect_true(rows$url_r[2] %in% mo$table$replication_url)
+
+  # the citing paper is a preprint listed in alt_identifier_r
+  row <- fl[grepl("^10\\.31234/", fl$alt_identifier_r) & !grepl(",", fl$alt_identifier_r) &
+              !is.na(fl$doi_r), ][1, ]
+  p$info$doi <- paste0("https://doi.org/", row$alt_identifier_r)
+  local_mocked_bindings(ref_table = function(paper)
+    data.frame(paper_id = p$paper_id, bib_id = 1L, doi = row$doi_o, text = "original"))
+  mo <- module_run(p, "ref_replication")
+  expect_false(row$doi_r %in% mo$table$replication_doi)
+})
+
+test_that("ref_replication matches identifiers and titles as FLoRA writes them (#716)", {
+  sici <- "10.1002/(sici)1099-0771(199806)11:2<107::aid-bdm292>3.0.co;2-y"
+  fake <- dplyr::tibble(
+    doi_o = c("10.1/orig", "10.1/orig", "10.1/orig", sici, "10.1/twin", "10.1/twin", "10.1/asch"),
+    apa_ref_o = "Original",
+    doi_r = c("10.2/rep1", "10.2/rep2", "10.2/rep4", "10.2/rep3",
+              "10.2/twin1", "10.2/twin2", "10.2/nauts"),
+    apa_ref_r = c("Rep 1", "Jones, A., & Lee, B. (2021). A replication of the original effect in a new sample. J.",
+                  "Rep 4", "Rep 3",
+                  "Brown, A. (2020). Reproduction of a twin study in management science. M.",
+                  "Kim, B. (2021). Reproduction of a twin study in management science. M.",
+                  "Nauts, S. (2014). Forming Impressions of Personality. Social Psychology."),
+    url_r = NA_character_,
+    title_r = c("Rep one", "A replication of the original effect in a new sample", "Rep four",
+                "Rep three", rep("Reproduction of a twin study in management science", 2),
+                "Forming Impressions of Personality"),
+    alt_identifier_r = c("10.3/pre1, 10.3/pre2", NA, NA, NA, NA, NA, NA),
+    outcome = "failed", outcome_quote = NA_character_, type = "replication"
+  )
+  p <- test_paper("x")
+  local_mocked_bindings(FLoRA = function() fake)
+  refs <- \(doi, text) data.frame(paper_id = p$paper_id, bib_id = seq_along(doi), doi = doi, text = text)
+  local_mocked_bindings(ref_table = function(paper) refs(
+    c("10.1/orig", "10.3/PRE2", NA, sici,
+      "https://doi.org/10.1002/(sici)1099-0771(199806)11:2%3C107::aid-bdm292%3E3.0.co;2-y"),
+    c("original", "preprint",
+      "Jones, A. & Lee, B. (2021). A Replication of the Original Effect in a New Sample. Journal of Tests, 1.",
+      "Hsee", "Hsee again")))
+  mo <- module_run(p, "ref_replication")
+  # rep1 is cited as its second alternative identifier; rep2 by its title and
+  # first author without a DOI
+  expect_setequal(mo$table$replication_doi, c("10.2/rep4", "10.2/rep3"))
+  # an original cited twice, once percent-encoded, is one original with one
+  # replication
+  expect_equal(sum(mo$table$replication_doi == "10.2/rep3"), 2)
+  expect_match(mo$summary_text, "We found 2 replications for 2 originals")
+  expect_equal(mo$summary_table$replications, 2)
+
+  # two reproductions with one title: the cited one is found by its first
+  # author, and a third author's work with that title hides neither
+  local_mocked_bindings(ref_table = function(paper) refs(
+    c("10.1/twin", NA, NA),
+    c("original", "Brown, A. (2020). Reproduction of a twin study in management science. M.",
+      "Lee, C. (2019). Reproduction of a twin study in management science. Working paper.")))
+  mo <- module_run(p, "ref_replication")
+  expect_equal(mo$table$replication_doi, "10.2/twin2")
+
+  # another version of the replication (a preprint with its own DOI) counts
+  local_mocked_bindings(ref_table = function(paper) refs(
+    c("10.1/orig", "10.31234/osf.io/abcde"),
+    c("original", "Jones, A. (2020). A replication of the original effect in a new sample. PsyArXiv.")))
+  mo <- module_run(p, "ref_replication")
+  expect_false("10.2/rep2" %in% mo$table$replication_doi)
+
+  # the paper is the replication, with a DOI FLoRA does not list
+  p$info$title <- "A Replication of the Original Effect in a New Sample"
+  p$info$doi <- "10.5/published"
+  local_mocked_bindings(ref_table = function(paper) refs("10.1/orig", "original"))
+  mo <- module_run(p, "ref_replication")
+  expect_false("10.2/rep2" %in% mo$table$replication_doi)
+
+  # a replication titled like its original is not cited by citing the original
+  local_mocked_bindings(ref_table = function(paper) refs(
+    "10.1/asch", "Asch, S. E. (1946). Forming impressions of personality. JASP, 41, 258."))
+  mo <- module_run(p, "ref_replication")
+  expect_equal(mo$table$replication_doi, "10.2/nauts")
+})
+
+test_that("reference modules run on a paper whose reference list could not be read", {
+  # bib has no rows and only bib_id; ref_table() stopped at its join
+  p <- test_paper("x")
+  p$bib <- data.frame(bib_id = integer(0))
+  rt <- ref_table(p)
+  expect_equal(nrow(rt), 0)
+  expect_equal(names(rt), c("paper_id", "bib_id", "doi", "text"))
+  mo <- module_run(p, "ref_replication")
+  expect_equal(mo$traffic_light, "na")
+})
+
 test_that("ref_summary labels unmatched references and keeps one row per reference (U119)", {
   # no_match with every *_mismatch FALSE gave NA; two replications repeated
   # the reference

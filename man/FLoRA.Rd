@@ -2,22 +2,24 @@
 % Please edit documentation in R/db-replications.R
 \name{FLoRA}
 \alias{FLoRA}
-\title{FORRT Replication Database (FLoRA)}
+\title{FORRT Library of Reproduction and Replication Attempts (FLoRA)}
 \format{
-A data frame with 8 columns:
+A data frame with 10 columns:
 \describe{
 \item{doi_o}{DOI of original study}
 \item{apa_ref_o}{APA reference of original study}
 \item{doi_r}{DOI of replication study (may be NA if url_r is provided)}
 \item{apa_ref_r}{APA reference of replication study}
 \item{url_r}{URL of replication study (used when DOI is not available)}
-\item{outcome}{replication outcome}
+\item{title_r}{title of replication study}
+\item{alt_identifier_r}{other identifiers of the replication study, separated by commas: a preprint, the individual report of a study in a project paper, or that project paper}
+\item{outcome}{replication outcome; for a reproduction, its computational reproducibility and robustness outcomes (e.g., "computationally reproducible, robustness not checked")}
 \item{outcome_quote}{quote describing replication outcome}
 \item{type}{replication or reproduction}
 }
 }
 \source{
-\url{https://osf.io/9r62x/files/t4j8f}
+FLoRA releases on Zenodo, \doi{10.5281/zenodo.24461022} (all versions)
 }
 \usage{
 FLoRA()
@@ -26,7 +28,7 @@ FLoRA()
 a data frame
 }
 \description{
-FLoRA database containing DOIs of original studies and replications. Use \code{FLoRA_date()} to find the date it was downloaded, and \code{FLoRA_update()} to update it.
+FLoRA database containing DOIs of original studies and replications. Use \code{FLoRA_date()} to find the date of the FLoRA release it comes from, and \code{FLoRA_update()} to download the latest release. \code{FLoRA()} uses that download instead of the built-in data when it was published on the same day or later and has all the built-in columns. The release's version and DOI are in \code{attr(FLoRA(), "version")} and \code{attr(FLoRA(), "doi")}.
 }
 \examples{
 FLoRA()
