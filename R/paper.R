@@ -693,6 +693,13 @@ ref_table <- function(paper) {
   bib_id <- text <- NULL
   cols <- c("paper_id", "bib_id", "doi")
   bib_orig <- paper_table(paper, "bib", cols)
+  # a paper whose reference list could not be read has a bib table without
+  # rows or columns, and every reference module stopped at the join below
+  # (27 of 5,063 papers in nine psychology corpora)
+  if (nrow(bib_orig) == 0) {
+    return(dplyr::tibble(paper_id = character(0), bib_id = integer(0),
+                         doi = character(0), text = character(0)))
+  }
   bib_match <- paper_table(paper, "bib_match", cols)
   if (nrow(bib_match) == 0) {
     bib <- bib_orig

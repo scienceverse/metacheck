@@ -10,7 +10,7 @@ FLoRA_update()
 the path to the data frame (invisibly)
 }
 \description{
-metacheck comes with a built-in data frame called \code{FLoRA}. We update it regularly, but you can use this function to download the newest version. The download is >5MB, but this function will summarise the information into a smaller version and delete the original file.
+metacheck comes with a built-in data frame called \code{FLoRA}. We update it regularly, but you can use this function to download the newest version. It downloads \code{flora.csv} from the latest FLoRA release on Zenodo (\doi{10.5281/zenodo.24461022}), which is >5MB, summarises the information into a smaller version and deletes the original file.
 }
 \examples{
 \dontrun{

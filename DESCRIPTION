@@ -1,6 +1,6 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.4.4.40
+Version: 0.4.4.41
 Date: 2026-11-06
 Authors@R: c(
   person(  given = "Lisa",
@@ -116,4 +116,4 @@ Depends:
 LazyData: true
 LazyDataCompression: xz
 Config/Needs/website: rmarkdown
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

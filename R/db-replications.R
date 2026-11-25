@@ -1,19 +1,21 @@
-#' FORRT Replication Database (FLoRA)
+#' FORRT Library of Reproduction and Replication Attempts (FLoRA)
 #'
-#' FLoRA database containing DOIs of original studies and replications. Use `FLoRA_date()` to find the date it was downloaded, and `FLoRA_update()` to update it.
+#' FLoRA database containing DOIs of original studies and replications. Use `FLoRA_date()` to find the date of the FLoRA release it comes from, and `FLoRA_update()` to download the latest release. `FLoRA()` uses that download instead of the built-in data when it was published on the same day or later and has all the built-in columns. The release's version and DOI are in `attr(FLoRA(), "version")` and `attr(FLoRA(), "doi")`.
 #'
-#' @format A data frame with 8 columns:
+#' @format A data frame with 10 columns:
 #' \describe{
 #'   \item{doi_o}{DOI of original study}
 #'   \item{apa_ref_o}{APA reference of original study}
 #'   \item{doi_r}{DOI of replication study (may be NA if url_r is provided)}
 #'   \item{apa_ref_r}{APA reference of replication study}
 #'   \item{url_r}{URL of replication study (used when DOI is not available)}
-#'   \item{outcome}{replication outcome}
+#'   \item{title_r}{title of replication study}
+#'   \item{alt_identifier_r}{other identifiers of the replication study, separated by commas: a preprint, the individual report of a study in a project paper, or that project paper}
+#'   \item{outcome}{replication outcome; for a reproduction, its computational reproducibility and robustness outcomes (e.g., "computationally reproducible, robustness not checked")}
 #'   \item{outcome_quote}{quote describing replication outcome}
 #'   \item{type}{replication or reproduction}
 #' }
-#' @source \url{https://osf.io/9r62x/files/t4j8f}
+#' @source FLoRA releases on Zenodo, \doi{10.5281/zenodo.24461022} (all versions)
 #'
 #' @returns a data frame
 #' @export
@@ -27,12 +29,12 @@ FLoRA <- function() {
   ext <- tools::R_user_dir("metacheck", "data") |>
     file.path("FLoRA.Rds")
 
+  # a downloaded copy is used when it is from the same or a later release date
+  # and has every built-in column (the former OSF download lacks some)
   if (file.exists(ext)) {
-    # check dates
     ext_FLoRA <- readRDS(ext)
-    ext_date <- attr(ext_FLoRA, "date")
-    int_date <- attr(int_FLoRA, "date")
-    if (ext_date > int_date) {
+    if (all(names(int_FLoRA) %in% names(ext_FLoRA)) &&
+        isTRUE(attr(ext_FLoRA, "date") >= attr(int_FLoRA, "date"))) {
       return(ext_FLoRA)
     }
   }
@@ -40,9 +42,9 @@ FLoRA <- function() {
   return(int_FLoRA)
 }
 
-#' Get date FLoRA was updated
+#' Get date of the FLoRA release
 #'
-#' @returns the date
+#' @returns the publication date of the FLoRA release on Zenodo that `FLoRA()` uses
 #' @export
 #'
 #' @examples
@@ -53,7 +55,7 @@ FLoRA_date <- function() {
 
 #' Update FLoRA
 #'
-#' metacheck comes with a built-in data frame called `FLoRA`. We update it regularly, but you can use this function to download the newest version. The download is >5MB, but this function will summarise the information into a smaller version and delete the original file.
+#' metacheck comes with a built-in data frame called `FLoRA`. We update it regularly, but you can use this function to download the newest version. It downloads `flora.csv` from the latest FLoRA release on Zenodo (\doi{10.5281/zenodo.24461022}), which is >5MB, summarises the information into a smaller version and deletes the original file.
 #'
 #' @returns the path to the data frame (invisibly)
 #' @export
@@ -64,44 +66,37 @@ FLoRA_date <- function() {
 #' FLoRA_update()
 #' }
 FLoRA_update <- function() {
-  # download newest FLoRA update
-  old_timeout <- getOption("timeout")
-  on.exit(options(timeout = old_timeout))
-  options(timeout = 300)
+  # the concept record (all versions) answers with the latest version's record
+  concept <- "https://zenodo.org/api/records/24461022/versions/latest"
+  record <- .mc_request(concept) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+  csv <- Filter(\(f) identical(f$key, "flora.csv"), record$files)
+  if (length(csv) == 0) {
+    stop("The FLoRA release at https://doi.org/", record$doi,
+         " has no flora.csv", call. = FALSE)
+  }
+  csv <- csv[[1]]
 
-  tmp <- tempfile()
-  # t4j8f is a single OSF file, not a whole project: mode = "all" (the
-  # default since the whole-project-download addition) skips the file
-  # listing and downloads archives per node, which is the wrong shape for
-  # a direct single-file target. "select" is the old "files" behaviour that
-  # actually lists and fetches the requested file.
-  suppressMessages(osf_file_download(
-    osf_id = "t4j8f",
-    download_to = tmp,
-    ignore_folder_structure = TRUE,
-    mode = "select"
-  ))
-  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+  tmp <- tempfile(fileext = ".csv")
+  on.exit(unlink(tmp), add = TRUE)
+  .mc_request(csv$links$self) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform(path = tmp)
+  md5 <- sub("^md5:", "", csv$checksum)
+  if (!identical(unname(tools::md5sum(tmp)), md5)) {
+    stop("The download of flora.csv from https://doi.org/", record$doi,
+         " is incomplete; try again", call. = FALSE)
+  }
 
-  # the file is in tmp/t4j8f/ (osf_file_download() saves into a folder named
-  # after the OSF ID)
-  file <- list.files(tmp, "\\.csv", full.names = TRUE, recursive = TRUE)
-  if (length(file) == 0) stop("The file at osf.io/t4j8f is missing")
-  FLoRA <- suppressMessages(
-    readr::read_csv(file[[1]], show_col_types = FALSE)
-  )
-
-  # Remove rows without doi for original study, and without doi or url for replication
-  has_doi_o <- !is.na(FLoRA$doi_o) & FLoRA$doi_o != ""
-  has_doi_r <- !is.na(FLoRA$doi_r) & FLoRA$doi_r != ""
-  has_url_r <- !is.na(FLoRA$url_r) & FLoRA$url_r != ""
-  rows <- has_doi_o & (has_doi_r | has_url_r)
-
-  # Keep 8 columns
-  cols <- c("doi_o", "apa_ref_o", "doi_r", "apa_ref_r", "url_r", "outcome", "outcome_quote", "type")
-  FLoRA <- dplyr::distinct(FLoRA[rows, cols])
-
-  attr(FLoRA, "date") <- Sys.Date()
+  # every field is text (see the release's CODEBOOK.md)
+  raw <- readr::read_csv(tmp, col_types = readr::cols(.default = "c"),
+                         na = c("", "NA"), progress = FALSE)
+  FLoRA <- .FLoRA_summarise(raw)
+  attr(FLoRA, "date") <- as.Date(record$metadata$publication_date)
+  attr(FLoRA, "version") <- record$metadata$version
+  attr(FLoRA, "doi") <- record$doi
 
   # how/where to save this file?
   # https://blog.r-hub.io/2020/03/12/user-preferences/
@@ -111,4 +106,51 @@ FLoRA_update <- function() {
   saveRDS(FLoRA, path, compress = "xz")
 
   invisible(path)
+}
+
+#' Summarise the FLoRA release's flora.csv
+#'
+#' Keeps rows with a DOI for the original study and a DOI or URL for the
+#' replication, and the 10 columns metacheck uses. The Zenodo release leaves
+#' `outcome` and `outcome_quote` empty for a reproduction, which has a
+#' computational reproducibility and a robustness outcome instead; these are
+#' combined into `outcome` ("computationally reproducible, robustness not
+#' checked") and `outcome_quote`.
+#'
+#' @param raw the data frame read from flora.csv
+#'
+#' @returns a data frame
+#' @keywords internal
+.FLoRA_summarise <- function(raw) {
+  has <- \(x) !is.na(x) & x != ""
+  # paste the non-missing values of each row, or NA when there are none
+  paste_rows <- function(..., sep) {
+    m <- cbind(...)
+    m[!has(m)] <- NA
+    apply(m, 1, \(x) if (all(is.na(x))) NA_character_ else
+      paste(x[!is.na(x)], collapse = sep))
+  }
+
+  repro <- raw$type %in% "reproduction" & !has(raw$outcome)
+  if (any(repro)) {
+    r <- raw[repro, ]
+    comp <- ifelse(r$outcome_computation %in% "not checked",
+                   "computation not checked", r$outcome_computation)
+    rob <- ifelse(r$outcome_robustness %in% "not checked",
+                  "robustness not checked", r$outcome_robustness)
+    raw$outcome[repro] <- paste_rows(comp, rob, sep = ", ")
+    comp_q <- ifelse(has(r$outcome_computational_quote),
+                     paste0("Computational reproducibility: ", r$outcome_computational_quote), NA)
+    rob_q <- ifelse(has(r$outcome_robustness_quote),
+                    paste0("Robustness: ", r$outcome_robustness_quote), NA)
+    raw$outcome_quote[repro] <- paste_rows(comp_q, rob_q, sep = "\n\n")
+  }
+
+  # Remove rows without doi for original study, and without doi or url for replication
+  rows <- has(raw$doi_o) & (has(raw$doi_r) | has(raw$url_r))
+
+  # Keep 10 columns
+  cols <- c("doi_o", "apa_ref_o", "doi_r", "apa_ref_r", "url_r", "title_r",
+            "alt_identifier_r", "outcome", "outcome_quote", "type")
+  dplyr::distinct(raw[rows, cols])
 }

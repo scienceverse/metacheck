@@ -2,15 +2,15 @@
 % Please edit documentation in R/db-replications.R
 \name{FLoRA_date}
 \alias{FLoRA_date}
-\title{Get date FLoRA was updated}
+\title{Get date of the FLoRA release}
 \usage{
 FLoRA_date()
 }
 \value{
-the date
+the publication date of the FLoRA release on Zenodo that \code{FLoRA()} uses
 }
 \description{
-Get date FLoRA was updated
+Get date of the FLoRA release
 }
 \examples{
 FLoRA_date()
