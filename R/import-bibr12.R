@@ -150,7 +150,10 @@
 #' @returns logical
 #' @noRd
 .is_bibr12 <- function(paper) {
-  isTRUE(grepl("^12\\.", paper$info$schema_version[1]))
+  sv <- if (is.list(paper$info) && "schema_version" %in% names(paper$info)) {
+    paper$info[["schema_version"]]
+  } else NULL
+  isTRUE(grepl("^12\\.", sv[1]))
 }
 
 #' The paper_ids of the papers in bibr export schema 12.x form
@@ -464,9 +467,8 @@
 #' @returns character vector
 #' @noRd
 .bibr12_doi <- function(x) {
-  x <- tolower(trimws(as.character(x)))
-  x <- sub("^(https?://(dx\\.)?doi\\.org/|doi:\\s*)", "", x)
-  x[!grepl("^10\\.[0-9]{4,9}/\\S+$", x)] <- NA_character_
+  x <- tolower(doi_clean(x))
+  x[!doi_valid_format(x)] <- NA_character_
   x
 }
 

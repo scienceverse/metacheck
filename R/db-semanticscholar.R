@@ -82,23 +82,35 @@ semanticscholar_query <- function(title) {
       return(empty)  # no match
     if (is.null(resp) || inherits(resp, "error") || httr2::resp_status(resp) >= 400)
       return(failed(todo[j]))
-    d <- tryCatch(httr2::resp_body_json(resp)$data[[1]], error = \(e) NULL)
-    if (is.null(d)) return(failed(todo[j]))
-    ids <- d$externalIds
-    types <- unlist(d$publicationTypes)
-    venue <- d$venue %||% NA_character_
+    body <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+    if (!is.list(body) || is.null(body[["data"]])) return(failed(todo[j]))
+    if (!length(body[["data"]])) return(empty)  # valid empty match list
+    d <- body[["data"]][[1]]
+    if (!is.list(d)) return(failed(todo[j]))
+    ids <- if (is.list(d[["externalIds"]])) d[["externalIds"]] else list()
+    types <- unlist(d[["publicationTypes"]], use.names = FALSE)
+    venue <- .json_chr(d[["venue"]])
+    arxiv_id <- .json_chr(ids[["ArXiv"]])
+    rec_doi <- .json_chr(ids[["DOI"]])
     # an arXiv record without a venue, or with arXiv as its venue; missing
     # publication types say nothing
-    arxiv_only <- !is.null(ids$ArXiv) && (is.null(ids$DOI) || grepl("^10\\.48550/", ids$DOI, ignore.case = TRUE)) &&
+    arxiv_only <- !is.na(arxiv_id) && nzchar(arxiv_id) &&
+      (is.na(rec_doi) || grepl("^10\\.48550/", rec_doi, ignore.case = TRUE)) &&
       (is.na(venue) || !nzchar(venue) || grepl("(?i)^(arxiv|corr)\\b", venue, perl = TRUE))
+    raw_authors <- d[["authors"]]
+    auth_str <- if (is.list(raw_authors) && length(raw_authors)) {
+      paste(vapply(raw_authors, \(a) {
+        if (!is.list(a)) return("")
+        name_parts(.json_chr(a[["name"]], ""))
+      }, character(1)), collapse = "; ")
+    } else ""
     data.frame(
       query = todo[j],
-      doi = ids$DOI %||% NA_character_,
-      url = d$url %||% NA_character_,
-      title = d$title %||% NA_character_,
-      year = as.integer(d$year %||% NA),
-      authors = paste(vapply(d$authors, \(a) name_parts(a$name %||% ""), ""),
-                      collapse = "; "),
+      doi = rec_doi,
+      url = .json_chr(d[["url"]]),
+      title = .json_chr(d[["title"]]),
+      year = .json_int(d[["year"]]),
+      authors = auth_str,
       venue = venue,
       type = if (arxiv_only) "Preprint"
              else if ("Conference" %in% types) "Conference"

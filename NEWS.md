@@ -1,5 +1,7 @@
 # metacheck 0.4.4
 
+* `ref_accuracy` (opt-in, not in `report()` defaults) and DOI/API lookups hardened across disciplines: fewer false flags on abbreviated, bilingual, non-English, and renamed journals, garbled registry text, and ASCII umlaut surnames; DOIs cut short or split by a PDF line-break hyphen are recovered; flagged preprint DOIs note that the preprint may have been revised; and DataCite/Crossref/doi.org lookups and HTML table truncation handle malformed records and markup safely.
+
 * `ref_accuracy` flags fewer correct references and more citation errors. In 30 Psychological Science papers, the previous version flagged 35 references, 3 of them citation errors; this version flags 29, 24 of them citation errors. Nineteen of the 29 are references without a DOI, which the previous version did not check. On CiteTracer's synthetic benchmark it flags or lists as not found 68% of citations with a fabricated field, and flags 0.7% of real citations. Its validation statement (shown by `module_help("ref_accuracy")` and in reports) gives these results.
 
 * `ref_accuracy` checks references without a DOI (#528):

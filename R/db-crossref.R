@@ -1,4 +1,21 @@
 
+# Safe scalar extraction from parsed JSON lists (guards against partial matching
+# with `$`, empty lists `list()`, `[null]`, and multi-valued fields).
+.json_chr <- function(x, default = NA_character_) {
+  if (is.null(x) || !length(x)) return(default)
+  if (is.list(x)) x <- unlist(x, use.names = FALSE)
+  if (!length(x) || is.na(x[[1]])) return(default)
+  as.character(x[[1]])
+}
+
+.json_int <- function(x, default = NA_integer_) {
+  if (is.null(x) || !length(x)) return(default)
+  if (is.list(x)) x <- unlist(x, use.names = FALSE)
+  if (!length(x) || is.na(x[[1]])) return(default)
+  v <- suppressWarnings(as.integer(x[[1]]))
+  if (is.na(v)) default else v
+}
+
 #' Doi.org Info from DataCite
 #'
 #' @param doi the DOI(s) to get info for
@@ -27,7 +44,15 @@ datacite_doi <- function(doi) {
   is_valid <- !is.na(doi)
 
   valid_idx <- which(is_valid)
-  urls <- paste0("https://api.datacite.org/dois/", cleaned[valid_idx])
+  # encode reserved characters per path segment while keeping "/" literal so
+  # DataCite paths and recorded httptest2 fixtures resolve cleanly
+  enc_doi_path <- vapply(cleaned[valid_idx], \(s) {
+    if (is.na(s) || !nzchar(s)) return("")
+    parts <- strsplit(s, "/", fixed = TRUE)[[1]]
+    paste(vapply(parts, \(p) utils::URLencode(p, reserved = TRUE), character(1)),
+          collapse = "/")
+  }, character(1), USE.NAMES = FALSE)
+  urls <- paste0("https://api.datacite.org/dois/", enc_doi_path)
 
   resps <- .batch_query(urls, msg = "Querying DataCite")
 
@@ -51,34 +76,57 @@ datacite_doi <- function(doi) {
   }
 
   bib_table <- lapply(bibdata, \(bd) {
-    att <- bd$data$attributes
+    data_obj <- if (is.list(bd)) bd[["data"]] else NULL
+    att <- if (is.list(data_obj)) data_obj[["attributes"]] else NULL
+    if (!is.list(att)) att <- list()
 
-    # authors
-    authors <- lapply(att$creators, \(a) {
-      if (is.null(a) || length(a) == 0) {
-        data.frame(given = character(0), family = character(0))
-      } else {
-        data.frame(
-          given = a$givenName %||% NA_character_,
-          family = a$familyName %||% NA_character_
-        )
-      }
-    }) |> dplyr::bind_rows()
+    # authors (preserve position and name-only organisation creators)
+    creators <- att[["creators"]]
+    authors <- if (is.list(creators) && length(creators)) {
+      lapply(creators, \(a) {
+        if (!is.list(a) || !length(a)) {
+          data.frame(given = NA_character_, family = NA_character_)
+        } else {
+          fam <- .json_chr(a[["familyName"]])
+          giv <- .json_chr(a[["givenName"]])
+          if (is.na(fam)) fam <- .json_chr(a[["name"]])
+          data.frame(given = giv, family = fam)
+        }
+      }) |> dplyr::bind_rows()
+    } else {
+      data.frame(given = character(0), family = character(0))
+    }
+
+    titles <- att[["titles"]]
+    title_val <- if (is.list(titles) && length(titles) && is.list(titles[[1]])) {
+      .json_chr(titles[[1]][["title"]])
+    } else .json_chr(titles)
+
+    cont <- att[["container"]]
+    cont_val <- if (is.list(cont)) .json_chr(cont[["title"]]) else .json_chr(cont)
+
+    dates <- att[["dates"]]
+    date_val <- if (is.list(dates) && length(dates) && is.list(dates[[1]])) {
+      .json_chr(dates[[1]][["date"]])
+    } else .json_chr(dates)
+
+    types <- if (is.list(att[["types"]])) att[["types"]] else list()
+    pub_year <- .json_int(att[["publicationYear"]], NA_integer_)
 
     info <- list(
       service    = "datacite",
-      service_id = bd$data$id %||% NA_character_,
+      service_id = if (is.list(data_obj)) .json_chr(data_obj[["id"]]) else NA_character_,
       score      = NA_real_,
-      doi        = att$doi %||% NA_character_,
-      bib_type   = att$types$bibtex %||% NA_character_,
-      title      = unlist(att$titles)[[1]] %||% NA_character_,
+      doi        = .json_chr(att[["doi"]]),
+      bib_type   = .json_chr(types[["bibtex"]]),
+      title      = title_val,
       authors    = NA,
-      container  = unlist(att$container)[[1]] %||% NA_character_,
-      publisher  = att[["publisher"]] %||% NA_character_,
-      year       = att$publicationYear %||% NA_real_,
-      date       = unlist(att$dates)[[1]] %||% NA_character_,
-      url        = att[["url"]] %||% NA_character_,
-      version    = att[["version"]] %||% NA_character_
+      container  = cont_val,
+      publisher  = .json_chr(att[["publisher"]]),
+      year       = if (is.na(pub_year)) NA_real_ else as.numeric(pub_year),
+      date       = date_val,
+      url        = .json_chr(att[["url"]]),
+      version    = .json_chr(att[["version"]])
     )
 
     info <- lapply(info, \(i) {
@@ -124,13 +172,22 @@ doi_ra <- function(doi) {
       j <- .mc_request(url) |> httr2::req_timeout(30) |>
         httr2::req_retry(max_tries = 2) |>
         httr2::req_perform() |> httr2::resp_body_json()
+      if (!is.list(j) || !length(j)) {
+        return(data.frame(doi = dois, ra = NA_character_, status = NA_character_))
+      }
+      # match returned entries by DOI (case-insensitive) instead of position,
+      # so a short or reordered answer cannot misattribute or recycle results
+      ret_doi <- vapply(j, \(x) if (is.list(x)) .json_chr(x[["DOI"]]) else NA_character_, character(1))
+      ret_ra <- vapply(j, \(x) if (is.list(x)) .json_chr(x[["RA"]]) else NA_character_, character(1))
+      ret_status <- vapply(j, \(x) if (is.list(x)) .json_chr(x[["status"]]) else NA_character_, character(1))
+      idx <- match(tolower(dois), tolower(ret_doi))
       data.frame(
         doi = dois,
-        ra = vapply(j, \(x) x$RA %||% NA_character_, ""),
-        status = vapply(j, \(x) x$status %||% NA_character_, ""))
+        ra = ret_ra[idx],
+        status = ret_status[idx])
     }, error = \(e) data.frame(doi = dois, ra = NA_character_, status = NA_character_))
   }) |> dplyr::bind_rows()
-  m <- match(cleaned, res$doi)
+  m <- match(tolower(cleaned), tolower(res$doi))
   out$ra <- res$ra[m]
   out$exists <- ifelse(!is.na(res$ra[m]), TRUE,
     ifelse(res$status[m] %in% c("DOI does not exist", "Invalid DOI"), FALSE, NA))
@@ -182,20 +239,33 @@ doi_csl <- function(doi) {
       httr2::resp_status(resp) >= 400
     rec <- if (!failed) tryCatch(httr2::resp_body_json(resp, check_type = FALSE),
                                  error = \(e) NULL)
-    if (!is.list(rec) || is.null(rec$title)) next
+    title_val <- if (is.list(rec)) .json_chr(rec[["title"]]) else NA_character_
+    if (is.na(title_val) || !nzchar(title_val)) next
     i <- todo[j]
-    out$doi[i] <- rec$DOI %||% NA_character_
-    out$title[i] <- first(rec$title)
-    dp <- rec$issued$`date-parts`
-    out$year[i] <- if (length(dp) && length(dp[[1]])) as.integer(dp[[1]][[1]]) else NA_integer_
-    out$container[i] <- first(rec$`container-title`)
-    type <- rec$type %||% NA_character_
+    out$doi[i] <- .json_chr(rec[["DOI"]])
+    out$title[i] <- title_val
+    issued <- rec[["issued"]]
+    dp <- if (is.list(issued)) issued[["date-parts"]] else NULL
+    out$year[i] <- if (is.list(dp) && length(dp) && length(dp[[1]])) {
+      .json_int(dp[[1]][[1]], NA_integer_)
+    } else NA_integer_
+    out$container[i] <- .json_chr(rec[["container-title"]])
+    type <- .json_chr(rec[["type"]])
     # Crossref's records keep Crossref's type names ("journal-article")
-    type <- if (type %in% names(csl_type)) csl_type[[type]] else .bibtype_convert(type)
-    out$bib_type[i] <- if (type %in% c(csl_type, "inbook", "proceedings")) type else "misc"
-    out$authors[[i]] <- data.frame(
-      given = vapply(rec$author, \(a) a$given %||% NA_character_, ""),
-      family = vapply(rec$author, \(a) a$family %||% a$literal %||% NA_character_, ""))
+    type <- if (!is.na(type) && type %in% names(csl_type)) csl_type[[type]] else .bibtype_convert(type)
+    out$bib_type[i] <- if (!is.na(type) && type %in% c(csl_type, "inbook", "proceedings")) type else "misc"
+    raw_authors <- rec[["author"]]
+    if (is.list(raw_authors) && length(raw_authors)) {
+      out$authors[[i]] <- data.frame(
+        given = vapply(raw_authors, \(a) if (is.list(a)) .json_chr(a[["given"]]) else NA_character_, character(1)),
+        family = vapply(raw_authors, \(a) {
+          if (!is.list(a)) return(NA_character_)
+          fam <- .json_chr(a[["family"]])
+          if (is.na(fam)) fam <- .json_chr(a[["literal"]])
+          if (is.na(fam)) fam <- .json_chr(a[["name"]])
+          fam
+        }, character(1)))
+    }
   }
   out
 }
@@ -251,31 +321,51 @@ datacite_query <- function(title, n = 5) {
     resp <- resps[[j]]
     failed <- is.null(resp) || inherits(resp, "error") ||
       httr2::resp_status(resp) >= 400
-    data <- if (!failed) tryCatch(httr2::resp_body_json(resp)$data,
+    data <- if (!failed) tryCatch(httr2::resp_body_json(resp)[["data"]],
                                   error = \(e) NULL)
-    if (failed || is.null(data)) {
+    if (failed || !is.list(data)) {
       return(data.frame(query = todo[j], doi = NA_character_,
                         title = NA_character_, year = NA_integer_,
                         authors = NA_character_, type = NA_character_,
                         error = TRUE))
     }
     if (!length(data)) return(empty)
+    # keep valid hits when one hit in the array is malformed
+    data <- Filter(is.list, data)
+    if (!length(data)) return(empty)
     data.frame(
       query = todo[j],
-      doi = vapply(data, \(d) d$id %||% NA_character_, ""),
+      doi = vapply(data, \(d) .json_chr(d[["id"]]), character(1)),
       # a record may have no title
       title = vapply(data, \(d) {
-        t <- d$attributes$titles
-        if (length(t)) t[[1]]$title %||% NA_character_ else NA_character_
-      }, ""),
-      year = vapply(data, \(d) as.integer(d$attributes$publicationYear %||% NA), 1L),
-      # "Family, Given; ...", so that a name with its parts swapped (family
-      # "Kui", given "Wu", cited as "Wu, K.") can be recognised
-      authors = vapply(data, \(d) paste(vapply(d$attributes$creators, \(a) {
-        if (is.null(a$familyName)) return(a$name %||% "")
-        paste(c(a$familyName, a$givenName), collapse = ", ")
-      }, ""), collapse = "; "), ""),
-      type = vapply(data, \(d) d$attributes$types$resourceTypeGeneral %||% NA_character_, ""),
+        att <- d[["attributes"]]
+        t <- if (is.list(att)) att[["titles"]] else NULL
+        if (is.list(t) && length(t) && is.list(t[[1]])) .json_chr(t[[1]][["title"]]) else NA_character_
+      }, character(1)),
+      year = vapply(data, \(d) {
+        att <- d[["attributes"]]
+        if (is.list(att)) .json_int(att[["publicationYear"]]) else NA_integer_
+      }, integer(1)),
+      # "Family, Given; ...", using exact `[[` extraction so a creator with
+      # only `affiliation` and `nameIdentifiers` never partially matches `name`,
+      # and preserving creator position when a creator's name is unknown
+      authors = vapply(data, \(d) {
+        att <- d[["attributes"]]
+        creators <- if (is.list(att)) att[["creators"]] else NULL
+        if (!is.list(creators) || !length(creators)) return("")
+        paste(vapply(creators, \(a) {
+          if (!is.list(a)) return("")
+          fam <- .json_chr(a[["familyName"]], "")
+          if (!nzchar(fam)) return(.json_chr(a[["name"]], ""))
+          giv <- .json_chr(a[["givenName"]], "")
+          if (nzchar(giv)) paste(fam, giv, sep = ", ") else fam
+        }, character(1)), collapse = "; ")
+      }, character(1)),
+      type = vapply(data, \(d) {
+        att <- d[["attributes"]]
+        types <- if (is.list(att)) att[["types"]] else NULL
+        if (is.list(types)) .json_chr(types[["resourceTypeGeneral"]]) else NA_character_
+      }, character(1)),
       error = FALSE)
   }) |> dplyr::bind_rows(empty)
 }
@@ -456,34 +546,47 @@ crossref_doi <- function(doi, select = c(
                                                     "container-title", "volume",
                                                     "issue", "page", "URL",
                                                     "abstract", "year", "error")) {
-  if (length(item$title)) {
-    item$title <- item$title[[1]]
+  if (!is.list(item)) return(data.frame(DOI = NA_character_))
+
+  if (length(item[["title"]])) {
+    item[["title"]] <- item[["title"]][[1]]
   } else {
-    item$title <- NULL
+    item[["title"]] <- NULL
   }
 
-  if (length(item$`container-title`)) {
-    item$`container-title` <- item$`container-title`[[1]]
+  if (length(item[["container-title"]])) {
+    item[["container-title"]] <- item[["container-title"]][[1]]
   } else {
-    item$`container-title` <- NULL
+    item[["container-title"]] <- NULL
   }
 
-  if (length(item$`journal-issue`$`published-print`$`date-parts`) &&
-      length(item$`journal-issue`$`published-print`$`date-parts`[[1]])) {
-    item$year <- item$`journal-issue`$`published-print`$`date-parts`[[1]][[1]]
-  } else if (length(item$published$`date-parts`) &&
-    length(item$published$`date-parts`[[1]])) {
-    item$year <- item$published$`date-parts`[[1]][[1]]
+  ji <- item[["journal-issue"]]
+  pp <- if (is.list(ji)) ji[["published-print"]] else NULL
+  pp_dp <- if (is.list(pp)) pp[["date-parts"]] else NULL
+  pub <- item[["published"]]
+  pub_dp <- if (is.list(pub)) pub[["date-parts"]] else NULL
+  if (is.list(pp_dp) && length(pp_dp) && length(pp_dp[[1]]) && !is.null(pp_dp[[1]][[1]])) {
+    item[["year"]] <- pp_dp[[1]][[1]]
+  } else if (is.list(pub_dp) && length(pub_dp) && length(pub_dp[[1]]) && !is.null(pub_dp[[1]][[1]])) {
+    item[["year"]] <- pub_dp[[1]][[1]]
   }
-  item$published <- NULL
+  item[["published"]] <- NULL
 
-  authors <- lapply(item$author, \(a) {
-    cols <- c("given", "family", "ORCID")
-    suba <- a[cols]
-    names(suba) <- cols
-    suba
-  }) |> do.call(dplyr::bind_rows, args = _)
-  item$author <- NULL
+  raw_authors <- item[["author"]]
+  authors <- if (is.list(raw_authors) && length(raw_authors)) {
+    lapply(raw_authors, \(a) {
+      cols <- c("given", "family", "ORCID")
+      if (!is.list(a)) {
+        return(data.frame(given = NA_character_, family = NA_character_, ORCID = NA_character_))
+      }
+      suba <- lapply(cols, \(k) .json_chr(a[[k]]))
+      names(suba) <- cols
+      as.data.frame(suba, stringsAsFactors = FALSE)
+    }) |> do.call(dplyr::bind_rows, args = _)
+  } else {
+    data.frame()
+  }
+  item[["author"]] <- NULL
 
   to_select <- intersect(select, names(item))
 
@@ -496,7 +599,7 @@ crossref_doi <- function(doi, select = c(
     paste(unlist(v), collapse = "; ") else v)
   ret <- if (length(vals)) data.frame(vals, check.names = FALSE) else
     data.frame(DOI = NA_character_)
-  if ("author" %in% select & nrow(authors)) ret$author <- list(authors)
+  if ("author" %in% select && nrow(authors)) ret$author <- list(authors)
 
   return(ret)
 }
@@ -571,7 +674,16 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 
   if (!online("api.crossref.org")) {
     message("Crossref is offline")
-    return(data.frame(bib_text = ref, DOI = NA, error = "offline"))
+    ref_labels <- vapply(seq_along(ref), \(i) {
+      if (is.character(ref[[i]])) {
+        as.character(ref[[i]])[[1]]
+      } else {
+        nonblank <- !ref[[i]] %in% c("", NA_character_)
+        paste(ref[[i]][, nonblank], collapse = "; \\n")
+      }
+    }, character(1))
+    return(data.frame(ref = ref_labels, DOI = rep(NA_character_, length(ref_labels)),
+                      error = rep("offline", length(ref_labels))))
   }
 
   # build requests in parallel
@@ -660,15 +772,30 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @returns a data frame
 #' @keywords internal
 .crossref_query_parse <- function(items, min_score, select) {
-  scores <- sapply(items, `[[`, "score")
-  if (length(items) == 0 || all(scores < min_score)) {
+  if (!is.list(items) || !length(items)) {
     return(data.frame(DOI = NA_character_))
   }
-  items <- items[scores >= min_score]
+  scores <- vapply(items, \(it) {
+    if (!is.list(it)) return(NA_real_)
+    s <- it[["score"]]
+    if (is.null(s) || !length(s) || is.null(s[[1]])) return(NA_real_)
+    val <- suppressWarnings(as.numeric(s[[1]]))
+    if (length(val) == 1L) val else NA_real_
+  }, numeric(1))
+  keep <- !is.na(scores) & scores >= min_score
+  if (!any(keep)) {
+    return(data.frame(DOI = NA_character_))
+  }
+  items <- items[keep]
 
-  parsed_items <- lapply(items, \(item) {
-    .crossref_parse_item(item, select)
-  })
+  # parse each item independently so one malformed candidate does not fail
+  # the rest of the query
+  parsed_items <- Filter(Negate(is.null), lapply(items, \(item) {
+    tryCatch(.crossref_parse_item(item, select), error = \(e) NULL)
+  }))
+  if (!length(parsed_items)) {
+    return(data.frame(DOI = NA_character_))
+  }
 
   table <- do.call(dplyr::bind_rows, parsed_items)
   cols <- intersect(select, names(table))
@@ -716,7 +843,7 @@ add_bib_match <- function(paper, min_score = 50) {
   # look up papers without
   cr_data_no <- data.frame()
   if (sum(!has_doi) > 0) {
-    cr_data_no <- crossref_query(bib[!has_doi, ], min_score = min_score)
+    cr_data_no <- crossref_query(bib[!has_doi, ], min_score = min_score, rows = 1)
     cr_data_no$ref <- NULL
     cr_data_no$paper_id <- bib$paper_id[!has_doi]
     cr_data_no$bib_id <- bib$bib_id[!has_doi]
@@ -730,10 +857,14 @@ add_bib_match <- function(paper, min_score = 50) {
   # bib_match table is incomplete, so downstream checks that treat a missing
   # match as a problem (e.g. flagging an unresolvable DOI) could misfire. We do
   # not store this in bib_match; we surface it here, at lookup time.
+  net_err_vec <- if (!is.null(cr_data$error)) {
+    grepl("offline|connection|timeout|failed|http 5",
+          tolower(cr_data$error)) %in% TRUE
+  } else {
+    rep(FALSE, nrow(cr_data))
+  }
   if (!is.null(cr_data$error)) {
-    net_err <- grepl("offline|connection|timeout|failed|http 5",
-                     tolower(cr_data$error))
-    n_net <- sum(net_err, na.rm = TRUE)
+    n_net <- sum(net_err_vec, na.rm = TRUE)
     if (n_net > 0) {
       msg <- sprintf(
         "%d of %d reference lookups did not complete (network error); the bib_match table may be incomplete. Re-run add_bib_match() with a stable connection for full data.",
@@ -804,14 +935,27 @@ add_bib_match <- function(paper, min_score = 50) {
   bib_match_table <- bib_match[!is.na(bib_match$title), ] |>
     dplyr::arrange(paper_id, bib_id)
 
-  # add bib_match table to paper object(s)
+  # add bib_match table to paper object(s), recording lookup provenance per paper
+  # so a network failure on one paper is not masked by another paper's success
+  paper_looked_up <- \(pid) {
+    pi <- cr_data$paper_id == pid
+    any(pi) && !all(net_err_vec[pi])
+  }
   if (.is_paper(paper)) {
     bib_match_table$paper_id <- NULL
+    if (paper_looked_up(paper$paper_id)) {
+      attr(bib_match_table, "looked_up") <- TRUE
+      attr(bib_match_table, "doi_bib_ids") <- bib$bib_id[bib$paper_id == paper$paper_id & has_doi]
+    }
     paper$bib_match <- bib_match_table
   } else if (.is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
       bib_match_i <- bib_match_table[bib_match_table$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
+      if (paper_looked_up(p$paper_id)) {
+        attr(bib_match_i, "looked_up") <- TRUE
+        attr(bib_match_i, "doi_bib_ids") <- bib$bib_id[bib$paper_id == p$paper_id & has_doi]
+      }
       p$bib_match <- bib_match_i
       p
     }) |> paperlist()

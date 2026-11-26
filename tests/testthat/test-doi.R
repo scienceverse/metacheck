@@ -221,3 +221,79 @@ test_that("doi_lookup and openalex_doi keep the other DOIs when one fails (U12)"
   expect_length(oa, 2)
   expect_equal(oa[[1]]$error, "not found")
 })
+
+test_that("doi_clean decodes percent codes, dashes and entities safely, and doi_valid_format accepts SICI brackets", {
+  # Wiley percent-encoded Unicode hyphen and BioOne/ESA SICI square brackets
+  expect_equal(doi_clean("10.1111/j.1461%E2%80%900248.2007.01033.x"),
+               "10.1111/j.1461-0248.2007.01033.x")
+  sici <- "10.1890/0012-9658(2002)083%5B2352:CARTAP%5D2.0.CO;2"
+  expect_equal(doi_clean(sici), "10.1890/0012-9658(2002)083[2352:CARTAP]2.0.CO;2")
+  expect_true(doi_valid_format(doi_clean(sici)))
+  # HTML entities inside DOIs and dual-issue "&" DOIs
+  expect_equal(doi_clean("10.1002/1097-4679%28197901%2935%3A1%26lt%3B60%3A%3Aaid-jclp2270350106%26gt%3B3.0.co%3B2-r"),
+               "10.1002/1097-4679(197901)35:1<60::aid-jclp2270350106>3.0.co;2-r")
+  expect_equal(doi_clean("10.1128/JVI.75.19.9129&ndash;9141.2001"),
+               "10.1128/JVI.75.19.9129-9141.2001")
+  expect_equal(doi_clean("10.1207/s15327051hci1901%26amp%3B2%5F7"),
+               "10.1207/s15327051hci1901&2_7")
+  expect_true(doi_valid_format("10.1207/s15327752jpa5503&4_10"))
+  expect_equal(doi_clean("10.1101/109876&x00A0;"), "10.1101/109876")
+  # numeric entity &#160; decoded before "#" fragment stripping (does not truncate)
+  expect_equal(doi_clean("10.1101/109876&#160;end"), "10.1101/109876end")
+  # encoded %23, %20, %252F and balanced %5B/%5D preserved safely and idempotently;
+  # unbalanced trailing %5D is stripped so doi_clean() is idempotent
+  expect_equal(doi_clean("10.1234/abc%23def#frag"), "10.1234/abc%23def")
+  expect_equal(doi_clean(doi_clean("10.1234/abc%23def#frag")), "10.1234/abc%23def")
+  expect_equal(doi_clean("10.1000/a%252Fb"), "10.1000/a%252Fb")
+  expect_equal(doi_clean(doi_clean("10.1000/a%252Fb")), "10.1000/a%252Fb")
+  expect_equal(doi_clean("10.1000/a%20b"), "10.1000/a%20b")
+  expect_equal(doi_clean("10.1000/a%5B1%5D"), "10.1000/a[1]")
+  expect_equal(doi_clean(doi_clean("10.1000/foo%5D")), doi_clean("10.1000/foo%5D"))
+  # SICI check character ";2-#" is preserved (not stripped as a URL fragment)
+  sici_hash <- "10.1002/(SICI)1097-0193(1998)6:3<160::AID-HBM5>3.0.CO;2-#"
+  expect_equal(doi_clean(sici_hash), sici_hash)
+  expect_true(doi_valid_format(sici_hash))
+  # Latin-1 input is converted to UTF-8 and cleaned
+  lat1 <- "https://doi.org/10.1000/caf\xe9"
+  Encoding(lat1) <- "latin1"
+  expect_equal(doi_clean(lat1), "10.1000/caf\u00e9")
+  # stray % does not stop %2F decoding elsewhere in the DOI
+  expect_equal(doi_clean("10.1000/50%off%2Fx"), "10.1000/50%off/x")
+  # stray %, NUL (%00), newline (%0A), invalid UTF-8 (%E9), and raw invalid bytes do not error
+  expect_equal(doi_clean("10.1/a%zz"), "10.1/a%zz")
+  expect_equal(doi_clean("10.1/a%00b"), "10.1/a%00b")
+  expect_equal(doi_clean("10.1/a%0Ab"), "10.1/a%0Ab")
+  expect_equal(doi_clean("10.1/a%E9b"), "10.1/a%E9b")
+  bad_bytes <- "10.1/a\xffb"
+  Encoding(bad_bytes) <- "UTF-8"
+  expect_equal(doi_clean(bad_bytes), bad_bytes)
+  # corrupt DOIs with commas still fail format check
+  expect_false(doi_valid_format("10.1016/j,jneumeth.2006.11.017"))
+})
+
+test_that("doi_lookup handles scalar JSON body and null published date-parts safely", {
+  local_mocked_bindings(.batch_query = function(urls, ...) {
+    list(
+      httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                      body = charToRaw('"scalar-string"')),
+      httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                      body = charToRaw('{"DOI":"10.1/x","title":"T","published":{"date-parts":[[null]]}}'))
+    )
+  })
+  res <- doi_lookup(c("10.1/scalar", "10.1/x"))
+  expect_equal(nrow(res), 2)
+  expect_true(is.na(res$title[1]))
+  expect_equal(res$title[2], "T")
+  expect_true(is.na(res$year[2]))
+})
+
+test_that("doi_resolves treats 429 and 5xx as NA and forwards timeout", {
+  seen_timeout <- NULL
+  local_mocked_bindings(.batch_query = function(urls, timeout_s = NULL, ...) {
+    seen_timeout <<- timeout_s
+    list(httr2::response(429), httr2::response(503), httr2::response(404))
+  })
+  res <- doi_resolves(c("10.1038/a", "10.1038/b", "10.1038/c"), timeout = 7)
+  expect_equal(seen_timeout, 7)
+  expect_equal(res, c(NA, NA, FALSE))
+})

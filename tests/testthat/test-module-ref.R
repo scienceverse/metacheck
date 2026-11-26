@@ -1561,3 +1561,785 @@ test_that("ref_pubpeer leaves Statcheck's comment out of the count (#695, point 
   expect_equal(mo$table$users[mo$table$doi == dois[2]], "A. Reader")
   expect_match(paste(mo$report, collapse = " "), "Commenters", fixed = TRUE)
 })
+
+test_that("ref_accuracy handles markup, footers, fragments, Greek, and title spills", {
+  mock_no_search()
+  local_mocked_bindings(
+    crossref_doi = \(doi, ...) data.frame(DOI = doi),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA)
+  )
+  base <- demopaper()
+  i <- match(1, base$bib$bib_id)
+  m <- match(1, base$bib_match$bib_id)
+  ti <- match(base$bib$text_id[i], base$text$text_id)
+  run1 <- \(p) {
+    tbl <- module_run(p, "ref_accuracy", semantic_scholar = FALSE)$table
+    as.list(tbl[tbl$bib_id == 1, ])
+  }
+
+  # 1. Escaped HTML tags in record title (&lt;em&gt;)
+  p <- base
+  p$bib$title[i] <- "Growth of Quercus robur in temperate forests"
+  p$bib_match$title[m] <- "Growth of &lt;em&gt;Quercus robur&lt;/em&gt; in temperate forests"
+  expect_false(run1(p)$title_mismatch)
+
+  # 2. Inline scientific superscripts preserved (R^2 != R^3), trailing footnote still stripped
+  p <- base
+  p$bib$title[i] <- "Interpreting R<sup>2</sup> in ecology"
+  p$bib_match$title[m] <- "Interpreting R<sup>3</sup> in ecology"
+  expect_true(run1(p)$title_mismatch)
+  p$bib_match$title[m] <- "Interpreting R2 in ecology"
+  expect_false(run1(p)$title_mismatch)
+
+  # 3. Spelled-out Greek letters (alpha/beta/delta15N) and negative control (alpha != beta)
+  p <- base
+  p$bib$title[i] <- "Patterns of alpha-diversity and beta diversity with delta15N"
+  p$bib_match$title[m] <- "Patterns of \u03b1-diversity and \u03b2-diversity with \u03b4<sup>15</sup>N"
+  expect_false(run1(p)$title_mismatch)
+  p$bib_match$title[m] <- "Patterns of \u03b2-diversity and \u03b2-diversity with \u03b4<sup>15</sup>N"
+  expect_true(run1(p)$title_mismatch)
+
+  # 4. Ellipsis-shortened author lists (both in authors.orig and dropped into text),
+  #    with negative controls for wrong first or wrong final author
+  p <- base
+  p$bib_match$authors[[m]] <- data.frame(
+    given = LETTERS[1:10],
+    family = c("Alpha", "Beta", "Gamma", "Delta", "Epsilon",
+               "Zeta", "Eta", "Theta", "Iota", "Omega")
+  )
+  p$bib$authors[i] <- "Alpha, A; Beta, B; \u2026; Omega, J"
+  expect_false(run1(p)$author_mismatch)
+  # GROBID dropped the ellipsis from authors.orig, keeping it only in text
+  p2 <- p
+  p2$bib$authors[i] <- "Alpha, A; Beta, B; Omega, J"
+  p2$text$text[ti] <- paste0("Alpha, A., Beta, B., \u2026 Omega, J. (1999). ", p2$bib$title[i], ".")
+  expect_false(run1(p2)$author_mismatch)
+  # negative control: wrong final author after ellipsis is still flagged
+  p3 <- p
+  p3$bib$authors[i] <- "Alpha, A; Beta, B; \u2026; Wronglast, J"
+  expect_true(run1(p3)$author_mismatch)
+  # negative control: wrong first author before ellipsis is still flagged
+  p4 <- p
+  p4$bib$authors[i] <- "Beta, B; Alpha, A; \u2026; Omega, J"
+  expect_true(run1(p4)$author_mismatch)
+
+  # 5. "et al." in text when title is hyphenated at a line break
+  p <- base
+  p$bib_match$authors[[m]] <- data.frame(given = c("A", "B", "C"), family = c("Alpha", "Beta", "Gamma"))
+  p$bib$authors[i] <- "Alpha, A"
+  p$bib$title[i] <- "Ecological dynamics of temperate forests"
+  p$bib_match$title[m] <- p$bib$title[i]
+  p$text$text[ti] <- "Alpha, A., et al. (1999). Eco- logical dynamics of temperate forests. American Psychologist."
+  expect_false(run1(p)$author_mismatch)
+
+  # 6. Former journal name with Crossref subtitle ("Proceedings of the Royal Society B: Biological Sciences")
+  p <- base
+  p$bib$container[i] <- "Proceedings of the Royal Society of London B"
+  p$bib_match$container[m] <- "Proceedings of the Royal Society B: Biological Sciences"
+  expect_false(run1(p)$container_mismatch)
+
+  # 7. End of title spilled into container.orig ("Alaska. Journal of Experimental Zoology")
+  #    and negative control (unrelated prefix before period)
+  p <- base
+  p$bib$title[i] <- "Population dynamics of salmon in"
+  p$bib_match$title[m] <- "Population dynamics of salmon in Alaska"
+  p$bib$container[i] <- "Alaska. Journal of Experimental Zoology"
+  p$bib_match$container[m] <- "Journal of Experimental Zoology"
+  p$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Population dynamics of salmon in Alaska. Journal of Experimental Zoology, 12, 1-10."
+  r <- run1(p)
+  expect_false(r$container_mismatch)
+  expect_false(r$title_mismatch)
+  # negative control: prefix is NOT the end of the title -> still flagged
+  p_bad <- p
+  p_bad$bib$container[i] <- "Biogeochemistry. Journal of Experimental Zoology"
+  expect_true(run1(p_bad)$container_mismatch)
+
+  # 8. Anchored in_text rescues cut title at parenthesis, but does NOT let a
+  #    journal name in text match a wrong single-word title ("Ecology")
+  p <- base
+  p$bib$title[i] <- "Effects of fire on Pinus sylvestris"
+  p$bib_match$title[m] <- "Effects of fire on Pinus sylvestris (Pinaceae) regeneration"
+  p$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Effects of fire on Pinus sylvestris (Pinaceae) regeneration. American Psychologist, 54, 1-10."
+  expect_false(run1(p)$title_mismatch)
+  # negative control: real title error still flagged even with trailing Wiley footer
+  p_eco <- base
+  p_eco$bib$title[i] <- "Ecology"
+  p_eco$bib$container[i] <- "Annual Review of Ecology and Evolution"
+  p_eco$bib_match$title[m] <- "Annual Review of Ecology and Evolution"
+  p_eco$bib_match$container[m] <- "Annual Review of Ecology and Evolution"
+  p_eco$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Ecology. Annual Review of Ecology and Evolution, 30, 1-10."
+  expect_true(run1(p_eco)$title_mismatch)
+
+  # 9. Fragment entry with stray DOI-derived year ("1007") and DOI-derived year ignored
+  p <- base
+  p$bib$year[i] <- 1007L
+  p$bib$doi[i] <- "10.1007/s00442-012-2345-6"
+  p$bib_match$doi[m] <- "10.1007/s00442-012-2345-6"
+  p$bib_match$year[m] <- 2012L
+  expect_false(run1(p)$year_mismatch)
+  # DOI-only fragment that also carries stray year 1007 is still caught as unreadable/fragment
+  p_frag <- base
+  p_frag$bib$title[i] <- ""
+  p_frag$bib$authors[i] <- ""
+  p_frag$bib$container[i] <- ""
+  p_frag$bib$year[i] <- 1007L
+  expect_equal(run1(p_frag)$tier, "unreadable")
+  expect_false(run1(p_frag)$incoherent)
+
+  # 10. Wiley download footer: mid-entry/contaminating -> unreadable;
+  #     trailing non-contaminating footer keeps a real citation error flagged
+  p <- base
+  footer <- "Downloaded from https://besjournals.onlinelibrary.wiley.com/doi/10.1111/123 by Test Univ, Wiley Online Library on [12/05/2023]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library."
+  p$text$text[ti] <- paste("Eagly, A. H., & Wood, W. (1999).", footer, p$bib$title[i], "American Psychologist.")
+  expect_equal(run1(p)$tier, "unreadable")
+  expect_false(run1(p)$incoherent)
+  # trailing footer + real surname typo still flags the surname error
+  p_trail <- base
+  p_trail$bib$authors[i] <- "Eagley, Alice H; Wood, Wendy"
+  p_trail$text$text[ti] <- paste(p_trail$text$text[ti], footer)
+  r_trail <- run1(p_trail)
+  expect_equal(r_trail$tier, "provided")
+  expect_true(r_trail$author_mismatch)
+
+  # 11. Deduplication prefers unscored DOI hit over scored title search
+  p <- base
+  dup <- p$bib_match[m, ]
+  dup$score <- 95
+  dup$title <- "Wrong Scored Title Match"
+  p$bib_match <- rbind(dup, p$bib_match)
+  expect_false(run1(p)$title_mismatch)
+})
+
+test_that("ref_accuracy title search is invariant to paper order for shared titles", {
+  # Two papers cite the same title with different years and venue classes;
+  # candidate selection must evaluate each reference independently.
+  p1 <- demopaper(); p1$paper_id <- "P1"
+  p2 <- demopaper(); p2$paper_id <- "P2"
+  k1 <- match(3, p1$bib$bib_id)
+  p1$bib_match <- p1$bib_match[p1$bib_match$bib_id != 3, ]
+  p2$bib_match <- p2$bib_match[p2$bib_match$bib_id != 3, ]
+  title <- p1$bib$title[k1]
+  p1$bib$year[k1] <- 2018L
+  p1$bib$container[k1] <- "PsyArXiv"
+  p1$bib$authors[k1] <- "Lakens, Daniël"
+  p2$bib$year[k1] <- 2020L
+  p2$bib$container[k1] <- "Advances in Methods and Practices in Psychological Science"
+  p2$bib$authors[k1] <- "Lakens, Daniël"
+
+  cr_hits <- data.frame(
+    ref = rep(title, 2),
+    DOI = c("10.31234/pre", "10.1177/pub"),
+    title = rep(title, 2),
+    score = c(90, 88),
+    year = c(2018L, 2020L),
+    type = c("posted-content", "journal-article"),
+    `container-title` = c(NA_character_, "Advances in Methods and Practices in Psychological Science"),
+    check.names = FALSE
+  )
+  cr_hits$author <- rep(list(data.frame(given = "Daniël", family = "Lakens")), 2)
+
+  local_mocked_bindings(
+    crossref_query = \(ref, ...) cr_hits,
+    datacite_query = \(title, ...) data.frame(query = integer(0), doi = character(0),
+      title = character(0), year = integer(0), authors = character(0), type = character(0), error = logical(0)),
+    semanticscholar_query = \(title) data.frame(query = integer(0), doi = character(0), url = character(0),
+      title = character(0), year = integer(0), authors = character(0), venue = character(0), type = character(0), error = logical(0)),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA),
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  m12 <- module_run(paperlist(p1, p2), "ref_accuracy", semantic_scholar = FALSE)$table
+  m21 <- module_run(paperlist(p2, p1), "ref_accuracy", semantic_scholar = FALSE)$table
+  r12_p2 <- m12[m12$paper_id == "P2" & m12$bib_id == 3, ]
+  r21_p2 <- m21[m21$paper_id == "P2" & m21$bib_id == 3, ]
+  expect_equal(r12_p2$doi.match, "10.1177/pub")
+  expect_equal(r21_p2$doi.match, "10.1177/pub")
+  expect_equal(r12_p2$incoherent, r21_p2$incoherent)
+  expect_equal(r12_p2$doi_suggested, r21_p2$doi_suggested)
+})
+
+test_that("ref_accuracy handles PDF diacritics, journal variants, author shifts, and candidate ranking", {
+  mock_no_search()
+  local_mocked_bindings(
+    crossref_doi = \(doi, ...) data.frame(DOI = doi),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA)
+  )
+  base <- demopaper()
+  i <- match(1, base$bib$bib_id)
+  m <- match(1, base$bib_match$bib_id)
+  ti <- match(base$bib$text_id[i], base$text$text_id)
+  run1 <- \(p) {
+    tbl <- module_run(p, "ref_accuracy", semantic_scholar = FALSE)$table
+    as.list(tbl[tbl$bib_id == 1, ])
+  }
+
+  # 1. Trademark symbol in journal name ("Thyroid\u00ae" vs "Thyroid")
+  p <- base
+  p$bib$container[i] <- "Thyroid"
+  p$bib_match$container[m] <- "Thyroid\u00ae"
+  expect_false(run1(p)$container_mismatch)
+
+  # 2. ISO-4 short abbreviations not broken by VarCon ("J. Coll. Stud. Ret.", "Eur. J. For. Res.")
+  p <- base
+  p$bib$container[i] <- "J. Coll. Stud. Ret."
+  p$bib_match$container[m] <- "Journal of College Student Retention: Research, Theory & Practice"
+  expect_false(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Eur. J. For. Res."
+  p$bib_match$container[m] <- "European Journal of Forest Research"
+  expect_false(run1(p)$container_mismatch)
+
+  # 3. Latin "et" stopword and optional "Section"/"Series" before single section letter
+  p <- base
+  p$bib$container[i] <- "Biochim Biophys Acta"
+  p$bib_match$container[m] <- "Biochimica et Biophysica Acta (BBA) - Bioenergetics"
+  expect_false(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Acta Crystallogr. D. Biol. Crystallogr"
+  p$bib_match$container[m] <- "Acta Crystallographica Section D Biological Crystallography"
+  expect_false(run1(p)$container_mismatch)
+  # negative control: Section A must NOT match Section D
+  p_sec <- p
+  p_sec$bib$container[i] <- "Acta Crystallogr. A. Biol. Crystallogr"
+  expect_true(run1(p_sec)$container_mismatch)
+
+  # 4. One-word journal with parenthetical city ("Cancers (Basel)") or delimited subtitle ("Flora - ...")
+  p <- base
+  p$bib$container[i] <- "Cancers (Basel)"
+  p$bib_match$container[m] <- "Cancers"
+  expect_false(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Flora"
+  p$bib_match$container[m] <- "Flora - Morphology, Distribution, Functional Ecology of Plants"
+  expect_false(run1(p)$container_mismatch)
+  # negative control: "Science" must NOT match "Science Advances" (no subtitle separator)
+  p_sci <- base
+  p_sci$bib$container[i] <- "Science"
+  p_sci$bib_match$container[m] <- "Science Advances"
+  expect_true(run1(p_sci)$container_mismatch)
+
+  # 5. Reverse Royal Society B succession with subtitle & subtitle-only container.orig
+  p <- base
+  p$bib$container[i] <- "Proceedings of the Royal Society B: Biological Sciences"
+  p$bib_match$container[m] <- "Proceedings of the Royal Society of London. Series B: Biological Sciences"
+  expect_false(run1(p)$container_mismatch)
+  # negative control: wrong subtitle still flags
+  p_sub <- p
+  p_sub$bib$container[i] <- "Proceedings of the Royal Society B: Mathematical Sciences"
+  expect_true(run1(p_sub)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Biological Sciences"
+  p$bib_match$container[m] <- "Proceedings of the Royal Society B: Biological Sciences"
+  p$text$text[ti] <- paste0(
+    "Eagly, A. H., & Wood, W. (1999). ", p$bib$title[i],
+    ". Proceedings of the Royal Society of London. Series B, Biological Sciences, 276, 3819-3825.")
+  expect_false(run1(p)$container_mismatch)
+
+  # 6. Glued bare footnote digit at end of title (vs spaced number / COVID19 vs COVID20)
+  p <- base
+  p$bib$title[i] <- "Analysis of genetic diversity via microsatellite markers"
+  p$bib_match$title[m] <- "Analysis of genetic diversity via microsatellite markers12"
+  expect_false(run1(p)$title_mismatch)
+  p_q <- base
+  p_q$bib$title[i] <- "Job satisfaction and employee \"citizenship\"1"
+  p_q$bib_match$title[m] <- "Job satisfaction and employee \"citizenship\""
+  expect_false(run1(p_q)$title_mismatch)
+  # negative controls: spaced number and differing suffix digits must stay flagged
+  p_sp <- base
+  p_sp$bib$title[i] <- "Memory across adult life"
+  p_sp$bib_match$title[m] <- "Memory across adult life 2"
+  p_sp$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Memory across adult life. American Psychologist."
+  expect_true(run1(p_sp)$title_mismatch)
+  p_cov <- base
+  p_cov$bib$title[i] <- "Epidemiology of COVID19"
+  p_cov$bib_match$title[m] <- "Epidemiology of COVID20"
+  p_cov$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Epidemiology of COVID19. American Psychologist."
+  expect_true(run1(p_cov)$title_mismatch)
+
+  # 7. Generational suffix, particle-shortened surname, detached PDF diacritics, Vancouver shift
+  p <- base
+  p$bib$authors[i] <- "Hatanaka, T; Galetti, P M"
+  p$bib_match$authors[[m]] <- data.frame(given = c("Terumi", "Pedro"), family = c("Hatanaka", "Galetti Jr."))
+  expect_false(run1(p)$author_mismatch)
+
+  p <- base
+  p$bib$authors[i] <- "Hubert, M; Der Veeken, S V"
+  p$bib_match$authors[[m]] <- data.frame(given = c("Mia", "Stephan"), family = c("Hubert", "Van der Veeken"))
+  expect_false(run1(p)$author_mismatch)
+
+  p <- base
+  p$bib$authors[i] <- "Cadena, C D; Jime, I"
+  p$bib_match$authors[[m]] <- data.frame(given = c("Carlos", "Ivan"), family = c("Cadena", "Jim\u00e9nez"))
+  p$text$text[ti] <- paste0("Cadena, C. D., I. Jime \u00b4nez. 1999. ", p$bib$title[i], ". American Psychologist.")
+  expect_false(run1(p)$author_mismatch)
+
+  p <- base
+  p$bib$authors[i] <- "Lu, H C; Kim, Wang W"
+  p$bib_match$authors[[m]] <- data.frame(given = c("Hsiang", "Wei", "Ji-Yoen"), family = c("Lu", "Wang", "Kim"))
+  p$text$text[ti] <- paste0("Lu HC, Wang W, Kim JY. 1999. ", p$bib$title[i], ". American Psychologist.")
+  expect_false(run1(p)$author_mismatch)
+  # negative control: real typo in Vancouver text stays flagged
+  p_typo <- p
+  p_typo$bib$authors[i] <- "Lu, H C; Kim, Wong W"
+  p_typo$text$text[ti] <- paste0("Lu HC, Wong W, Kim JY. 1999. ", p$bib$title[i], ". American Psychologist.")
+  expect_true(run1(p_typo)$author_mismatch)
+
+  # 8. Title search ranks by author/container & rejects "Re: <Title>" and zero-corroboration hits
+  p_s <- demopaper()
+  k3 <- match(3, p_s$bib$bib_id)
+  p_s$bib_match <- p_s$bib_match[p_s$bib_match$bib_id != 3, ]
+  t3 <- p_s$bib$title[k3]
+  p_s$bib$year[k3] <- 2018L
+  p_s$bib$container[k3] <- "Advances in Methods and Practices in Psychological Science"
+  p_s$bib$authors[k3] <- "Lakens, Dani\u00ebl"
+
+  # 8a: multi-candidate search prefers matching author/journal over Yearbook summary
+  cr_multi <- data.frame(
+    ref = rep(t3, 2),
+    DOI = c("10.1016/yearbook", "10.1177/2515245918770963"),
+    title = rep(t3, 2),
+    score = c(95, 85),
+    year = c(2018L, 2018L),
+    type = c("journal-article", "journal-article"),
+    `container-title` = c("Yearbook of Psychology", "Advances in Methods and Practices in Psychological Science"),
+    check.names = FALSE
+  )
+  cr_multi$author <- list(
+    data.frame(given = "Other", family = "Dungan"),
+    data.frame(given = "Dani\u00ebl", family = "Lakens")
+  )
+  local_mocked_bindings(
+    crossref_query = \(ref, ...) cr_multi,
+    datacite_query = \(title, ...) data.frame(query = integer(0), doi = character(0),
+      title = character(0), year = integer(0), authors = character(0), type = character(0), error = logical(0)),
+    semanticscholar_query = \(title) data.frame(query = integer(0), doi = character(0), url = character(0),
+      title = character(0), year = integer(0), authors = character(0), venue = character(0), type = character(0), error = logical(0)),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA),
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  r_multi <- module_run(p_s, "ref_accuracy", semantic_scholar = FALSE)$table
+  r_m3 <- r_multi[r_multi$bib_id == 3, ]
+  expect_false(r_m3$incoherent)
+  expect_false(r_m3$doi_suggested) # two records with same title+year -> conservative no-suggest
+  # when the Yearbook summary has another year, the author/journal-matching record is suggested
+  cr_multi2 <- cr_multi
+  cr_multi2$year <- c(2019L, 2018L)
+  local_mocked_bindings(crossref_query = \(ref, ...) cr_multi2)
+  r_multi2 <- module_run(p_s, "ref_accuracy", semantic_scholar = FALSE)$table
+  r_m3b <- r_multi2[r_multi2$bib_id == 3, ]
+  expect_false(r_m3b$incoherent)
+  expect_true(r_m3b$doi_suggested)
+  expect_equal(r_m3b$doi.match, "10.1177/2515245918770963")
+
+  # 8b: "Re: <Title>" commentary and zero-corroboration different work do not false-flag
+  cr_re <- data.frame(
+    ref = t3,
+    DOI = "10.1016/comment",
+    title = paste0("Re: ", t3),
+    score = 90,
+    year = 2021L,
+    type = "journal-article",
+    `container-title` = "Other Journal",
+    check.names = FALSE
+  )
+  cr_re$author <- list(data.frame(given = "Someone", family = "Else"))
+  local_mocked_bindings(
+    crossref_query = \(ref, ...) cr_re,
+    datacite_query = \(title, ...) data.frame(query = integer(0), doi = character(0),
+      title = character(0), year = integer(0), authors = character(0), type = character(0), error = logical(0)),
+    semanticscholar_query = \(title) data.frame(query = integer(0), doi = character(0), url = character(0),
+      title = character(0), year = integer(0), authors = character(0), venue = character(0), type = character(0), error = logical(0)),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA),
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  r_re <- module_run(p_s, "ref_accuracy", semantic_scholar = FALSE)$table
+  expect_false(r_re$incoherent[r_re$bib_id == 3])
+
+  # 8c: single-field error (wrong year, right author/journal) in no-DOI search STILL flags!
+  cr_yr <- data.frame(
+    ref = t3,
+    DOI = "10.1177/2515245918770963",
+    title = t3,
+    score = 90,
+    year = 2022L,
+    type = "journal-article",
+    `container-title` = "Advances in Methods and Practices in Psychological Science",
+    check.names = FALSE
+  )
+  cr_yr$author <- list(data.frame(given = "Dani\u00ebl", family = "Lakens"))
+  local_mocked_bindings(
+    crossref_query = \(ref, ...) cr_yr,
+    datacite_query = \(title, ...) data.frame(query = integer(0), doi = character(0),
+      title = character(0), year = integer(0), authors = character(0), type = character(0), error = logical(0)),
+    semanticscholar_query = \(title) data.frame(query = integer(0), doi = character(0), url = character(0),
+      title = character(0), year = integer(0), authors = character(0), venue = character(0), type = character(0), error = logical(0)),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA),
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  r_yr <- module_run(p_s, "ref_accuracy", semantic_scholar = FALSE)$table
+  expect_true(r_yr$incoherent[r_yr$bib_id == 3])
+  expect_true(r_yr$year_mismatch[r_yr$bib_id == 3])
+})
+
+test_that("ref_accuracy preserves batch invariance, scientific superscripts, DOI recovery, and HTML escaping", {
+  mock_no_search()
+  local_mocked_bindings(
+    crossref_doi = \(doi, ...) data.frame(DOI = doi),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA)
+  )
+  base <- demopaper()
+  i <- match(1, base$bib$bib_id)
+  m <- match(1, base$bib_match$bib_id)
+  ti <- match(base$bib$text_id[i], base$text$text_id)
+  run1 <- \(p) {
+    tbl <- module_run(p, "ref_accuracy", semantic_scholar = FALSE)$table
+    as.list(tbl[tbl$bib_id == 1, ])
+  }
+
+  # 1. Trailing scientific superscript R^2 vs R^3 at END of title stays flagged
+  p <- base
+  p$bib$title[i] <- "Measuring variance with R<sup>2</sup>"
+  p$bib_match$title[m] <- "Measuring variance with R<sup>3</sup>"
+  p$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Measuring variance with R2. American Psychologist."
+  expect_true(run1(p)$title_mismatch)
+  # trailing footnote after >=4-letter word still stripped
+  p_fn <- base
+  p_fn$bib$title[i] <- "Measuring variance in psychology"
+  p_fn$bib_match$title[m] <- "Measuring variance in psychology<sup>1</sup>"
+  expect_false(run1(p_fn)$title_mismatch)
+
+  # 2. Invisible Unicode format/bidi marks (U+200E LRM) stripped in clean()
+  p <- base
+  p$bib$title[i] <- "Replication and extension of Svenson"
+  p$bib_match$title[m] <- "Replication and extension of Svenson (1981)\u200e"
+  p$text$text[ti] <- "Eagly, A. H., & Wood, W. (1999). Replication and extension of Svenson (1981). American Psychologist."
+  expect_false(run1(p)$title_mismatch)
+
+  # 3. Journal normalization: section letters, ISO-4 "For.", and UK/US stems
+  p <- base
+  p$bib$container[i] <- "Acta Crystallogr. A"
+  p$bib_match$container[m] <- "Acta Crystallographica Section B"
+  expect_true(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Ann. For."
+  p$bib_match$container[m] <- "Annals of Forestry"
+  expect_false(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Paediatr Perinat Epidemiol"
+  p$bib_match$container[m] <- "Paediatric and Perinatal Epidemiology"
+  expect_false(run1(p)$container_mismatch)
+
+  p <- base
+  p$bib$container[i] <- "Int J Paediatr Dent"
+  p$bib_match$container[m] <- "International Journal of Paediatric Dentistry"
+  expect_false(run1(p)$container_mismatch)
+
+  # 4. bare_frag requires non-NA text
+  p <- base
+  p$bib$title[i] <- ""
+  p$bib$authors[i] <- ""
+  p$text$text[ti] <- NA_character_
+  expect_false(identical(run1(p)$tier, "unreadable"))
+
+  # 5. GROBID-mangled doi.orig recovered from single intact printed DOI in text
+  #    with negative controls when text itself contains the truncated/hyphenated DOI
+  p_trunc <- base
+  p_trunc$bib$doi[i] <- "10.1037/0003-066x."
+  p_trunc$bib_match <- p_trunc$bib_match[-m, ]
+  attr(p_trunc$bib_match, "looked_up") <- TRUE
+  p_trunc$text$text[ti] <- paste(p_trunc$text$text[ti], "doi:10.1037/0003-066x.54.6.408")
+  local_mocked_bindings(
+    doi_ra = \(doi) data.frame(doi = doi, ra = ifelse(doi == "10.1037/0003-066x.54.6.408", "Crossref", NA_character_),
+                               exists = doi == "10.1037/0003-066x.54.6.408"),
+    doi_csl = \(doi) {
+      r <- data.frame(doi = doi, title = base$bib$title[i], year = base$bib$year[i],
+                      container = base$bib$container[i], bib_type = "article", stringsAsFactors = FALSE)
+      r$authors <- list(base$bib_match$authors[[m]])
+      r
+    }
+  )
+  r_trunc <- run1(p_trunc)
+  expect_equal(r_trunc$tier, "provided")
+  expect_false(r_trunc$incoherent)
+  # extra hyphen inserted by GROBID absent in printed text
+  p_hyp <- p_trunc
+  p_hyp$bib$doi[i] <- "10.1037/0003--066x.54.6.408"
+  r_hyp <- run1(p_hyp)
+  expect_equal(r_hyp$tier, "provided")
+  expect_false(r_hyp$incoherent)
+  # Negative control: genuinely truncated DOI printed in text stays unresolved
+  p_bad_t <- p_trunc
+  p_bad_t$text$text[ti] <- sub("10\\.1037/0003-066x\\.54\\.6\\.408", "10.1037/0003-066x.", p_bad_t$text$text[ti])
+  r_bad_t <- run1(p_bad_t)
+  expect_equal(r_bad_t$tier, "unresolved")
+
+  # 6. looked_up attribute with 0 bib_match rows still checks unresolved DOIs
+  p_zero <- base
+  p_zero$bib <- p_zero$bib[i, , drop = FALSE]
+  p_zero$bib_match <- p_zero$bib_match[0, , drop = FALSE]
+  attr(p_zero$bib_match, "looked_up") <- TRUE
+  local_mocked_bindings(doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = FALSE))
+  r_zero <- module_run(p_zero, "ref_accuracy", semantic_scholar = FALSE)$table
+  expect_equal(r_zero$tier, "unresolved")
+
+  # 7. Batch-independent DataCite fallback: adding another paper that triggers
+  #    DataCite for a shared title must NOT change P2's result
+  p_a <- demopaper(); p_a$paper_id <- "PA"
+  p_b <- demopaper(); p_b$paper_id <- "PB"
+  k3 <- match(3, p_a$bib$bib_id)
+  p_a$bib_match <- p_a$bib_match[p_a$bib_match$bib_id != 3, ]
+  p_b$bib_match <- p_b$bib_match[p_b$bib_match$bib_id != 3, ]
+  sh_t <- p_a$bib$title[k3]
+  # PA cites a journal -> Crossref preprint triggers DataCite fallback for PA
+  p_a$bib$container[k3] <- "Psychological Science"
+  p_a$bib$authors[k3] <- "Lakens, Dani\u00ebl"
+  # PB cites a preprint (not a journal!) -> Crossref preprint already suffices for PB,
+  # so PB alone does NOT query DataCite; PB has wrong author -> flagged alone AND in batch
+  p_b$bib$container[k3] <- "PsyArXiv"
+  p_b$bib$authors[k3] <- "Wrongauthor, Z"
+  cr_pre <- data.frame(
+    ref = sh_t, DOI = "10.31234/osf.io/abc", title = sh_t, score = 90,
+    year = 2018L, type = "posted-content", `container-title` = NA_character_,
+    check.names = FALSE
+  )
+  cr_pre$author <- list(data.frame(given = "Dani\u00ebl", family = "Lakens"))
+  dc_alt <- data.frame(
+    query = 1L, doi = "10.5281/zenodo.999", title = sh_t, year = 2018L,
+    authors = "Wrongauthor, Z", type = "Preprint", error = FALSE, stringsAsFactors = FALSE
+  )
+  local_mocked_bindings(
+    crossref_query = \(ref, ...) cr_pre,
+    datacite_query = \(title, ...) dc_alt,
+    semanticscholar_query = \(title) data.frame(query = integer(0), doi = character(0), url = character(0),
+      title = character(0), year = integer(0), authors = character(0), venue = character(0), type = character(0), error = logical(0)),
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = NA),
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  alone_b <- module_run(p_b, "ref_accuracy", semantic_scholar = FALSE)$table
+  batch_ab <- module_run(paperlist(p_a, p_b), "ref_accuracy", semantic_scholar = FALSE)$table
+  rb_alone <- alone_b[alone_b$bib_id == 3, ]
+  rb_batch <- batch_ab[batch_ab$paper_id == "PB" & batch_ab$bib_id == 3, ]
+  expect_identical(rb_batch$incoherent, rb_alone$incoherent)
+  expect_identical(rb_batch$doi.match, rb_alone$doi.match)
+
+  # 8. Report HTML/attribute escaping (read_problem, doi_href #, ?, [], and preprint context note)
+  p_esc <- base
+  p_esc$bib$doi[i] <- NA_character_
+  p_esc$bib_match <- p_esc$bib_match[-m, ]
+  p_esc$text$text[ti] <- "Smith (2020). Title. doi:10.1000/<img/onerror=1>"
+  rep_esc <- paste(unlist(module_run(p_esc, "ref_accuracy", semantic_scholar = FALSE)$report), collapse = "\n")
+  expect_false(grepl("<img", rep_esc, fixed = TRUE))
+  expect_match(rep_esc, "&lt;img", fixed = TRUE)
+
+  p_pre <- base
+  p_pre$bib$doi[i] <- "10.31234/osf.io/5yexm"
+  p_pre$bib_match$doi[m] <- "10.31234/osf.io/5yexm"
+  p_pre$bib_match$bib_type[m] <- "preprint"
+  p_pre$bib$authors[i] <- "Eagly, A H"
+  mo_pre <- module_run(p_pre, "ref_accuracy", semantic_scholar = FALSE)
+  expect_true(mo_pre$table$incoherent[mo_pre$table$bib_id == 1])
+  expect_match(paste(unlist(mo_pre$report), collapse = "\n"),
+               "preprint; its registry record may have been revised", fixed = TRUE)
+})
+
+test_that("ref_accuracy handles journal abbreviations, encoding corruption, umlauts, and DOI recovery", {
+  mock_no_search()
+  base <- demopaper()
+  i <- match(1, base$bib$bib_id)
+  m <- match(1, base$bib_match$bib_id)
+  ti <- match(base$bib$text_id[i], base$text$text_id)
+  run1 <- \(p) {
+    tbl <- module_run(p, "ref_accuracy", semantic_scholar = FALSE)$table
+    tbl[tbl$bib_id == 1, ]
+  }
+
+  # 1. Journal matching: Wikidata 1-word alias with city/subtitle, bilingual '=',
+  #    Polish/European stopwords, numbered journals, ISO-4 contractions, compound
+  #    hyphens, 2-letter uppercase initials, multi-word parenthetical qualifiers,
+  #    leading acronym with hyphen/initials, De Gruyter publisher codes, tight
+  #    abbreviation-aware edit distance
+  j_ok <- list(
+    c("Europace", "EP Europace"),
+    c("Eklem hastaliklari ve cerrahisi = Jt Dis Relat Surg", "Joint Diseases and Related Surgery"),
+    c("Neurol. Neurochir. Pol", "Neurologia i Neurochirurgia Polska"),
+    c("Periodontol.2000", "Periodontology 2000"),
+    c("J. Bone Jt. Surg", "The Journal of Bone & Joint Surgery"),
+    c("Eur. J. Cardiothorac. Surg", "European Journal of Cardio-Thoracic Surgery"),
+    c("Neuro-Image", "NeuroImage"),
+    c("Ann NY Acad Sci", "Annals of the New York Academy of Sciences"),
+    c("Obesity (Silver Spring)", "Obesity"),
+    c("BMJ (Clinical Research", "BMJ"),
+    c("JARO-J Assoc Res Otolaryngol", "Journal of the Association for Research in Otolaryngology"),
+    c("PNAS Proceedings of the National Academy of Sciences of the United States of America",
+      "Proceedings of the National Academy of Sciences"),
+    c("J. Neuroscince", "Journal of Neuroscience"),
+    c("I-Perception", "i-Perception"),
+    c("Revista Brasileira de Cineantropometria E Desempenho Humano",
+      "Revista Brasileira de Cineantropometria e Desempenho Humano")
+  )
+  for (pair in j_ok) {
+    p <- base
+    p$bib$container[i] <- pair[1]
+    p$bib_match$container[m] <- pair[2]
+    expect_false(run1(p)$container_mismatch, info = paste(pair, collapse = " vs "))
+  }
+
+  # De Gruyter lowercase journal code in Crossref when DOI carries the code
+  p_dg <- base
+  p_dg$bib$doi[i] <- "10.1515/cogl.2005.16.3.437"
+  p_dg$bib_match$doi[m] <- "10.1515/cogl.2005.16.3.437"
+  p_dg$bib$container[i] <- "Cognitive Linguistics"
+  p_dg$bib_match$container[m] <- "cogl"
+  expect_false(run1(p_dg)$container_mismatch)
+
+  # Negative controls: genuinely wrong journals MUST stay flagged
+  j_bad <- list(
+    c("Clin Epidemiol", "Journal of Clinical Epidemiology"),
+    c("The American Journal of Sports Medicine", "Medicine & Science in Sports & Exercise"),
+    c("Journal of Sport", "Journal of Support"),
+    c("Psychol Med", "Psychological Methods"),
+    c("Stat Med", "Statistical Methods in Medical Research"),
+    c("Psychol Res", "Psychological Reports"),
+    c("Annals of Hematology", "Annals of Hepatology"),
+    c("J Hepatol", "Journal of Hematology"),
+    c("Journal of Ethology", "Journal of Ethnology"),
+    c("Physical Review E", "Physical Review A"),
+    c("Acta Crystallogr. E", "Acta Crystallographica Section A"),
+    c("Nature", "cogl")
+  )
+  for (pair in j_bad) {
+    p <- base
+    p$bib$container[i] <- pair[1]
+    p$bib_match$container[m] <- pair[2]
+    if (pair[2] == "cogl") {
+      p$bib$doi[i] <- "10.1515/cogl.2005.16.3.437"
+      p$bib_match$doi[m] <- "10.1515/cogl.2005.16.3.437"
+    }
+    expect_true(run1(p)$container_mismatch, info = paste(pair, collapse = " vs "))
+  }
+
+  # 2. Registry UTF-8 encoding corruption (\uFFFD and ??) in record surnames & titles
+  p_enc <- base
+  p_enc$bib$authors[i] <- "Cola\u00e7o, P; Ingulf Medbo, J"
+  p_enc$bib_match$authors[[m]] <- data.frame(
+    given = c("P.", "J."), family = c("Cola\uFFFDo", "INGULF MEDB??"),
+    stringsAsFactors = FALSE
+  )
+  expect_false(run1(p_enc)$author_mismatch)
+
+  # Negative controls: corrupted record surname must NOT match unrelated or short names
+  p_enc_bad <- p_enc
+  p_enc_bad$bib$authors[i] <- "Smith, P; Ingulf Medbo, J"
+  expect_true(run1(p_enc_bad)$author_mismatch)
+  p_enc_short <- base
+  p_enc_short$bib$authors[i] <- "Kimura, J"
+  p_enc_short$bib_match$authors[[m]] <- data.frame(given = "J.", family = "Kim??", stringsAsFactors = FALSE)
+  expect_true(run1(p_enc_short)$author_mismatch)
+
+  p_tenc <- base
+  p_tenc$bib$title[i] <- "Effects of \u00e7-peptide on metabolism in adults"
+  p_tenc$bib_match$title[m] <- "Effects of \uFFFD-peptide on metabolism in adults"
+  expect_false(run1(p_tenc)$title_mismatch)
+
+  # 3. ASCII umlaut / Nordic transliteration in surnames (both directions)
+  p_um <- base
+  p_um$bib$authors[i] <- "Mueller, L; Luethen, F; Soerensen, K"
+  p_um$bib_match$authors[[m]] <- data.frame(
+    given = c("L.", "F.", "K."), family = c("M\u00fcller", "L\u00fcthen", "S\u00f8rensen"),
+    stringsAsFactors = FALSE
+  )
+  expect_false(run1(p_um)$author_mismatch)
+
+  p_um_rev <- base
+  p_um_rev$bib$authors[i] <- "M\u00fcller, L; L\u00fcthen, F"
+  p_um_rev$bib_match$authors[[m]] <- data.frame(
+    given = c("L.", "F."), family = c("Mueller", "Luethen"),
+    stringsAsFactors = FALSE
+  )
+  expect_false(run1(p_um_rev)$author_mismatch)
+
+  # Negative control: non-umlaut names ("Bauer" vs "Baur") must stay flagged
+  p_um_bad <- base
+  p_um_bad$bib$authors[i] <- "Baur, L"
+  p_um_bad$bib_match$authors[[m]] <- data.frame(given = "L.", family = "Bauer", stringsAsFactors = FALSE)
+  expect_true(run1(p_um_bad)$author_mismatch)
+
+  # 4. Truncated journal-level DOI recovery even when truncated stub had a record
+  p_tr <- base
+  p_tr$bib$doi[i] <- "10.5007/1980-0037"
+  p_tr$bib_match$doi[m] <- "10.5007/1980-0037"
+  p_tr$bib_match$title[m] <- "Journal Name Stub"
+  p_tr$bib_match$bib_type[m] <- "journal"
+  p_tr$text$text[ti] <- paste(base$bib$authors[i], base$bib$title[i],
+                              "http://dx.doi.org/10.5007/1980-0037.2014v16n2p233")
+  local_mocked_bindings(
+    doi_ra = \(doi) data.frame(doi = doi, ra = "Crossref", exists = TRUE),
+    doi_csl = \(doi) {
+      d <- data.frame(
+        doi = "10.5007/1980-0037.2014v16n2p233",
+        title = base$bib$title[i], year = base$bib$year[i],
+        container = base$bib$container[i], bib_type = "article",
+        stringsAsFactors = FALSE
+      )
+      d$authors <- list(base$bib_match$authors[[m]])
+      d
+    }
+  )
+  r_tr <- run1(p_tr)
+  expect_equal(r_tr$doi.orig, "10.5007/1980-0037.2014v16n2p233")
+  expect_false(r_tr$incoherent)
+
+  # Negative control: glued text after a valid DOI (".../a0012345.Epub") must NOT
+  # wipe an already-matching article record
+  p_glued <- base
+  p_glued$bib$doi[i] <- "10.1037/a0012345"
+  p_glued$bib_match$doi[m] <- "10.1037/a0012345"
+  p_glued$text$text[ti] <- paste(base$bib$authors[i], base$bib$title[i],
+                                 "https://doi.org/10.1037/a0012345.Epub")
+  r_glued <- run1(p_glued)
+  expect_equal(r_glued$doi.orig, "10.1037/a0012345")
+  expect_false(r_glued$incoherent)
+
+  # Cold Spring Harbor journal DOI (10.1101/gr.*) must NOT get the preprint note
+  p_csh <- base
+  p_csh$bib$doi[i] <- "10.1101/gr.123456.111"
+  p_csh$bib_match$doi[m] <- "10.1101/gr.123456.111"
+  p_csh$bib$authors[i] <- "Eagly, A H"
+  mo_csh <- module_run(p_csh, "ref_accuracy", semantic_scholar = FALSE)
+  expect_true(mo_csh$table$incoherent[mo_csh$table$bib_id == 1])
+  expect_false(grepl("this is a preprint", paste(unlist(mo_csh$report), collapse = "\n"), fixed = TRUE))
+
+  # 5. Unresolved DOI with PDF line-break hyphen recovered via title search
+  p_hy <- base
+  p_hy$bib$doi[i] <- "10.1152/japplphys-iol.00630.2016"
+  p_hy$bib_match <- p_hy$bib_match[-m, ]
+  attr(p_hy$bib_match, "looked_up") <- TRUE
+  p_hy$text$text[ti] <- paste(base$bib$authors[i], base$bib$title[i], "10.1152/japplphys-iol.00630.2016")
+  cr_hit <- data.frame(
+    ref = base$bib$title[i], DOI = "10.1152/japplphysiol.00630.2016",
+    title = base$bib$title[i], score = 95, year = base$bib$year[i],
+    type = "journal-article", `container-title` = base$bib$container[i],
+    check.names = FALSE
+  )
+  cr_hit$author <- list(base$bib_match$authors[[m]])
+  local_mocked_bindings(
+    doi_ra = \(doi) data.frame(doi = doi, ra = NA_character_, exists = FALSE),
+    crossref_query = \(ref, ...) cr_hit,
+    crossref_doi = \(doi, ...) data.frame(DOI = doi)
+  )
+  r_hy <- run1(p_hy)
+  expect_equal(r_hy$tier, "provided")
+  expect_false(r_hy$incoherent)
+
+  # Negative control: line-break hyphen recovery STILL flags a genuine wrong year
+  p_hy_bad <- p_hy
+  p_hy_bad$bib$year[i] <- base$bib$year[i] - 5L
+  r_hy_bad <- run1(p_hy_bad)
+  expect_true(r_hy_bad$incoherent)
+  expect_true(r_hy_bad$year_mismatch)
+})

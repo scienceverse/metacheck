@@ -17,3 +17,19 @@ test_that("semanticscholar_query takes a record as a preprint only from arXiv", 
   expect_equal(s2$type, c("Preprint", NA, "Conference"))
   expect_equal(s2$authors[1], "van Dijk, Ann")
 })
+
+test_that("semanticscholar_query distinguishes empty data array from invalid envelope", {
+  local_mocked_bindings(
+    online = \(...) TRUE,
+    .batch_query = \(urls, ...) list(
+      httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                      body = charToRaw('{"data":[]}')),
+      httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                      body = charToRaw('{"unexpected":1}'))
+    )
+  )
+  s2 <- semanticscholar_query(c("No match title", "Broken response title"))
+  # query 1 had valid empty data[] -> no rows (not error); query 2 -> error = TRUE
+  expect_equal(s2$query, 2L)
+  expect_true(s2$error)
+})
