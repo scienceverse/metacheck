@@ -1280,8 +1280,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   by_name <- base %in% found
   if (!isTRUE(by_extension)) return(want & by_name)
   exts <- unique(ext[want & nzchar(ext)])
+  # the extension is escaped: what follows the last dot of a name such as
+  # "README (v1.2)" ("2)") made the pattern invalid
   ext_named <- exts[vapply(exts, function(e)
-    grepl(paste0("(\\\\{1,2}\\.|\\*\\.|['\"]\\.)", e, "\\b"), txt, perl = TRUE), logical(1))]
+    grepl(paste0("(\\\\{1,2}\\.|\\*\\.|['\"]\\.)", .repro_sw_escape(e), "\\b"), txt, perl = TRUE), logical(1))]
   want & (by_name | ext %in% ext_named)
 }
 
@@ -2732,7 +2734,10 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 .repro_function_users <- function(fn, functions, code_text_list, sources = list()) {
   others <- setdiff(names(code_text_list), fn)
   if (!length(functions) || !length(others)) return(character(0))
-  called <- paste0("(^|[^A-Za-z0-9._])(", paste(gsub("([.])", "\\\\\\1", functions), collapse = "|"), ")\\s*\\(")
+  # every special character is escaped, not only the dot: a function defined
+  # in quotes or backticks ("[.myclass", `%||%`) made the pattern invalid or
+  # match any "(" after a space
+  called <- paste0("(^|[^A-Za-z0-9._])(", paste(.repro_sw_escape(functions), collapse = "|"), ")\\s*\\(")
   base <- tolower(basename(gsub("\\\\", "/", fn)))
   others[vapply(others, function(o) {
     base %in% sources[[o]] ||

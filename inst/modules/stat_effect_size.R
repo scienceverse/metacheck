@@ -620,9 +620,12 @@ stat_effect_size <- function(paper) {
     eq$kind <- mapply(label_lhs, eq$lhs, eq$df, USE.NAMES = FALSE)
     # "t = 1, ..., T" counts, it reports no test: a t without degrees of
     # freedom and with a whole number, followed by a list (mp20191615; #695,
-    # point 10)
-    counter <- eq$kind %in% "t-test" & is.na(eq$df) & grepl("^\\d+$", eq$rhs) &
-      vapply(seq_len(nrow(eq)), function(k) grepl(
+    # point 10). The pattern holds the number itself, so it is built only for a
+    # whole number: a value such as "[0.53-1.12]" made the pattern invalid and
+    # stopped the module (psyarxiv_metacheck#5).
+    whole_t <- eq$kind %in% "t-test" & is.na(eq$df) & grepl("^\\d+$", eq$rhs)
+    counter <- whole_t &
+      vapply(seq_len(nrow(eq)), function(k) whole_t[k] && grepl(
         paste0("(?i)\\bt\\s*=\\s*", eq$rhs[k], "\\s*(?:,\\s*(?:\\.\\.\\.|\u2026|\\d+\\s*,)|\\.\\.\\.|\u2026|to\\s+[A-Z]\\b)"),
         eq_text[k] %||% "", perl = TRUE), logical(1))
     eq$kind[counter] <- NA_character_
