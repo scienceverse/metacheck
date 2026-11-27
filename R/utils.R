@@ -402,10 +402,13 @@ email <- function(email = NULL) {
 path_sanitize <- function(path, replacement = "_",
                           remove_whitespace = TRUE,
                           keep_sep = TRUE) {
-  rep_plus <- paste0(replacement, "+")
+  # the replacement is escaped where it is searched for: "+" or "(" made the
+  # pattern invalid, and "." replaced every character
+  rep_esc <- .repro_sw_escape(replacement)
+  rep_plus <- paste0("(", rep_esc, ")+")
   invalid <- '[\\:*?"<>|]'
-  sep <- ifelse(keep_sep, replacement, "\\/")
-  ws <- ifelse(remove_whitespace, "\\s", replacement)
+  sep <- ifelse(keep_sep, rep_esc, "\\/")
+  ws <- ifelse(remove_whitespace, "\\s", rep_esc)
 
   path |>
     trimws() |>

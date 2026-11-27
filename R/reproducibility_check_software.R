@@ -706,7 +706,8 @@
   stem <- function(f) tolower(basename(gsub("\\\\", "/", f)))
   # whether a name in one list can be a name in the other, patterns included
   as_regex <- function(x) {
-    x <- gsub("([.+^$()|\\[\\]\\\\])", "\\\\\\1", x, perl = TRUE)
+    # "?" is escaped too: a name starting with it made the pattern invalid
+    x <- gsub("([.+?^$()|\\[\\]\\\\])", "\\\\\\1", x, perl = TRUE)
     x <- gsub("\\{[^}]*\\}|%[0-9.]*[sdif]|\\*", ".+", x, perl = TRUE)
     paste0("^", x, "$")
   }

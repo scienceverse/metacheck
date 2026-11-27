@@ -20,12 +20,23 @@ pubpeer_comments <- function(doi) {
   body <- list(dois = I(tolower(doi_na))) |>
     jsonlite::toJSON(auto_unbox = TRUE)
 
-  resp <- .mc_request(url) |>
-    httr2::req_headers(`Content-Type` = "application/json;charset=UTF-8") |>
-    httr2::req_body_raw(body, type = "application/json;charset=UTF-8") |>
-    httr2::req_error(is_error = \(resp) FALSE) |>
-    httr2::req_perform()
-  if (httr2::resp_status(resp) == 200) {
+  # PubPeer is asked up to 3 times, 5 and 10 s apart, when it does not answer
+  # or answers with a busy or server error: a single failed request made
+  # ref_pubpeer fail although PubPeer answered the same DOIs normally later
+  # (psyarxiv_metacheck#6). When no answer comes at all, NULL is returned, as
+  # for an error answer, instead of stopping with the connection error.
+  resp <- tryCatch(
+    .mc_request(url) |>
+      httr2::req_headers(`Content-Type` = "application/json;charset=UTF-8") |>
+      httr2::req_body_raw(body, type = "application/json;charset=UTF-8") |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = \(resp) httr2::resp_status(resp) %in%
+                         c(408, 429, 500, 502, 503, 504),
+                       backoff = \(i) 5 * i) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform(),
+    error = \(e) NULL)
+  if (!is.null(resp) && httr2::resp_status(resp) == 200) {
     data <- httr2::resp_body_json(resp)
     # feedback without an id cannot be matched to a DOI; when none had one,
     # the table had no doi column and the join below stopped (U14)
