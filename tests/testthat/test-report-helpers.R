@@ -533,3 +533,36 @@ test_that("link(type = 'doi') gives no link for a missing DOI (U8)", {
   # sprintf() made NA into a link to https://doi.org/NA
   expect_true(is.na(link(c("10.1/x", NA), type = "doi")[2]))
 })
+
+test_that(".report_table_limits truncates HTML diff cells without breaking tags", {
+  opts <- c("metacheck.report_max_rows", "metacheck.report_max_cols",
+            "metacheck.report_max_cell_chars")
+  old <- options()[opts]
+  names(old) <- opts
+  on.exit(options(old), add = TRUE)
+  options(metacheck.report_max_cell_chars = 40L)
+
+  # raw length > 40 because of style attributes, but visible length <= 40: kept whole
+  short_vis <- '<b>title:</b> <del style="color:#c00">old</del> <ins style="color:#1a7f37">new</ins>'
+  lim1 <- .report_table_limits(data.frame(d = short_vis, stringsAsFactors = FALSE))
+  expect_equal(lim1$table$d, short_vis)
+  expect_null(lim1$note)
+
+  # visible length > 40: cut cleanly with closing </del> before end of cell
+  long_vis <- paste0('<b>title:</b> <del style="color:#c00">', strrep("word ", 20), '</del>')
+  lim2 <- .report_table_limits(data.frame(d = long_vis, stringsAsFactors = FALSE))
+  expect_match(lim2$table$d, "\u2026</del>$")
+  expect_false(grepl("<del[^>]*\u2026", lim2$table$d))
+  expect_match(lim2$note, "Cells longer than 40 characters are cut", fixed = TRUE)
+
+  # literal "<" and ">" comparisons are NOT treated as HTML tags
+  cmp_cell <- paste0("<b>t:</b> p < .05 and q > 2 <del>", strrep("a", 40), "</del>")
+  lim3 <- .report_table_limits(data.frame(d = cmp_cell, stringsAsFactors = FALSE))
+  expect_match(lim3$table$d, "\u2026</del>$")
+  expect_false(grepl("</<", lim3$table$d, fixed = TRUE))
+
+  # entity-only plain cells are not cut mid-entity
+  ent_cell <- paste0(strrep("x", 38), "&amp;&amp;more")
+  lim4 <- .report_table_limits(data.frame(d = ent_cell, stringsAsFactors = FALSE))
+  expect_equal(lim4$table$d, paste0(strrep("x", 38), "&amp;&amp;\u2026"))
+})

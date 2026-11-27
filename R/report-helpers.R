@@ -113,6 +113,72 @@ report_type <- function(report_type = NULL) {
   n
 }
 
+# Truncate an HTML-formatted or entity-containing cell to at most `max_chars`
+# visible characters without slicing inside a recognised tag or HTML entity,
+# closing any open formatting tags before appending the ellipsis. Literal
+# comparisons such as "p < .05 and q > 2" are treated as plain text, not tags.
+# Returns list(text, cut).
+.report_cut_html <- function(s, max_chars) {
+  # match only genuine HTML tags, not arbitrary "<...>" comparisons
+  m <- gregexpr("</?[A-Za-z][A-Za-z0-9:-]*(?:\\s[^<>]*)?/?>", s, perl = TRUE)
+  tags <- regmatches(s, m)[[1]]
+  texts <- regmatches(s, m, invert = TRUE)[[1]]
+  void_tags <- c("br", "hr", "img", "wbr")
+  out <- character()
+  stack <- character()
+  vis <- 0L
+  cut <- FALSE
+
+  for (i in seq_along(texts)) {
+    txt <- texts[[i]]
+    if (nzchar(txt)) {
+      # count decoded entities (&amp;, &lt;, ...) as 1 visible char, never split one
+      em <- gregexpr("&(?:#[0-9]+|#x[0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]+);", txt, perl = TRUE)
+      ents <- regmatches(txt, em)[[1]]
+      plains <- regmatches(txt, em, invert = TRUE)[[1]]
+      for (k in seq_along(plains)) {
+        p <- plains[[k]]
+        np <- nchar(p, type = "chars")
+        if (vis + np > max_chars) {
+          keep <- max_chars - vis
+          if (keep > 0L) out <- c(out, substr(p, 1L, keep))
+          vis <- max_chars
+          cut <- TRUE
+          break
+        }
+        if (np > 0L) {
+          out <- c(out, p)
+          vis <- vis + np
+        }
+        if (k <= length(ents)) {
+          if (vis + 1L > max_chars) {
+            cut <- TRUE
+            break
+          }
+          out <- c(out, ents[[k]])
+          vis <- vis + 1L
+        }
+      }
+      if (cut) break
+    }
+    if (i <= length(tags)) {
+      tg <- tags[[i]]
+      out <- c(out, tg)
+      if (grepl("^</", tg)) {
+        nm <- tolower(sub("^</\\s*([A-Za-z][A-Za-z0-9:-]*).*", "\\1", tg))
+        hit <- which(stack == nm)
+        if (length(hit)) stack <- stack[-utils::tail(hit, 1L)]
+      } else if (!grepl("/>$", tg)) {
+        nm <- tolower(sub("^<\\s*([A-Za-z][A-Za-z0-9:-]*).*", "\\1", tg))
+        if (!nm %in% void_tags) stack <- c(stack, nm)
+      }
+    }
+  }
+  if (!cut) return(list(text = s, cut = FALSE))
+  close_tags <- if (length(stack)) paste0("</", rev(stack), ">", collapse = "") else ""
+  list(text = paste0(paste(out, collapse = ""), "\u2026", close_tags), cut = TRUE)
+}
+
 # What a report shows of a table that scroll_table() writes into a report: at
 # most getOption("metacheck.report_max_rows", 100) rows and
 # getOption("metacheck.report_max_cols", 100) columns, and each text cell cut
@@ -145,19 +211,32 @@ report_type <- function(report_type = NULL) {
   if (!identical(names(table), nm)) names(table) <- nm
 
   cut <- FALSE
+  html_or_ent <- "<(del|ins|b|i|em|strong|span|code|br|sub|sup)\\b|&(?:#[0-9]+|#x[0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]+);"
   for (j in seq_along(table)) {
     x <- table[[j]]
     if (!is.character(x) && !is.factor(x)) next
     x <- as.character(x)
     # NA for a text that is not valid in its encoding: left as it is
     len <- suppressWarnings(nchar(x, type = "chars", allowNA = TRUE))
-    long <- !is.na(len) & len > max_chars &
-      !grepl("<a\\b", x, ignore.case = TRUE, perl = TRUE, useBytes = TRUE)
-    if (any(long)) {
-      x[long] <- paste0(substr(x[long], 1L, max_chars), "\u2026")
-      table[[j]] <- x
+    has_link <- !is.na(x) & grepl("<a\\b", x, ignore.case = TRUE, perl = TRUE, useBytes = TRUE)
+    has_html <- !is.na(x) & !has_link &
+      grepl(html_or_ent, x, ignore.case = TRUE, perl = TRUE, useBytes = TRUE)
+    long_plain <- !is.na(len) & len > max_chars & !has_link & !has_html
+    if (any(long_plain)) {
+      x[long_plain] <- paste0(substr(x[long_plain], 1L, max_chars), "\u2026")
       cut <- TRUE
     }
+    long_html <- which(!is.na(len) & len > max_chars & has_html)
+    if (length(long_html)) {
+      for (k in long_html) {
+        res <- .report_cut_html(x[[k]], max_chars)
+        if (res$cut) {
+          x[[k]] <- res$text
+          cut <- TRUE
+        }
+      }
+    }
+    if (any(long_plain) || length(long_html)) table[[j]] <- x
   }
 
   shown <- c(

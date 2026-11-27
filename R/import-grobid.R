@@ -986,9 +986,12 @@ grobid_to_bibr <- function(xml_path,
       gsub("\\s+", " ", x = _) |>
       trimws()
 
-    # extract first occurrence of year from string
+    # extract first plausible publication year from string, ignoring DOI
+    # prefixes such as "10.1007/..."
     year <- sapply(bib_table$year, \(x) {
-      m <- regexpr("\\b[12]\\d{3}[a-z]?\\b", x)
+      if (is.na(x)) return(NA_character_)
+      x <- gsub("10\\.\\d{3,9}/\\S+", " ", as.character(x), perl = TRUE)
+      m <- regexpr("\\b(1[5-9]\\d{2}|20\\d{2})[a-z]?\\b", x, perl = TRUE)
       y <- regmatches(x, m)
       ifelse(length(y), y[[1]], NA_character_)
     })
@@ -1202,8 +1205,11 @@ grobid_to_bibr <- function(xml_path,
     b$container <- b$journal
     if (is.null(b$year) | !nzchar(b$year)) {
       # b$bibtype <- "unpublished"
-      note <- xml2::xml_find_first(ref, ".//note") |> xml2::xml_text()
-      b$year <- note %||% "no year"
+      # skip raw_reference notes, which contain DOIs ("10.1007/...") and other
+      # numbers that are not publication years
+      note <- xml2::xml_find_first(ref, ".//note[not(@type='raw_reference')]") |>
+        xml2::xml_text()
+      b$year <- if (!is.na(note) && nzchar(note)) note else "no year"
     }
   } else if (!is.null(b$booktitle) & nzchar(b$booktitle)) {
     if (is.null(b$title) | !nzchar(b$title)) {

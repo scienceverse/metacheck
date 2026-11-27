@@ -394,3 +394,155 @@ test_that(".crossref_parse_item reads a record with null fields (U13)", {
   expect_equal(out$DOI, "10.1/x")
   expect_false("volume" %in% names(out))
 })
+
+test_that("doi_ra tells registered from missing DOIs", {
+  skip_if_not(online("doi.org"))
+  ra <- doi_ra(c("10.1037/0033-2909.126.1.78", "10.1037/0033-2909.1261.7",
+                 NA, "https://doi.org/10.48550/arxiv.1706.03762"))
+  expect_equal(ra$ra, c("Crossref", NA, NA, "DataCite"))
+  expect_equal(ra$exists, c(TRUE, FALSE, NA, TRUE))
+})
+
+test_that("datacite_query finds a title misread from the PDF", {
+  skip_if_not(online("api.datacite.org"))
+  dc <- datacite_query(c("Deep residual learning for image recog- nition", NA))
+  expect_true("10.48550/arxiv.1512.03385" %in% dc$doi[dc$query == 1])
+  expect_false(2 %in% dc$query)
+  expect_true(all(c("title", "year", "authors", "type") %in% names(dc)))
+})
+
+test_that("datacite_query reads a record without a title, and searches operators as words", {
+  urls <- NULL
+  local_mocked_bindings(online = \(...) TRUE, .batch_query = \(u, ...) {
+    urls <<- u
+    list(httr2::response(200, headers = list(`Content-Type` = "application/json"),
+      body = charToRaw('{"data":[{"id":"10.5281/x","attributes":{"titles":[],"publicationYear":2020,"creators":[]}}]}')))
+  })
+  dc <- datacite_query("To be or NOT to be")
+  expect_true(is.na(dc$title))
+  expect_false(grepl("NOT", utils::URLdecode(urls)))
+})
+
+test_that("datacite_query handles creators with only affiliation/nameIdentifiers and malformed hits (#693)", {
+  # exact creator shape from DataCite record 10.57647/j.jrs.2024.1401.07:
+  # a$name partially matched nameIdentifiers (empty list), stopping vapply()
+  payload <- paste0(
+    '{"data":[',
+    '  "not-an-object",',
+    '  {"id":"10.57647/j.jrs.2024.1401.07","attributes":{',
+    '    "titles":[{"title":"Example Study"}],',
+    '    "publicationYear":2024,',
+    '    "types":{"resourceTypeGeneral":"JournalArticle"},',
+    '    "creators":[',
+    '      {"affiliation":[],"nameIdentifiers":[]},',
+    '      {"familyName":"Smith","givenName":"Ada"},',
+    '      {"name":"Open Science Consortium"}',
+    '    ]',
+    '  }}',
+    ']}'
+  )
+  local_mocked_bindings(online = \(...) TRUE, .batch_query = \(u, ...) {
+    list(httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                         body = charToRaw(payload)))
+  })
+  dc <- datacite_query("Example Study")
+  expect_equal(nrow(dc), 1)
+  expect_equal(dc$doi, "10.57647/j.jrs.2024.1401.07")
+  # unknown first creator position preserved before "; "
+  expect_equal(dc$authors, "; Smith, Ada; Open Science Consortium")
+})
+
+test_that("doi_csl handles null date-parts and empty-list author fields", {
+  payload <- '{"DOI":"10.5281/x","title":"T","issued":{"date-parts":[[null]]},"author":[{"given":[],"family":[]},{"literal":"Org"}]}'
+  local_mocked_bindings(online = \(...) TRUE, .batch_query = \(u, ...) {
+    list(httr2::response(200, headers = list(`Content-Type` = "application/vnd.citationstyles.csl+json"),
+                         body = charToRaw(payload)))
+  })
+  res <- doi_csl("10.5281/x")
+  expect_equal(res$title, "T")
+  expect_true(is.na(res$year))
+  expect_equal(nrow(res$authors[[1]]), 2)
+  expect_true(is.na(res$authors[[1]]$family[1]))
+  expect_equal(res$authors[[1]]$family[2], "Org")
+})
+
+test_that("doi_ra matches returned DOIs by identifier rather than position", {
+  # short, reordered JSON response from doi.org/ra/
+  payload <- '[{"DOI":"10.1037/B","RA":"DataCite"},{"DOI":"10.1037/GONE","status":"DOI does not exist"},{"DOI":"10.1037/A","RA":"Crossref"}]'
+  local_mocked_bindings(online = \(...) TRUE)
+  httr2::with_mocked_responses(
+    \(req) httr2::response(200, headers = list(`Content-Type` = "application/json"),
+                           body = charToRaw(payload)),
+    {
+      out_reord <- doi_ra(c("10.1037/a", "10.1037/omitted", "10.1037/gone", "10.1037/b"))
+      expect_equal(out_reord$ra, c("Crossref", NA_character_, NA_character_, "DataCite"))
+      expect_equal(out_reord$exists, c(TRUE, NA, FALSE, TRUE))
+    }
+  )
+  # offline path returns NA
+  local_mocked_bindings(online = \(...) FALSE)
+  out <- doi_ra(c("10.1037/a", "10.1037/b"))
+  expect_equal(nrow(out), 2)
+  expect_true(all(is.na(out$exists)))
+})
+
+test_that(".crossref_query_parse skips score:[null] hit without discarding valid sibling", {
+  items <- list(
+    list(DOI = "10.1/bad", title = list("Bad"), score = list(NULL)),
+    list(DOI = "10.1/ok", title = list("Good Paper"), score = 95,
+         author = list(list(given = "Ada", family = "Smith")))
+  )
+  out <- .crossref_query_parse(items, min_score = 50, select = c("DOI", "title", "score", "author"))
+  expect_equal(nrow(out), 1)
+  expect_equal(out$DOI, "10.1/ok")
+  expect_equal(out$title, "Good Paper")
+})
+
+test_that("datacite_doi keeps slash literal in request URL while encoding reserved chars", {
+  seen_urls <- NULL
+  local_mocked_bindings(.batch_query = function(urls, ...) {
+    seen_urls <<- urls
+    replicate(length(urls), httr2::response(404), simplify = FALSE)
+  })
+  datacite_doi(c("10.5281/zenodo.2669586", "10.1002/a[1]"))
+  expect_equal(seen_urls[1], "https://api.datacite.org/dois/10.5281/zenodo.2669586")
+  expect_equal(seen_urls[2], "https://api.datacite.org/dois/10.1002/a%5B1%5D")
+})
+
+test_that("add_bib_match records looked_up provenance per paper in a batch", {
+  p1 <- test_paper("P_ok")
+  p1$bib <- data.frame(bib_id = 1, doi = "10.1098/ok", title = "T1", container = "J1", authors = "Smith, A")
+  p2 <- test_paper("P_netfail")
+  p2$bib <- data.frame(bib_id = 1, doi = "10.1098/fail", title = "T2", container = "J2", authors = "Jones, B")
+  local_mocked_bindings(
+    crossref_doi = function(doi, ...) {
+      data.frame(
+        DOI = c("10.1098/ok", NA_character_),
+        title = c("T1", NA_character_),
+        error = c(NA_character_, "HTTP 503 timeout"),
+        stringsAsFactors = FALSE
+      )
+    }
+  )
+  out <- suppressMessages(add_bib_match(paperlist(p1, p2)))
+  expect_true(isTRUE(attr(out[[1]]$bib_match, "looked_up")))
+  expect_null(attr(out[[2]]$bib_match, "looked_up"))
+})
+
+test_that("crossref_query offline returns one row per structured reference and add_bib_match does not error", {
+  local_mocked_bindings(online = \(...) FALSE)
+  p <- test_paper("Offline test")
+  p$bib <- data.frame(
+    bib_id = 1:2,
+    doi = c(NA_character_, NA_character_),
+    title = c("First Paper", "Second Paper"),
+    container = c("Journal A", "Journal B"),
+    authors = c("Smith, A", "Jones, B")
+  )
+  cr <- suppressMessages(crossref_query(p$bib))
+  expect_equal(nrow(cr), 2)
+  expect_equal(cr$error, c("offline", "offline"))
+  p2 <- suppressMessages(add_bib_match(p))
+  expect_equal(nrow(p2$bib_match), 0)
+  expect_null(attr(p2$bib_match, "looked_up"))
+})
