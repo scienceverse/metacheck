@@ -1,4 +1,15 @@
-#' Read in grobid XML or bibr JSON
+#' Read in bibr JSON, grobid XML or a publisher's XML
+#'
+#' Reads the JSON bibr writes, the TEI XML Grobid writes, and the full-text
+#' XML publishers deliver: JATS (the Journal Article Tag Suite, in all its
+#' versions and the older NLM DTDs, as PLOS, Frontiers, eLife, SAGE, Taylor &
+#' Francis, APA, MDPI, Springer Nature, PubMed Central and many others
+#' deliver it, and as CERMINE writes it), Elsevier's XML (from its Article
+#' Retrieval API) and Wiley's XML (WileyML, from the text-mining links Wiley
+#' registers with CrossRef, also for the society journals Wiley publishes).
+#' The format of an XML file is recognised from its first
+#' element; a file in another format is not read, with a warning that names
+#' its first element.
 #'
 #' @param file_path path to a single directory containing XML and/or JSON files, or a vector of XML/JSON paths
 #' @param include_images whether to include images in the figures table of the paper object (they make object size larger, only relevant to bibr imports)
@@ -35,7 +46,7 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
       if (grepl("\\.json$", fp, ignore.case = TRUE)) {
         .read_bibr(fp, include_images)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
-        .grobid_to_bibr(fp)
+        .read_xml_fulltext(fp)
       }
     }, error = \(e) {
       logger("read", e$message)
@@ -49,6 +60,62 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   return(papers)
 }
 
+
+#' Read an XML full-text file in whichever format it is
+#'
+#' Grobid's TEI is read as before; a publisher's JATS (and CERMINE's output,
+#' which is JATS) with `.jats_to_bibr12()`; Elsevier's XML with
+#' `.elsevier_to_bibr12()`; Wiley's XML with `.wiley_to_bibr12()`; BITS (books)
+#' with `.bits_to_bibr12()`; an OJS export with `.ojs_to_bibr12()`. Formats
+#' without JATS's structure are read as blocks (R/import-xml-blocks.R):
+#' DocBook, SciELO's markup, Acrobat's "Save as XML", Word and OpenDocument
+#' files, web pages, the output of PDF and OCR tools, and journals' own
+#' formats; metadata records (PubMed, Crossref, DOAJ, EndNote, ISC) give the
+#' title, authors, abstract and references. A PDF with an .xml name is read
+#' by Grobid; text before the XML declaration (a server's notice) is left
+#' out. An error message from a server, and a file without an article's text,
+#' stop with what the file is.
+#'
+#' @param fp path to the XML file
+#' @returns a paper object
+#' @noRd
+.read_xml_fulltext <- function(fp) {
+  fmt <- .xml_format(fp)
+  switch(
+    fmt$format,
+    tei = .grobid_to_bibr(fp),
+    jats = .jats_to_bibr12(fp),
+    elsevier = .elsevier_to_bibr12(fp),
+    wiley = .wiley_to_bibr12(fp),
+    bits = .bits_to_bibr12(fp),
+    docbook = .docbook_to_bibr12(fp),
+    ojs = .ojs_to_bibr12(fp),
+    scielo_sps = .scielo_to_bibr12(fp),
+    taggedpdf = .taggedpdf_to_bibr12(fp),
+    word = .word_to_bibr12(fp),
+    odf = .odf_to_bibr12(fp),
+    html = .html_to_bibr12(fp),
+    pubmed = .pubmed_to_bibr12(fp),
+    crossref = .crossref_to_bibr12(fp),
+    doaj = .doaj_to_bibr12(fp),
+    endnote = .endnote_to_bibr12(fp),
+    isc = .isc_to_bibr12(fp),
+    pdf2xml = .pdf2xml_to_bibr12(fp),
+    ocr_lines = .ocr_lines_to_bibr12(fp),
+    segments = .segments_to_bibr12(fp),
+    aps = .aps_to_bibr12(fp),
+    spreadsheet = .spreadsheet_to_bibr12(fp),
+    pdf = .pdf_to_bibr12(fp),
+    junk_prefix = .xml_without_prefix(fp, .read_xml_fulltext),
+    not_xml = stop("not an XML file: a ", fmt$root, " with an .xml name", call. = FALSE),
+    error_response = stop("an error message from a server, not an article: ",
+                          substr(.tei_squish(xml2::xml_text(.xml_read_plain(fp))), 1, 200),
+                          call. = FALSE),
+    # any other XML: read as a journal's own format when it holds an
+    # article's text (see .generic_xml_to_bibr12())
+    .generic_xml_to_bibr12(fp, fmt)
+  )
+}
 
 #' Read bibr JSON file
 #'

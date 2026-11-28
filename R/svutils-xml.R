@@ -37,12 +37,21 @@
 #' Read in, strip TEI namespace, and fix common problems.
 #'
 #' @param path Path to a grobid/TEI XML file
+#' @param pdf_repairs whether to undo what reading a PDF does to numbers:
+#'   spaces inside a number split by a line break ("1. 5"), before a full
+#'   stop that ends an element, and before a number in front of a comparison.
+#'   FALSE for TEI translated from a publisher's XML (see R/import-jats.R),
+#'   whose text has none of these, and where joining "10. 10.1234" or "in
+#'   2019. 25 participants" would change correct text.
 #'
 #' @returns a list with class "xml_document" for xml2
 #' @keywords internal
 #'
-.xml_read_grobid <- function(path) {
+.xml_read_grobid <- function(path, pdf_repairs = TRUE) {
   if (!file.exists(path)) stop("The XML file does not exist.")
+  pdf_fix <- function(pattern, replacement, x) {
+    if (pdf_repairs) gsub(pattern, replacement, x = x) else x
+  }
 
   operators <- c(
     "=", "<", ">", "~",
@@ -65,8 +74,8 @@
     # ) |>
     # fix common mangled stats
     #gsub("\u00B2",  "2", x = _) |> # squared -> 2
-    gsub(num_pre_op, "\\1", x = _) |>    # "XX  2 = ?" -> "XX2 = ?"
-    gsub("\\s+(\\.\\s*<)", "\\1", x = _) |> # a stray space before a full stop that ends an element
+    pdf_fix(num_pre_op, "\\1", x = _) |>    # "XX  2 = ?" -> "XX2 = ?"
+    pdf_fix("\\s+(\\.\\s*<)", "\\1", x = _) |> # a stray space before a full stop that ends an element
     gsub("r\\s*p\\s*2",                  "rp\u00B2", x = _) |>
     # omega is \u03C9: "\u03C" was read as "<", so this rewrote "<p2" (U16)
     gsub("\u03C9\\s*p\\s*[2\u00B2]",     "\u03C9p\u00B2", x = _) |> # omega
@@ -88,7 +97,7 @@
     gsub("\\bBF\\s+([10]{2})\\b",        "BF\\1", x = _) |> # BF 10; BF 01
 
     gsub("(https?://)\\s+", "\\1", x = _) |> # whitespace in url
-    gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |> # #. #
+    pdf_fix("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |> # #. #
     gsub("\\b[Ff]ig\\. (\\D?\\d)", "Fig \\1", x = _) |>
     gsub("\\b[Ff]igure\\. (\\d)", "Figure \\1", x = _) |>
     gsub("\\b[Tt]ab\\. (\\d)", "Tab \\1", x = _) |>

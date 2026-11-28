@@ -4,10 +4,13 @@
 \alias{.tei_authors}
 \title{Get authors from TEI type XML}
 \usage{
-.tei_authors(xml)
+.tei_authors(xml, all_affiliations = FALSE)
 }
 \arguments{
 \item{xml}{The XML}
+
+\item{all_affiliations}{whether to add the column \code{affiliations}: every
+affiliation of each author, as a list (\code{affiliation} is the first one)}
 }
 \value{
 authors table

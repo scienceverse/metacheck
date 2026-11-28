@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN" "JATS-journalpublishing1-3.dtd">
+<!-- A made-up article that holds the cases the JATS reader handles. -->
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" dtd-version="1.3" xml:lang="en" article-type="research-article">
+  <front>
+    <journal-meta>
+      <journal-title-group><journal-title>Journal of Test Cases</journal-title></journal-title-group>
+      <issn pub-type="epub">1234-5678</issn>
+      <publisher><publisher-name>Test Press</publisher-name></publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="doi">10.1234/jtc.2026.001</article-id>
+      <article-id pub-id-type="pmid">12345678</article-id>
+      <article-categories>
+        <subj-group subj-group-type="heading"><subject>Research Article</subject></subj-group>
+        <subj-group subj-group-type="article-features">
+          <compound-subject><compound-subject-part content-type="code">open-data</compound-subject-part><compound-subject-part content-type="label">Open Data</compound-subject-part></compound-subject>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Reading <italic>publisher</italic> XML&mdash;a test</article-title>
+        <subtitle>Cases from many publishers</subtitle>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author" corresp="yes">
+          <contrib-id contrib-id-type="orcid">https://orcid.org/0000-0002-1825-0097</contrib-id>
+          <name><surname>Smith</surname><given-names>Anna B.</given-names></name>
+          <role vocab="credit" vocab-term-identifier="https://credit.niso.org/contributor-roles/conceptualization/">Conceptualization</role>
+          <xref ref-type="aff" rid="aff1"><sup>1</sup></xref>
+        </contrib>
+        <contrib contrib-type="author" rid="aff2">
+          <string-name><given-names>Carl</given-names> <surname>Jones</surname></string-name>
+        </contrib>
+        <contrib contrib-type="editor">
+          <name><surname>Editor</surname><given-names>Not An</given-names></name>
+          <role>Academic Editor</role>
+        </contrib>
+      </contrib-group>
+      <aff id="aff1"><label>1</label><institution-wrap><institution-id institution-id-type="ror">https://ror.org/02c2kyt77</institution-id><institution>Department of Psychology, Test University</institution></institution-wrap>, <country>Netherlands</country></aff>
+      <aff id="aff2">School of Testing, Other University</aff>
+      <author-notes>
+        <corresp>Correspondence: <email>anna.smith@example.org</email></corresp>
+        <fn fn-type="con"><label>Author Contributions</label><p>A. B. Smith wrote the paper.</p></fn>
+      </author-notes>
+      <pub-date pub-type="epub"><day>5</day><month>3</month><year>2026</year></pub-date>
+      <volume>12</volume>
+      <issue>2</issue>
+      <fpage>101</fpage>
+      <lpage>120</lpage>
+      <history>
+        <date date-type="received"><day>1</day><month>10</month><year>2025</year></date>
+        <date date-type="rev-recd"><month>1</month><year>2026</year></date>
+        <date date-type="accepted"><day>2</day><month>2</month><year>2026</year></date>
+      </history>
+      <related-article related-article-type="preprint" ext-link-type="doi" xlink:href="10.31234/osf.io/abcde"/>
+      <permissions>
+        <copyright-statement>&#xa9; 2026 The Authors</copyright-statement>
+        <copyright-year>2026</copyright-year>
+        <copyright-holder>The Authors</copyright-holder>
+        <license xlink:href="https://creativecommons.org/licenses/by/4.0/"><license-p>CC BY 4.0</license-p></license>
+      </permissions>
+      <abstract>
+        <p>We tested whether <italic>p</italic> values are read.</p>
+      </abstract>
+      <abstract abstract-type="teaser"><p>A teaser that is not the abstract.</p></abstract>
+      <kwd-group><kwd>JATS</kwd><kwd>testing</kwd></kwd-group>
+      <kwd-group kwd-group-type="research-organism"><kwd>Human</kwd></kwd-group>
+      <funding-group>
+        <award-group id="award1">
+          <funding-source><institution-wrap><institution-id institution-id-type="FundRef">http://dx.doi.org/10.13039/501100001659</institution-id><institution>Test Foundation</institution></institution-wrap></funding-source>
+          <award-id>TF-123</award-id>
+          <principal-award-recipient><name><surname>Smith</surname><given-names>Anna B.</given-names></name></principal-award-recipient>
+        </award-group>
+        <funding-statement>This work was funded by the Test Foundation (<ext-link ext-link-type="uri" xlink:href="https://test.example.org/">https://test.example.org/</ext-link>).</funding-statement>
+      </funding-group>
+      <custom-meta-group>
+        <custom-meta id="data-availability">
+          <meta-name>Data Availability</meta-name>
+          <meta-value>The data are on OSF: <ext-link ext-link-type="uri" xlink:href="https://osf.io/abcde/">https://osf.io/abcde/</ext-link>.</meta-value>
+        </custom-meta>
+      </custom-meta-group>
+      <counts><fig-count count="1"/><table-count count="1"/><ref-count count="3"/><word-count count="2500"/></counts>
+    </article-meta>
+  </front>
+  <body>
+    <boxed-text><caption><title>Statement of Relevance</title></caption><p>This matters for everyone who reads XML.</p></boxed-text>
+    <p>An opening paragraph without a section, citing <xref ref-type="bibr" rid="r1">Smith (2020)</xref>.</p>
+    <sec id="s1">
+      <label>1.</label>
+      <title>Method</title>
+      <sec id="s1a">
+        <title>Participants</title>
+        <p>We recruited 40 participants (see <xref ref-type="table" rid="t1">Table 1</xref>).<xref ref-type="fn" rid="fn1"><sup>1</sup></xref></p>
+        <p>Materials are at <ext-link ext-link-type="doi" xlink:href="10.17605/OSF.IO/XYZ12">the project page</ext-link>.</p>
+        <p>The code is on osf.io/qwert1 (see also www.example.org), e.g. for Fig.1.</p>
+        <p>The posterior was <inline-formula><mml:math><mml:mrow><mml:mi>P</mml:mi><mml:mo>(</mml:mo><mml:mi>&#x3B2;</mml:mi><mml:mo>&gt;</mml:mo><mml:mn>0</mml:mn><mml:mo>)</mml:mo><mml:mo>=</mml:mo><mml:mn>.97</mml:mn><mml:mo>,</mml:mo><mml:mi>N</mml:mi><mml:mo>=</mml:mo><mml:mn>40</mml:mn></mml:mrow></mml:math></inline-formula>.</p>
+      </sec>
+    </sec>
+    <sec id="s2">
+      <title>Study 1</title>
+      <sec id="s2a">
+        <title>Results</title>
+        <p>The effect was significant, <italic>t</italic>(38) = 2.50, <italic>p</italic> = .017, and the smallest <italic>p</italic> was 10<sup>&#x2212;5</sup> (<xref ref-type="bibr" rid="r1 r2">Smith, 2020; Jones et al., 2019</xref>; <xref ref-type="fig" rid="f1">Figure 1</xref>).</p>
+        <p>A range of citations [<xref ref-type="bibr" rid="r1">1</xref>&#x2013;<xref ref-type="bibr" rid="r3">3</xref>].</p>
+        <list list-type="bullet">
+          <list-item><p>A first point.</p></list-item>
+          <list-item><p>A second point.</p></list-item>
+        </list>
+      </sec>
+    </sec>
+    <sec id="s3">
+      <title>Funding of Public Goods</title>
+      <p>This section is about public goods, not a funding statement.</p>
+    </sec>
+    <sec id="s4">
+      <title>Declaration of competing interest</title>
+      <p>The authors declare no competing interests.</p>
+    </sec>
+    <fig id="f1">
+      <label>Figure 1</label>
+      <caption><title>Mean scores.</title><p>Error bars show 95% CIs.</p></caption>
+      <graphic xlink:href="f1.png"><alt-text>A bar chart of two means.</alt-text></graphic>
+    </fig>
+    <table-wrap id="t1">
+      <label>Table 1.</label>
+      <caption><p>Participants</p></caption>
+      <table>
+        <thead>
+          <tr><th rowspan="2">Group</th><th colspan="2">Age</th></tr>
+          <tr><th>M</th><th>SD</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Young</td><td>21.3</td><td>2.1<xref ref-type="table-fn" rid="tf1">a</xref></td></tr>
+          <tr><td>Old</td><td>68.0</td><td>5.4</td></tr>
+        </tbody>
+      </table>
+      <table-wrap-foot><fn id="tf1"><p><sup>a</sup> One value was missing.</p></fn></table-wrap-foot>
+    </table-wrap>
+  </body>
+  <back>
+    <ack><title>Acknowledgments</title><p>We thank the participants.</p></ack>
+    <fn-group>
+      <fn id="fn1"><label>1</label><p>A footnote in the text.</p></fn>
+      <fn fn-type="other"><label>Open Practices</label><p>All data and materials are on OSF.</p></fn>
+    </fn-group>
+    <sec><title>Use of AI</title><p>No generative AI was used.</p></sec>
+    <sec sec-type="supplementary-material">
+      <title>Supporting information</title>
+      <supplementary-material id="s1" mimetype="text" mime-subtype="csv" xlink:href="s1_data.csv">
+        <label>S1 Data</label>
+        <caption><p>The raw data.</p></caption>
+        <object-id pub-id-type="doi">10.1234/jtc.2026.001.s001</object-id>
+      </supplementary-material>
+    </sec>
+    <ref-list>
+      <title>References</title>
+      <ref id="r1">
+        <mixed-citation publication-type="journal"><person-group person-group-type="author"><string-name><surname>Smith</surname>, <given-names>A. B.</given-names></string-name></person-group> (<year>2020</year>). <article-title>A study of tests</article-title>. <source>Test Journal</source>, <volume>3</volume>(<issue>1</issue>), <fpage>1</fpage>&#x2013;<lpage>10</lpage>. <pub-id pub-id-type="doi">10.1234/tj.2020.1</pub-id></mixed-citation>
+      </ref>
+      <ref>
+        <element-citation publication-type="book" id="r2">
+          <person-group person-group-type="author"><name><surname>Jones</surname><given-names>C</given-names></name><name><surname>Brown</surname><given-names>D</given-names></name></person-group>
+          <source>The Book of Tests</source>
+          <year>2019</year>
+          <publisher-name>Book Press</publisher-name>
+          <ext-link ext-link-type="uri" xlink:href="https://books.example.org/tests">https://books.example.org/tests</ext-link>
+        </element-citation>
+      </ref>
+      <ref id="r3">
+        <mixed-citation specific-use="isSupplementedBy">Plain T. A reference printed as text only. Some Journal. 2018;4:5-6. <ext-link ext-link-type="doi" xlink:href="10.1234/sj.2018.4"/></mixed-citation>
+      </ref>
+    </ref-list>
+  </back>
+  <sub-article article-type="reviewer-report" id="rev1">
+    <front-stub>
+      <article-id pub-id-type="doi">10.1234/jtc.2026.001.r001</article-id>
+      <title-group><article-title>Review 1</article-title></title-group>
+      <contrib-group><contrib contrib-type="author"><name><surname>Reviewer</surname><given-names>Rita</given-names></name><role>Reviewer</role></contrib></contrib-group>
+    </front-stub>
+    <body>
+      <fig id="rf1"><label>Figure R1</label><caption><p>A reviewer figure that is not part of the article.</p></caption></fig>
+      <p>The reviewer liked it.</p>
+    </body>
+  </sub-article>
+  <sub-article article-type="author-comment" id="rev2">
+    <front-stub><title-group><article-title>Author response</article-title></title-group></front-stub>
+    <body><p>We thank the reviewer.</p><p>We changed the analysis.</p></body>
+  </sub-article>
+</article>

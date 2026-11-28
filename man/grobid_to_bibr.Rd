@@ -30,7 +30,8 @@ the XML file.}
 a paper object
 }
 \description{
-Convert Grobid TEI XML file to bibr format
+A publisher's full-text XML (JATS, Elsevier) is converted as \code{\link[=read]{read()}}
+reads it, and saved as a bibr 12.0 file whatever \code{schema_version} is.
 }
 \examples{
 # NULL returns the paper instead of writing a JSON file
