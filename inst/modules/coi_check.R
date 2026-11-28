@@ -45,9 +45,21 @@ coi_check <- function(paper) {
                               from_section)
   }
 
+  # The statement the article declares (a paper read from a publisher's XML
+  # has it in `info$coi_statement`) wins over a search that found nothing:
+  # it is the statement. `coi_source` says where the statement is from:
+  # "text", "metadata" or "both".
+  declared <- .coi_declared(paper)
+  from_text <- unique(table$paper_id)
+  only_meta <- declared[!declared$paper_id %in% from_text, , drop = FALSE]
+  if (nrow(only_meta)) table <- dplyr::bind_rows(table, only_meta)
+
   # summary_table ----
   summary_table <- table |>
     dplyr::summarise(coi_found = TRUE, .by = paper_id)
+  summary_table$coi_source <- ifelse(
+    !summary_table$paper_id %in% from_text, "metadata",
+    ifelse(summary_table$paper_id %in% declared$paper_id, "both", "text"))
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")
@@ -69,7 +81,7 @@ coi_check <- function(paper) {
   list(
     table = table,
     summary_table = summary_table,
-    na_replace = FALSE,
+    na_replace = list(coi_found = FALSE),
     traffic_light = tl,
     summary_text = summary_text,
     report = report
@@ -354,4 +366,18 @@ rtransparent_coi <- function(splitted) {
   }
 
   trimws(coi_text)
+}
+
+#' The conflict-of-interest statement an article declares
+#'
+#' @param paper a paper object or paperlist object
+#' @returns a data frame: `paper_id` and `text`, a row per paper whose info
+#'   table has a declared statement (a paper read from a publisher's XML)
+#' @noRd
+.coi_declared <- function(paper) {
+  empty <- data.frame(paper_id = character(0), text = character(0))
+  info <- tryCatch(paper_table(paper, "info"), error = function(e) NULL)
+  if (!is.data.frame(info) || !all(c("paper_id", "coi_statement") %in% names(info))) return(empty)
+  has <- !is.na(info$coi_statement) & nzchar(info$coi_statement)
+  data.frame(paper_id = as.character(info$paper_id[has]), text = as.character(info$coi_statement[has]))
 }

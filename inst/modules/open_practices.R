@@ -169,6 +169,21 @@ open_practices <- function(paper) {
   summary_table$badge_data <- badges$badge_data[k]
   summary_table$badge_materials <- badges$badge_materials[k]
   summary_table$badge_prereg <- badges$badge_prereg[k]
+  # What the publisher declares wins over a search that found nothing: a
+  # badge counts as shared data, materials or a preregistration also when no
+  # sentence was found. The reverse stays as it is: a sentence without a
+  # badge is the search's answer alone. `*_source` says where each answer is
+  # from: "text", "metadata" (the badge) or "both"; NA when neither found it.
+  source_of <- function(text, meta) {
+    ifelse(text & meta %in% TRUE, "both",
+           ifelse(meta %in% TRUE, "metadata", ifelse(text, "text", NA_character_)))
+  }
+  summary_table$data_source <- source_of(summary_table$data_open, summary_table$badge_data)
+  summary_table$materials_source <- source_of(summary_table$materials_open, summary_table$badge_materials)
+  summary_table$prereg_source <- source_of(summary_table$prereg_open, summary_table$badge_prereg)
+  summary_table$data_open <- summary_table$data_open | summary_table$badge_data %in% TRUE
+  summary_table$materials_open <- summary_table$materials_open | summary_table$badge_materials %in% TRUE
+  summary_table$prereg_open <- summary_table$prereg_open | summary_table$badge_prereg %in% TRUE
 
   # traffic_light ----
   # summary_text ----
@@ -221,6 +236,8 @@ open_practices <- function(paper) {
     # data_report
     if (!summary_table$data_open) {
       data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not recognized by our code. If there is data, please consider sharing it in a repository."
+    } else if (summary_table$data_source %in% "metadata") {
+      data_report <- "Data was openly shared for this article, according to the Open Data badge the journal awarded; we did not find a sentence that says where."
     } else {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",

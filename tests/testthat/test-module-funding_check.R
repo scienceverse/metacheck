@@ -56,3 +56,20 @@ test_that("funding_check: the funders a publisher's XML declares", {
   expect_equal(nrow(mo$funders), 0)
   expect_equal(mo$summary_table$funder_n, 0L)
 })
+
+test_that("funding_check: where the answer is from", {
+  # a sentence about funding and declared funders
+  p <- read(test_path("fixtures", "formats", "jats_cases.xml"))
+  expect_equal(module_run(p, "funding_check")$summary_table$funding_source, "both")
+  # what the article declares wins over a search that finds nothing: the
+  # Wiley article names its funder in the metadata and in a note the search
+  # does not read as a funding statement
+  p <- read(test_path("fixtures", "formats", "wiley_cases.xml"))
+  mo <- module_run(p, "funding_check")
+  expect_equal(mo$summary_table$funding_source, "metadata")
+  expect_equal(mo$traffic_light, "green")
+  # a paper read from a PDF: the text alone, or nothing
+  g <- test_paper("This research was supported by NIH grant 456.")
+  expect_equal(module_run(g, "funding_check")$summary_table$funding_source, "text")
+  expect_true(is.na(module_run(read(demofile("xml")), "funding_check")$summary_table$funding_source))
+})

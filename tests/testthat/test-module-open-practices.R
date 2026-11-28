@@ -111,3 +111,19 @@ test_that("open_practices: the badges a publisher's XML declares", {
   expect_true(is.na(mo$summary_table$badge_data))
   expect_false(any(grepl("badge", mo$report)))
 })
+
+test_that("open_practices: a badge wins over a search that finds nothing", {
+  # jats_cases.xml has the Open Data badge, and no sentence the search counts
+  mo <- module_run(read(test_path("fixtures", "formats", "jats_cases.xml")), "open_practices")
+  st <- mo$summary_table
+  expect_true(st$data_open)
+  expect_equal(st$data_source, "metadata")
+  expect_true(is.na(st$materials_source))
+  expect_true(any(grepl("according to the Open Data badge", mo$report, fixed = TRUE)))
+
+  # a sentence without a badge: the text's answer alone
+  p <- test_paper("All data are available at https://osf.io/abcde.")
+  st <- module_run(p, "open_practices")$summary_table
+  expect_true(st$data_open)
+  expect_equal(st$data_source, "text")
+})

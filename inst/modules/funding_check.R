@@ -89,6 +89,12 @@ funding_check <- function(paper) {
   ids <- paper_id(paper)
   summary_table <- data.frame(paper_id = ids)
   summary_table$funding_found <- ids %in% table$paper_id | ids %in% funders$paper_id
+  # where the answer is from: the sentence found ("text"), the funders the
+  # article declares ("metadata"), or "both"; NA when neither
+  in_text <- ids %in% table$paper_id
+  in_meta <- ids %in% funders$paper_id
+  summary_table$funding_source <- ifelse(in_text & in_meta, "both",
+                                         ifelse(in_meta, "metadata", ifelse(in_text, "text", NA_character_)))
   summary_table$funder_n <- vapply(ids, \(id) sum(funders$paper_id %in% id), integer(1), USE.NAMES = FALSE)
   summary_table$award_n <- vapply(ids, \(id) sum(lengths(funders$award_ids[funders$paper_id %in% id])),
                                   integer(1), USE.NAMES = FALSE)
@@ -135,7 +141,7 @@ funding_check <- function(paper) {
     # in the Crossref Funder Registry) and award_ids
     funders = funders,
     summary_table = summary_table,
-    na_replace = FALSE,
+    na_replace = list(funding_found = FALSE),
     traffic_light = tl,
     summary_text = summary_text,
     report = report

@@ -68,3 +68,21 @@ test_that("coi_check's report shows at most 5 sentences and 1,000 characters (#6
   long <- env$.coi_short_text(paste("Conflict of interest", strrep("x", 1500)))
   expect_equal(nchar(long), 1000)
 })
+
+test_that("coi_check: the statement an article declares wins over a search that finds nothing", {
+  # no sentence about interests in the text; the publisher's XML declares one
+  p <- test_paper("We ran a study.")
+  mo <- module_run(p, "coi_check")
+  expect_equal(mo$traffic_light, "red")
+  p$info$coi_statement <- "None."
+  mo <- module_run(p, "coi_check")
+  expect_equal(mo$traffic_light, "green")
+  expect_equal(mo$table$text, "None.")
+  expect_equal(mo$summary_table$coi_source, "metadata")
+
+  # found in the text and declared: both; found in the text only: text
+  p <- read(test_path("fixtures", "formats", "jats_cases.xml"))
+  expect_equal(module_run(p, "coi_check")$summary_table$coi_source, "both")
+  g <- test_paper("The authors declare no conflict of interest.")
+  expect_equal(module_run(g, "coi_check")$summary_table$coi_source, "text")
+})
