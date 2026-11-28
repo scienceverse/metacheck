@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A made-up article in the form Elsevier's Article Retrieval API returns. -->
+<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd" xmlns:bk="http://www.elsevier.com/xml/bk/dtd" xmlns:cals="http://www.elsevier.com/xml/common/cals/dtd" xmlns:ce="http://www.elsevier.com/xml/common/dtd" xmlns:ja="http://www.elsevier.com/xml/ja/dtd" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:sa="http://www.elsevier.com/xml/common/struct-aff/dtd" xmlns:sb="http://www.elsevier.com/xml/common/struct-bib/dtd" xmlns:tb="http://www.elsevier.com/xml/common/table/dtd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xocs="http://www.elsevier.com/xml/xocs/dtd" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:prism="http://prismstandard.org/namespaces/basic/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <coredata>
+    <prism:doi>10.1016/j.test.2026.100001</prism:doi>
+    <dc:title>An Elsevier test article</dc:title>
+    <prism:publicationName>Journal of Elsevier Tests</prism:publicationName>
+    <prism:issn>12345678</prism:issn>
+    <prism:volume>7</prism:volume>
+    <prism:issueIdentifier>3</prism:issueIdentifier>
+    <prism:startingPage>100001</prism:startingPage>
+    <prism:coverDate>2026-06-30</prism:coverDate>
+    <prism:publisher>Elsevier Ltd</prism:publisher>
+    <openaccessUserLicense>http://creativecommons.org/licenses/by/4.0/</openaccessUserLicense>
+  </coredata>
+  <pubmed-id>87654321</pubmed-id>
+  <originalText>
+    <xocs:doc>
+      <xocs:serial-item>
+        <ja:article docsubtype="fla" version="5.6">
+          <ce:floats>
+            <ce:figure id="fig1"><ce:label>Fig. 1</ce:label><ce:caption id="cap1"><ce:simple-para>Mean scores per group.</ce:simple-para></ce:caption></ce:figure>
+            <ce:table id="tbl1" frame="topbot">
+              <ce:label>Table 1</ce:label>
+              <ce:caption id="cap2"><ce:simple-para>Descriptive statistics.</ce:simple-para></ce:caption>
+              <tgroup cols="3">
+                <colspec colname="col1"/><colspec colname="col2"/><colspec colname="col3"/>
+                <thead><row><entry morerows="1">Group</entry><entry namest="col2" nameend="col3">Score</entry></row>
+                  <row><entry>M</entry><entry>SD</entry></row></thead>
+                <tbody><row><entry>A</entry><entry>3.10</entry><entry>0.50</entry></row>
+                  <row><entry>B</entry><entry>2.80</entry><entry>0.60</entry></row></tbody>
+              </tgroup>
+              <ce:legend><ce:simple-para>Scores range from 1 to 5.</ce:simple-para></ce:legend>
+            </ce:table>
+          </ce:floats>
+          <ja:head>
+            <ce:title>An Elsevier test article</ce:title>
+            <ce:author-group>
+              <ce:author orcid="0000-0002-1825-0097"><ce:given-name>Dana</ce:given-name><ce:surname>Lee</ce:surname><ce:cross-ref refid="cor1"><ce:sup>&#x204E;</ce:sup></ce:cross-ref><ce:e-address type="email">dana.lee@example.org</ce:e-address><ce:contributor-role role="http://credit.niso.org/contributor-roles/formal-analysis">Formal analysis</ce:contributor-role></ce:author>
+              <ce:author><ce:given-name>Eric</ce:given-name><ce:surname>Moss</ce:surname></ce:author>
+              <ce:affiliation id="aff1"><ce:label>a</ce:label><ce:textfn>Department of Testing, Example University, Netherlands</ce:textfn><sa:affiliation><sa:organization>Example University</sa:organization></sa:affiliation></ce:affiliation>
+              <ce:correspondence id="cor1"><ce:label>&#x204E;</ce:label><ce:text>Corresponding author.</ce:text></ce:correspondence>
+            </ce:author-group>
+            <ce:date-received day="11" month="7" year="2025"/>
+            <ce:date-revised day="1" month="3" year="2026"/>
+            <ce:date-accepted day="28" month="3" year="2026"/>
+            <ce:miscellaneous id="misc1">Handling editor: Frank Editor</ce:miscellaneous>
+            <ce:abstract class="author-highlights"><ce:section-title>Highlights</ce:section-title><ce:abstract-sec><ce:simple-para>A highlight, not the abstract.</ce:simple-para></ce:abstract-sec></ce:abstract>
+            <ce:abstract class="author"><ce:section-title>Abstract</ce:section-title><ce:abstract-sec><ce:simple-para>We test reading Elsevier XML.</ce:simple-para></ce:abstract-sec></ce:abstract>
+            <ce:keywords class="keyword"><ce:section-title>Keywords</ce:section-title><ce:keyword><ce:text>Elsevier</ce:text></ce:keyword><ce:keyword><ce:text>XML</ce:text></ce:keyword></ce:keywords>
+            <ce:keywords class="jel"><ce:section-title>JEL classification</ce:section-title><ce:keyword><ce:text>C93</ce:text></ce:keyword></ce:keywords>
+            <ce:data-availability><ce:section-title>Data availability</ce:section-title><ce:para>Data are available at <ce:inter-ref xlink:href="https://osf.io/fghij/" xlink:type="simple">https://osf.io/fghij/</ce:inter-ref>.</ce:para></ce:data-availability>
+          </ja:head>
+          <ja:body>
+            <ce:sections>
+              <ce:section id="s1"><ce:label>1</ce:label><ce:section-title>Introduction</ce:section-title>
+                <ce:para>Earlier work found an effect (<ce:cross-ref refid="bib1">Lee, 2020</ce:cross-ref>; <ce:cross-refs refid="bib1 bib2">Lee, 2020; Moss and Lee, 2021</ce:cross-refs>).<ce:footnote id="fn1"><ce:label>1</ce:label><ce:note-para>A footnote.</ce:note-para></ce:footnote></ce:para>
+              </ce:section>
+              <ce:section id="s2" role="materials-methods"><ce:label>2</ce:label><ce:section-title>Method</ce:section-title>
+                <ce:section id="s2.1"><ce:label>2.1</ce:label><ce:section-title>Participants</ce:section-title>
+                  <ce:para>Fifty people took part (<ce:cross-ref refid="tbl1">Table 1</ce:cross-ref>, <ce:cross-ref refid="fig1">Fig. 1</ce:cross-ref>); the groups differed,<ce:hsp sp="0.25"/><ce:italic>t</ce:italic>(48)&#xA0;=&#xA0;2.10, <ce:italic>p</ce:italic>&#xA0;=&#xA0;.041.<ce:float-anchor refid="tbl1"/></ce:para>
+                </ce:section>
+              </ce:section>
+              <ce:section id="s3"><ce:section-title>Funding</ce:section-title><ce:para>Funded by the Example Council.</ce:para></ce:section>
+            </ce:sections>
+            <ce:acknowledgment><ce:section-title>Acknowledgments</ce:section-title><ce:para>We thank everyone.</ce:para></ce:acknowledgment>
+            <ce:conflict-of-interest><ce:section-title>Declaration of competing interest</ce:section-title><ce:para>The authors declare no competing interests.</ce:para></ce:conflict-of-interest>
+          </ja:body>
+          <ja:tail>
+            <ce:bibliography id="bibl1"><ce:section-title>References</ce:section-title>
+              <ce:bibliography-sec>
+                <ce:bib-reference id="bib1"><ce:label>Lee, 2020</ce:label>
+                  <sb:reference><sb:contribution><sb:authors><sb:author><ce:given-name>D.</ce:given-name><ce:surname>Lee</ce:surname></sb:author></sb:authors><sb:title><sb:maintitle>An earlier study</sb:maintitle></sb:title></sb:contribution>
+                    <sb:host><sb:issue><sb:series><sb:title><sb:maintitle>Earlier Journal</sb:maintitle></sb:title><sb:volume-nr>10</sb:volume-nr></sb:series><sb:issue-nr>2</sb:issue-nr><sb:date>2020</sb:date></sb:issue><sb:pages><sb:first-page>11</sb:first-page><sb:last-page>20</sb:last-page></sb:pages><ce:doi>10.1234/ej.2020.10</ce:doi></sb:host></sb:reference>
+                  <ce:source-text>Lee, D., 2020. An earlier study. Earlier Journal 10 (2), 11–20.</ce:source-text>
+                </ce:bib-reference>
+                <ce:bib-reference id="bib2"><ce:label>Moss and Lee, 2021</ce:label>
+                  <sb:reference><sb:contribution><sb:authors><sb:author><ce:given-name>E.</ce:given-name><ce:surname>Moss</ce:surname></sb:author><sb:author><ce:given-name>D.</ce:given-name><ce:surname>Lee</ce:surname></sb:author></sb:authors><sb:title><sb:maintitle>A chapter</sb:maintitle></sb:title></sb:contribution>
+                    <sb:host><sb:edited-book><sb:editors><sb:editor><ce:given-name>F.</ce:given-name><ce:surname>Editor</ce:surname></sb:editor></sb:editors><sb:title><sb:maintitle>The Edited Book</sb:maintitle></sb:title><sb:date>2021</sb:date><sb:publisher><sb:name>Book House</sb:name></sb:publisher></sb:edited-book><sb:pages><sb:first-page>5</sb:first-page><sb:last-page>9</sb:last-page></sb:pages></sb:host></sb:reference>
+                </ce:bib-reference>
+                <ce:bib-reference id="bib3"><ce:label>Old, 1999</ce:label><ce:other-ref><ce:textref>Old, A., 1999. A reference given as text. Some Journal 1, 1-2.</ce:textref></ce:other-ref></ce:bib-reference>
+              </ce:bibliography-sec>
+            </ce:bibliography>
+          </ja:tail>
+        </ja:article>
+      </xocs:serial-item>
+    </xocs:doc>
+  </originalText>
+</full-text-retrieval-response>

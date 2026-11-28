@@ -187,6 +187,9 @@ convert_grobid <- function(file_path, save_path,
 
 #' Convert Grobid TEI XML file to bibr format
 #'
+#' A publisher's full-text XML (JATS, Elsevier) is converted as [read()]
+#' reads it, and saved as a bibr 12.0 file whatever `schema_version` is.
+#'
 #' @param xml_path the path to the XML file
 #' @param save_path directory or file path to save to; set to NULL to return a paper
 #'   object. There is no default, because CRAN does not allow writing into the
@@ -227,8 +230,14 @@ grobid_to_bibr <- function(xml_path,
   paper <- lapply(xml_path, \(xml_path1) {
     what <- basename(xml_path1)
     pb$tick(0, list(step = "", what = what))
+    # any XML that is not Grobid's TEI (a publisher's XML) is read as read()
+    # reads it: it was read as Grobid TEI, which gave a paper with almost no
+    # text
+    publisher <- tryCatch(!.xml_format(xml_path1)$format %in% "tei",
+                          error = \(e) FALSE)
     p <- tryCatch(
-      .grobid_to_bibr(xml_path = xml_path1, pb, schema_version),
+      if (publisher) .read_xml_fulltext(xml_path1) else
+        .grobid_to_bibr(xml_path = xml_path1, pb, schema_version),
       error = \(e) {
         errors <<- errors + 1
         logger("grobid_to_bibr", list(xml_path = xml_path1, error = e$message))
@@ -252,7 +261,9 @@ grobid_to_bibr <- function(xml_path,
     # or save paper and return file name
     # save here instead of after iteration so batches can be cancelled with partial return
     file_name <- basename(xml_path1) |> gsub("\\.xml$", "", x = _)
-    json_path <- paper_write(p, file_name, save_path, schema_version)
+    # a publisher's XML gives a paper in bibr 12.x form, written as 12.0
+    json_path <- paper_write(p, file_name, save_path,
+                             if (publisher) "12.0" else schema_version)
     return(json_path)
   })
 
@@ -807,8 +818,13 @@ grobid_to_bibr <- function(xml_path,
       header = "",
       #text = xml2::xml_text(note),
       formatted = as.character(note),
-      section = sub("_\\d+$", "", x = noteid),
-      div = sub("^foot_", "", x = noteid) |> as.numeric()
+      # Grobid's ids are "foot_0"; a journal's own TEI has others ("ftn1"):
+      # the number at the end of the id, and such a note is a footnote
+      section = if (grepl("_[0-9]+$", noteid %NA% "")) sub("_\\d+$", "", x = noteid) else "foot",
+      div = {
+        num <- regmatches(noteid %NA% "", regexpr("[0-9]+$", noteid %NA% ""))
+        if (length(num)) as.numeric(num) else NA_real_
+      }
     )
   }) |> do.call(rbind, args = _)
   notetbl <- notetbl %||% dplyr::tibble()
@@ -858,10 +874,12 @@ grobid_to_bibr <- function(xml_path,
 #' Get authors from TEI type XML
 #'
 #' @param xml The XML
+#' @param all_affiliations whether to add the column `affiliations`: every
+#'   affiliation of each author, as a list (`affiliation` is the first one)
 #'
 #' @return authors table
 #' @keywords internal
-.tei_authors <- function(xml) {
+.tei_authors <- function(xml, all_affiliations = FALSE) {
   author_nodes <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
   authors <- lapply(seq_along(author_nodes), function(i) {
     a <- author_nodes[[i]]
@@ -872,7 +890,7 @@ grobid_to_bibr <- function(xml_path,
     affiliation <- .xml_find1_text(a, ".//affiliation")
     orcid <- .xml_find1_text(a, ".//idno[@type='ORCID']")
 
-    list(
+    row <- list(
       author_id = i,
       given = given,
       family = family,
@@ -882,6 +900,11 @@ grobid_to_bibr <- function(xml_path,
       orcid = orcid,
       role = list(character(0))
     )
+    if (all_affiliations) {
+      affs <- .xml_find_text(a, ".//affiliation")
+      row$affiliations <- list(affs[nzchar(affs)])
+    }
+    row
   })
 
   dplyr::bind_rows(authors)

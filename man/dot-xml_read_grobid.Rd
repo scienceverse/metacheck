@@ -4,10 +4,17 @@
 \alias{.xml_read_grobid}
 \title{Read in a grobid XML file}
 \usage{
-.xml_read_grobid(path)
+.xml_read_grobid(path, pdf_repairs = TRUE)
 }
 \arguments{
 \item{path}{Path to a grobid/TEI XML file}
+
+\item{pdf_repairs}{whether to undo what reading a PDF does to numbers:
+spaces inside a number split by a line break ("1. 5"), before a full
+stop that ends an element, and before a number in front of a comparison.
+FALSE for TEI translated from a publisher's XML (see R/import-jats.R),
+whose text has none of these, and where joining "10. 10.1234" or "in
+2019. 25 participants" would change correct text.}
 }
 \value{
 a list with class "xml_document" for xml2

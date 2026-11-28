@@ -1,5 +1,5 @@
 {
-  "description": "What a paper read from a bibr export schema 12.x file (or converted from Grobid TEI with schema_version = \"12.0\") adds to paper.json. Every addition is optional, so papers in the older format validate as before. Merged into paper.json by .paper_schema_bibr12().",
+  "description": "What a paper read from a bibr export schema 12.x file (12.6 adds what a publisher's XML declares) (or converted from Grobid TEI with schema_version = \"12.0\") adds to paper.json. Every addition is optional, so papers in the older format validate as before. Merged into paper.json by .paper_schema_bibr12().",
   "properties": {
     "affiliation": {
       "description": "bibr 12.x: distinct byline affiliations (the 12.x name of affiliations)",
@@ -27,6 +27,48 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/funding_match"
+      }
+    },
+    "subject": {
+      "description": "bibr 12.6: subject terms with their scheme (subject headings, JEL codes, open-science badges, assessment terms)",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/subject"
+      }
+    },
+    "related": {
+      "description": "bibr 12.6: works the input declares related (corrected or retracted articles, the preprint, peer-review reports)",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/related"
+      }
+    },
+    "contributor": {
+      "description": "bibr 12.6: editors and reviewers, who are not authors",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/contributor"
+      }
+    },
+    "supplement": {
+      "description": "bibr 12.6: supplementary files the input lists",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/supplement"
+      }
+    },
+    "review": {
+      "description": "bibr 12.6: peer-review documents (decision letters, referee reports, author responses, assessments)",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review"
+      }
+    },
+    "review_text": {
+      "description": "bibr 12.6: paragraphs of the peer-review documents, kept apart from the paper's text table",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review_text"
       }
     }
   },
@@ -99,6 +141,111 @@
             "corrigendum",
             "erratum",
             "retraction"
+          ]
+        },
+        "article_type": {
+          "description": "bibr 12.6: the publisher's own article type, as the input declares it (JATS article-type), lowercase",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "received_date": {
+          "description": "bibr 12.6: when the journal received the manuscript, ISO 8601 (YYYY, YYYY-MM or YYYY-MM-DD)",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revised_date": {
+          "description": "bibr 12.6: when the last revision was received, ISO 8601",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accepted_date": {
+          "description": "bibr 12.6: when the paper was accepted, ISO 8601",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "copyright_statement": {
+          "description": "bibr 12.6: copyright statement, as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "copyright_holder": {
+          "description": "bibr 12.6: copyright holder, as declared",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "copyright_year": {
+          "description": "bibr 12.6: copyright year, as declared",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "significance_statement": {
+          "description": "bibr 12.6: a statement of relevance or public significance, as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ai_statement": {
+          "description": "bibr 12.6: statement on the use of generative AI, as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "open_practices_statement": {
+          "description": "bibr 12.6: open-practices statement (data, materials, preregistration), as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "word_count": {
+          "description": "bibr 12.6: word count the input declares",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "figure_count": {
+          "description": "bibr 12.6: figure count the input declares",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "table_count": {
+          "description": "bibr 12.6: table count the input declares",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "ref_count": {
+          "description": "bibr 12.6: reference count the input declares",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "page_count": {
+          "description": "bibr 12.6: page count the input declares",
+          "type": [
+            "integer",
+            "null"
           ]
         }
       }
@@ -195,6 +342,13 @@
           ]
         },
         "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relation": {
+          "description": "bibr 12.6: what the cited work is to the paper: supplements (the paper's own data, code or materials), preprint, other",
           "type": [
             "string",
             "null"
@@ -316,6 +470,20 @@
         "funding_id": {
           "description": "bibr 12.x: 1-based position",
           "type": "integer"
+        },
+        "funder_doi": {
+          "description": "bibr 12.6: the funder's Crossref Funder Registry DOI the input declares, bare and lowercase",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recipients": {
+          "description": "bibr 12.6: names of the award's recipients, as declared",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -357,6 +525,13 @@
             "integer",
             "null"
           ]
+        },
+        "alt_text": {
+          "description": "bibr 12.6: the figure's text alternative (for screen readers), as the input gives it",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -370,6 +545,13 @@
         },
         "text_id": {
           "description": "bibr 12.x: the caption's text row; section_id is then the section the table is printed in",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "header_rows": {
+          "description": "bibr 12.6: how many of the first rows of contents the input marks as header rows",
           "type": [
             "integer",
             "null"
@@ -542,6 +724,285 @@
             "array",
             "null"
           ]
+        }
+      }
+    },
+    "affiliation": {
+      "properties": {
+        "ror": {
+          "description": "bibr 12.6: ROR ID the input declares, as https URI",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "subject_id",
+        "scheme",
+        "term"
+      ],
+      "properties": {
+        "subject_id": {
+          "description": "1-based position",
+          "type": "integer"
+        },
+        "scheme": {
+          "description": "What the term classifies (heading, jel, open-science-badge, ...)",
+          "type": "string"
+        },
+        "term": {
+          "description": "The term, as printed",
+          "type": "string"
+        },
+        "code": {
+          "description": "The term's code, when given",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "related": {
+      "type": "object",
+      "required": [
+        "related_id",
+        "relation"
+      ],
+      "properties": {
+        "related_id": {
+          "description": "1-based position",
+          "type": "integer"
+        },
+        "relation": {
+          "description": "corrects, retracts, expression_of_concern_for, comments_on, replies_to, companion, preprint, peer_review, supplement, other",
+          "type": "string"
+        },
+        "doi": {
+          "description": "The related work's DOI, bare and lowercase",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "The related work's URL",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "description": "The related work's title",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "contributor": {
+      "type": "object",
+      "required": [
+        "contributor_id"
+      ],
+      "properties": {
+        "contributor_id": {
+          "description": "1-based position",
+          "type": "integer"
+        },
+        "given": {
+          "description": "Given name(s)",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "description": "Family name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "literal": {
+          "description": "A group's whole name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orcid": {
+          "description": "ORCID iD as https URI",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "description": "Roles as printed (Academic Editor, Reviewer)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "affiliation": {
+          "description": "Affiliation, as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "supplement": {
+      "type": "object",
+      "required": [
+        "supplement_id"
+      ],
+      "properties": {
+        "supplement_id": {
+          "description": "1-based position",
+          "type": "integer"
+        },
+        "label": {
+          "description": "The printed label",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "The text row holding the caption",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "caption": {
+          "description": "Caption, as printed",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "description": "The file's DOI, bare and lowercase",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Where the file is",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "file_name": {
+          "description": "The file's name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "media_type": {
+          "description": "The file's media type",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "review_id",
+        "review_type"
+      ],
+      "properties": {
+        "review_id": {
+          "description": "1-based position",
+          "type": "integer"
+        },
+        "review_type": {
+          "description": "decision_letter, referee_report, author_response, editor_report, assessment, acceptance_letter, other",
+          "type": "string"
+        },
+        "title": {
+          "description": "The document's title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "round": {
+          "description": "Review round, 1-based",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "date": {
+          "description": "The document's date, ISO 8601",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "description": "The document's DOI",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "Where the document is",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contributor_ids": {
+          "description": "The reviewers' or editors' contributor_id",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "review_text": {
+      "type": "object",
+      "required": [
+        "review_text_id",
+        "review_id",
+        "paragraph_id",
+        "text"
+      ],
+      "properties": {
+        "review_text_id": {
+          "description": "1-based reading-order position",
+          "type": "integer"
+        },
+        "review_id": {
+          "description": "The review the paragraph belongs to",
+          "type": "integer"
+        },
+        "paragraph_id": {
+          "description": "Paragraph within the review",
+          "type": "integer"
+        },
+        "text": {
+          "description": "The paragraph as plain text",
+          "type": "string"
         }
       }
     }

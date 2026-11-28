@@ -2,7 +2,7 @@
 % Please edit documentation in R/import-read.R
 \name{read}
 \alias{read}
-\title{Read in grobid XML or bibr JSON}
+\title{Read in bibr JSON, grobid XML or a publisher's XML}
 \usage{
 read(file_path, include_images = FALSE, recursive = FALSE)
 }
@@ -17,7 +17,16 @@ read(file_path, include_images = FALSE, recursive = FALSE)
 a paper or paperlist
 }
 \description{
-Read in grobid XML or bibr JSON
+Reads the JSON bibr writes, the TEI XML Grobid writes, and the full-text
+XML publishers deliver: JATS (the Journal Article Tag Suite, in all its
+versions and the older NLM DTDs, as PLOS, Frontiers, eLife, SAGE, Taylor &
+Francis, APA, MDPI, Springer Nature, PubMed Central and many others
+deliver it, and as CERMINE writes it), Elsevier's XML (from its Article
+Retrieval API) and Wiley's XML (WileyML, from the text-mining links Wiley
+registers with CrossRef, also for the society journals Wiley publishes).
+The format of an XML file is recognised from its first
+element; a file in another format is not read, with a warning that names
+its first element.
 }
 \examples{
 paper <- read(demofile("xml"))

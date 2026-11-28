@@ -33,7 +33,13 @@
     issn = "chr", publisher = "chr", published = "chr",
     published_date = "chr", license = "chr", license_url = "chr",
     license_spdx = "chr", funding_statement = "chr", coi_statement = "chr",
-    ethics_statement = "chr", data_availability = "chr"
+    ethics_statement = "chr", data_availability = "chr",
+    # 12.6: what a publisher's XML declares
+    article_type = "chr", received_date = "chr", revised_date = "chr",
+    accepted_date = "chr", copyright_statement = "chr", copyright_holder = "chr",
+    copyright_year = "int", significance_statement = "chr", ai_statement = "chr",
+    open_practices_statement = "chr", word_count = "int", figure_count = "int",
+    table_count = "int", ref_count = "int", page_count = "int"
   ),
   author = c(
     author_id = "int", given = "chr", family = "chr", suffix = "chr",
@@ -42,9 +48,11 @@
   ),
   affiliation = c(
     affiliation_id = "int", text = "chr", institution = "chr",
-    department = "chr", city = "chr", country = "chr", author_ids = "int[]"
+    department = "chr", city = "chr", country = "chr", author_ids = "int[]",
+    ror = "chr" # 12.6
   ),
-  funding = c(funding_id = "int", funder = "chr", award_ids = "chr[]"),
+  funding = c(funding_id = "int", funder = "chr", award_ids = "chr[]",
+              funder_doi = "chr", recipients = "chr[]"), # 12.6: funder_doi, recipients
   text = c(
     text = "chr", text_id = "int", paragraph_id = "int", section_id = "int",
     page_number = "int", formatted = "chr"
@@ -64,7 +72,8 @@
     container = "chr", volume = "chr", issue = "chr", first_page = "chr",
     last_page = "chr", edition = "chr", version = "chr", url = "chr",
     is_in_press = "lgl", arxiv = "chr", pmid = "chr", series = "chr",
-    access_date = "chr", note = "chr"
+    access_date = "chr", note = "chr",
+    relation = "chr" # 12.6
   ),
   xref = c(
     xref_id = "int", target_id = "int", xref_type = "chr", contents = "chr",
@@ -72,13 +81,33 @@
   ),
   figure = c(
     figure_id = "int", label = "chr", section_id = "int", text_id = "int",
-    image = "chr", caption = "chr", page_number = "int"
+    image = "chr", caption = "chr", page_number = "int",
+    alt_text = "chr" # 12.6
   ),
   table = c(
     table_id = "int", label = "chr", section_id = "int", text_id = "int",
-    html = "chr", contents = "chr[][]", caption = "chr", page_number = "int"
+    html = "chr", contents = "chr[][]", caption = "chr", page_number = "int",
+    header_rows = "int" # 12.6
   ),
   footnote = c(footnote_id = "int", label = "chr", text_id = "int"),
+  # 12.6: what a publisher's XML declares beyond the text
+  subject = c(subject_id = "int", scheme = "chr", term = "chr", code = "chr"),
+  related = c(related_id = "int", relation = "chr", doi = "chr", url = "chr",
+              title = "chr"),
+  contributor = c(
+    contributor_id = "int", given = "chr", family = "chr", literal = "chr",
+    orcid = "chr", role = "chr[]", affiliation = "chr"
+  ),
+  supplement = c(
+    supplement_id = "int", label = "chr", text_id = "int", caption = "chr",
+    doi = "chr", url = "chr", file_name = "chr", media_type = "chr"
+  ),
+  review = c(
+    review_id = "int", review_type = "chr", title = "chr", round = "int",
+    date = "chr", doi = "chr", url = "chr", contributor_ids = "int[]"
+  ),
+  review_text = c(review_text_id = "int", review_id = "int", paragraph_id = "int",
+                  text = "chr"),
   eq = c(
     eq_id = "int", text_id = "int", start = "int", end = "int",
     grp_id = "int", verbatim = "chr", lhs = "chr", df = "chr", comp = "chr",
@@ -101,7 +130,9 @@
   author = "author", affiliation = "affiliation", funding = "funding",
   text = "text", section = "section", url = "url", bib = "bib",
   xref = "xref", figure = "figure", table = "table", footnote = "footnote",
-  eq = "eq", metadata_match = "info_match",
+  eq = "eq", subject = "subject", related = "related",
+  contributor = "contributor", supplement = "supplement", review = "review",
+  review_text = "review_text", metadata_match = "info_match",
   affiliation_match = "affiliation_match", funding_match = "funding_match",
   bib_match = "bib_match"
 )
@@ -316,17 +347,19 @@
   .bibr12_paper(x[["paper_id"]], info, tables, x[["extraction"]])
 }
 
-#' Convert a paper to bibr export schema 12.0
+#' Convert a paper to bibr export schema 12.0 or 12.6
 #'
 #' Called by `paper_write(schema_version = "12.0")`. Keeps the extraction
 #' block of the paper (a bibr export keeps bibr as its producer and the time
-#' bibr extracted it) and names metacheck as the converter. A paper read from
-#' a later 12.x file is not rewritten, since the rewrite would have to keep
-#' keys metacheck does not know.
+#' bibr extracted it) and names metacheck as the converter. A paper in 12.0
+#' form is written as 12.0. A paper in 12.6 form that metacheck converted
+#' itself (from a publisher's XML) is written as 12.6, with its 12.6 keys. A
+#' paper read from a later 12.x bibr export is not rewritten, since the
+#' rewrite would have to keep keys metacheck does not know.
 #'
-#' @param paper a paper object in 12.0 form
+#' @param paper a paper object in 12.0 or 12.6 form
 #' @returns a list that `jsonlite::write_json(auto_unbox = TRUE)` writes as
-#'   a 12.0 export
+#'   a 12.0 or 12.6 export
 #' @noRd
 .paper_to_bibr12 <- function(paper) {
   if (!.is_bibr12(paper)) {
@@ -336,7 +369,8 @@
          "' is in metacheck's older format", call. = FALSE)
   }
   version <- paper$info$schema_version[[1]]
-  if (!identical(version, "12.0")) {
+  converted <- !identical(paper$extraction$producer$name, "bibr")
+  if (!identical(version, "12.0") && !(identical(version, "12.6") && converted)) {
     stop("paper_write(schema_version = \"12.0\") cannot rewrite '",
          paper$paper_id, "': it was read from bibr export schema ", version,
          ", and a rewrite keeps every key, including those metacheck does ",
@@ -351,7 +385,10 @@
   tables <- lapply(stats::setNames(nm = names(.bibr12_tables)), \(tbl) {
     df <- paper[[.bibr12_tables[[tbl]]]]
     columns <- if (is.data.frame(df)) as.list(df) else list()
-    .bibr12_df(columns, .bibr12_cols[[tbl]], n = NROW(df))
+    out <- .bibr12_df(columns, .bibr12_cols[[tbl]], n = NROW(df))
+    # a 12.0 export has none of the 12.6 columns: its strict schema rejects them
+    if (identical(version, "12.0")) out <- out[setdiff(names(out), .bibr12_v126$cols[[tbl]])]
+    out
   })
 
   # 12.x writes degrees of freedom bare: "28"
@@ -403,6 +440,7 @@
   tables <- lapply(stats::setNames(nm = names(tables)), \(tbl) {
     rows <- tables[[tbl]]
     cols <- .bibr12_cols[[tbl]]
+    cols <- cols[names(cols) %in% names(rows)] # a 12.0 export left out 12.6's
     for (col in names(cols)[cols %in% c("chr[]", "int[]")]) {
       rows[[col]] <- lapply(rows[[col]], I)
     }
@@ -416,6 +454,9 @@
   metadata <- .bibr12_df(as.list(info), .bibr12_cols$metadata, n = 1L) |>
     as.list() |>
     lapply(\(v) if (is.list(v)) I(v[[1]]) else v[[1]])
+  if (identical(version, "12.0")) {
+    metadata <- metadata[setdiff(names(metadata), .bibr12_v126$cols$metadata)]
+  }
 
   source <- list(
     file_name = as.character(info$file_name[[1]]),
@@ -446,17 +487,38 @@
   c(
     list(
       paper_id = as.character(paper$paper_id),
-      schema_version = "12.0",
+      schema_version = version,
       source = source,
       metadata = metadata
     ),
     tables[c("author", "affiliation", "funding", "text", "section", "url",
              "bib", "xref", "figure", "table", "footnote", "eq",
+             if (identical(version, "12.6")) .bibr12_v126$tables,
              "metadata_match", "affiliation_match", "funding_match",
              "bib_match")],
     list(extraction = extraction)
   )
 }
+
+# What bibr export schema 12.6 added: the columns of existing tables (and of
+# the metadata), and the new tables, in the order bibr writes them. A 12.0
+# export leaves all of them out.
+.bibr12_v126 <- list(
+  cols = list(
+    metadata = c("article_type", "received_date", "revised_date", "accepted_date",
+                 "copyright_statement", "copyright_holder", "copyright_year",
+                 "significance_statement", "ai_statement",
+                 "open_practices_statement", "word_count", "figure_count",
+                 "table_count", "ref_count", "page_count"),
+    affiliation = "ror",
+    funding = c("funder_doi", "recipients"),
+    bib = "relation",
+    figure = "alt_text",
+    table = "header_rows"
+  ),
+  tables = c("subject", "related", "contributor", "supplement", "review",
+             "review_text")
+)
 
 #' Normalize DOIs for bibr 12.x: bare and lowercase, NA when not a DOI
 #'

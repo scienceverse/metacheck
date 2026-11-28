@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A made-up article that holds the cases the Wiley reader handles. -->
+<component xmlns="http://www.wiley.com/namespaces/wiley" xmlns:wiley="http://www.wiley.com/namespaces/wiley/wiley" type="serialArticle" version="2.0" xml:id="tst10101" xml:lang="en">
+  <header>
+    <publicationMeta level="product">
+      <doi origin="wiley" registered="yes">10.1111/(ISSN)1234-5678</doi>
+      <issn type="print">1234-5670</issn>
+      <issn type="electronic">1234-5678</issn>
+      <titleGroup><title type="main">Journal of Wiley Tests</title><title type="short">J Wiley Tests</title></titleGroup>
+    </publicationMeta>
+    <publicationMeta level="part" position="10">
+      <doi origin="wiley">10.1111/tst.v12.3</doi>
+      <numberingGroup><numbering type="journalVolume" number="12">12</numbering><numbering type="journalIssue">3</numbering></numberingGroup>
+      <coverDate startDate="2026-03">March 2026</coverDate>
+    </publicationMeta>
+    <publicationMeta level="unit" type="article" position="20" status="forIssue" accessType="open">
+      <doi>10.1111/tst.10101</doi>
+      <idGroup><id type="unit" value="TST10101"/></idGroup>
+      <countGroup><count type="pageTotal" number="12"/></countGroup>
+      <titleGroup><title type="articleCategory">RESEARCH ARTICLE</title><title type="tocHeading1">Test methods</title></titleGroup>
+      <copyright ownership="thirdParty">&#xa9; 2026 The Authors. Journal of Wiley Tests published by John Wiley &amp; Sons Ltd on behalf of the Test Society.</copyright>
+      <legalStatement type="creativeCommonsBy"><p>This is an open access article under the terms of the <link href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution</link> License.</p></legalStatement>
+      <eventGroup>
+        <event type="manuscriptReceived" date="2025-09-01"/>
+        <event type="manuscriptRevised" date="2025-12-15"/>
+        <event type="manuscriptAccepted" date="2026-01-10"/>
+        <event type="xmlCreated" agent="SPS" date="2026-01-12"/>
+        <event type="firstOnline" date="2026-02-01"/>
+      </eventGroup>
+      <numberingGroup><numbering type="pageFirst">301</numbering><numbering type="pageLast">312</numbering></numberingGroup>
+      <correspondenceTo><lineatedText><line><b>Correspondence</b></line><line>Ada Byron</line><line>Email: <email>ada.byron@example.org</email></line></lineatedText></correspondenceTo>
+      <subjectInfo><subject href="http://entities.wiley.com/objects/TST1">Test ecology</subject></subjectInfo>
+      <selfCitationGroup><citation type="self" xml:id="tst10101-cit-1001">Byron A. A test of reading Wiley XML. J Wiley Tests. 2026;12:301-312.</citation></selfCitationGroup>
+    </publicationMeta>
+    <contentMeta>
+      <countGroup><count type="figureTotal" number="1"/><count type="tableTotal" number="1"/><count type="wordTotal" number="4000"/></countGroup>
+      <titleGroup><title type="main">A test of reading <i>Wiley</i> XML</title><title type="short">Wiley XML</title></titleGroup>
+      <creators>
+        <creator xml:id="tst10101-cr-0001" creatorRole="author" affiliationRef="#tst10101-aff-0001" corresponding="yes">
+          <idGroup><id type="orcid" value="https://orcid.org/0000-0002-1825-0097"/></idGroup>
+          <personName><givenNames>Ada</givenNames><familyName>Byron</familyName></personName>
+          <contactDetails><email>ada.byron@example.org</email></contactDetails>
+        </creator>
+        <creator xml:id="tst10101-cr-0002" creatorRole="author" affiliationRef="#tst10101-aff-0001 #tst10101-aff-0002">
+          <personName><givenNames>Ben</givenNames><familyNamePrefix>van der</familyNamePrefix><familyName>Berg</familyName></personName>
+        </creator>
+        <creator xml:id="tst10101-cr-0003" creatorRole="editor">
+          <personName><givenNames>Cleo</givenNames><familyName>Handler</familyName></personName>
+        </creator>
+      </creators>
+      <affiliationGroup>
+        <affiliation xml:id="tst10101-aff-0001" countryCode="NL" type="organization"><orgDiv>Department of Testing</orgDiv><orgName>Test University</orgName><address><city>Eindhoven</city><country>The Netherlands</country></address></affiliation>
+        <affiliation xml:id="tst10101-aff-0002" countryCode="GB" type="organization"><orgName>Other University</orgName><address><city>Bristol</city><country>UK</country></address></affiliation>
+      </affiliationGroup>
+      <keywordGroup type="author"><keyword xml:id="tst10101-kwd-0001">Wiley</keyword><keyword xml:id="tst10101-kwd-0002"><fi>in situ</fi> testing</keyword></keywordGroup>
+      <fundingInfo><fundingAgency fundRefName="Test Council" funderDoi="10.13039/501100000270">Test Research Council</fundingAgency><fundingNumber>TRC-1</fundingNumber><fundingNumber>TRC-2</fundingNumber></fundingInfo>
+      <supportingInformation><supportingInfoItem xml:id="tst10101-sup-0001"><mediaResource alt="supporting" mimeType="application/pdf" href="suppl/tst10101-sup-0001-Appendix.pdf"/><caption>Appendix S1. Extra analyses.</caption></supportingInfoItem></supportingInformation>
+      <abstractGroup>
+        <abstract type="main" xml:id="tst10101-abs-0001" xml:lang="en"><title type="main">Abstract</title><p><list formatted="paragraph" style="1" xml:id="tst10101-list-0001"><listItem xml:id="tst10101-li-0001">We test whether Wiley XML is read.</listItem><listItem xml:id="tst10101-li-0002">It is.</listItem></list></p></abstract>
+        <abstract type="graphical" xml:id="tst10101-abs-0002" xml:lang="en"><p>A graphical abstract that is not the abstract.<blockFixed type="graphic" xml:id="tst10101-blkfxd-0001"><mediaResourceGroup><mediaResource alt="image" href="graphic/tst10101-toc-0001-m.png"/></mediaResourceGroup></blockFixed></p></abstract>
+      </abstractGroup>
+    </contentMeta>
+    <noteGroup xml:id="tst10101-ntgp-0001">
+      <note type="handlingEditor" numbered="no" xml:id="tst10101-note-0101"><p>Cleo Handler <b>Handling Editor</b></p></note>
+      <note type="equal" numbered="no" xml:id="tst10101-note-0102"><p>Ada Byron and Ben van der Berg contributed equally.</p></note>
+      <note type="funding" numbered="no" xml:id="tst10101-note-0103"><p><b>Funding information</b></p><p>Test Research Council, Grant/Award Number: TRC-1</p></note>
+    </noteGroup>
+  </header>
+  <body sectionsNumbered="yes" xml:id="tst10101-body-0001">
+    <section xml:id="tst10101-sec-0001" type="introduction">
+      <title type="main">INTRODUCTION</title>
+      <p>Earlier work tested this (Smith, <link href="#tst10101-bib-0001">2020</link>; Jones &amp; Lee, <link href="#tst10101-bib-0002">2019</link>), as Figure <link href="#tst10101-fig-0001">1</link> shows.<note xml:id="tst10101-note-1001"><label><sup>1</sup></label><p>A footnote in the text.</p></note></p>
+    </section>
+    <section xml:id="tst10101-sec-0002" type="materialsAndMethods">
+      <title type="main">MATERIALS AND METHODS</title>
+      <section xml:id="tst10101-sec-0003" type="experimental">
+        <title type="main">Participants</title>
+        <p>We tested 40 <fi>Rana dalmatina</fi> tadpoles (Table <link href="#tst10101-tbl-0001">1</link>). The code is at <url href="https://github.com/example/test">https://github.com/example/test</url>.</p>
+        <p><computerCode><lineatedText><line>x &lt;- 1</line><line>y &lt;- 2</line></lineatedText></computerCode></p>
+        <mathStatement numbered="no" xml:id="tst10101-mthst-0001"><title type="mathStatementName">H1</title><p>Tadpoles hide more when predators are near.</p></mathStatement>
+      </section>
+    </section>
+    <section xml:id="tst10101-sec-0004" type="results">
+      <title type="main">RESULTS</title>
+      <p>Hiding increased, <i>t</i>(38) = 2.50, <i>p</i> = .017, and <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" altimg="graphic/tst10101-math-0001.png"><mi>F</mi><mo>(</mo><mn>1</mn><mo>,</mo><mn>38</mn><mo>)</mo><mo>=</mo><mn>6.25</mn></math>.</p>
+      <p><displayedItem type="mathematics" xml:id="tst10101-disp-0001"><label>1</label><mediaResource href="graphic/tst10101-math-0002.png" alt="urn:x-wiley:12345678:media:tst10101:tst10101-math-0002"/></displayedItem></p>
+      <figure xml:id="tst10101-fig-0001"><label>1</label><title type="figureName">FIGURE</title><mediaResourceGroup><mediaResource alt="image" href="graphic/tst10101-fig-0001-m.png" mimeType="image/png" rendition="webHiRes"/></mediaResourceGroup><caption>Mean hiding time of <i>R. dalmatina</i> per treatment.</caption></figure>
+      <tabular xml:id="tst10101-tbl-0001" copyright="John Wiley &amp; Sons, Ltd"><label>1</label><titleGroup><title type="tabularName">TABLE</title><title type="main">Hiding time by treatment</title></titleGroup>
+        <table frame="topbot"><tgroup cols="3"><colspec colname="col1" colnum="1"/><colspec colname="col2" colnum="2"/><colspec colname="col3" colnum="3"/>
+          <thead><row><entry colname="col1" morerows="1">Treatment</entry><entry colname="col2" namest="col2" nameend="col3">Hiding (s)</entry></row><row><entry colname="col2">M</entry><entry colname="col3">SD</entry></row></thead>
+          <tbody><row><entry colname="col1">Predator<link href="#tst10101-note-0001"><sup>a</sup></link></entry><entry colname="col2">12.1</entry><entry colname="col3">3.2</entry></row><row><entry colname="col1">Control</entry><entry colname="col2">8.4</entry><entry colname="col3">2.9</entry></row></tbody>
+        </tgroup></table>
+        <noteGroup xml:id="tst10101-ntgp-0002"><note xml:id="tst10101-note-0001"><label><sup>a</sup></label><p>Predator cue added.</p></note></noteGroup>
+      </tabular>
+    </section>
+    <section xml:id="tst10101-sec-0005">
+      <title type="main">AUTHORS&#x2019; CONTRIBUTIONS</title>
+      <p>Ada Byron wrote the paper.</p>
+    </section>
+    <section xml:id="tst10101-sec-0006" type="acknowledgments" numbered="no"><title type="main">ACKNOWLEDGEMENTS</title><p>We thank the tadpoles.</p></section>
+    <section xml:id="tst10101-sec-0007" type="conflictOfInterest" numbered="no"><title type="main">CONFLICT OF INTEREST</title><p>The authors declare no conflict of interest.</p></section>
+    <section xml:id="tst10101-sec-0008" type="openResearch" numbered="no">
+      <section xml:id="tst10101-sec-0009" type="transparentPeerReview" numbered="no"><title type="main">PEER REVIEW</title><p>The peer review history for this article is available at <url href="https://publons.com/publon/10.1111/tst.10101">https://publons.com/publon/10.1111/tst.10101</url>.</p></section>
+      <section xml:id="tst10101-sec-0010" type="dataAvailability" numbered="no"><title type="main">DATA AVAILABILITY STATEMENT</title><p>The data are on Dryad: <url href="https://doi.org/10.5061/dryad.test">https://doi.org/10.5061/dryad.test</url> (Byron, <link href="#tst10101-bib-0003">2026</link>).</p></section>
+    </section>
+    <bibliography xml:id="tst10101-bibl-0001" style="nameDate" cited="yes">
+      <title type="main">REFERENCES</title>
+      <bib xml:id="tst10101-bib-0001"><citation type="journal" xml:id="tst10101-cit-0001"><author><familyName>Smith</familyName>, <givenNames>A. B.</givenNames></author> (<pubYear year="2020">2020</pubYear>). <articleTitle>A study of tests</articleTitle>. <journalTitle>Test Journal</journalTitle>, <vol>3</vol>, <pageFirst>1</pageFirst>&#x2013;<pageLast>10</pageLast>. <url href="https://doi.org/10.1234/tj.2020.1">https://doi.org/10.1234/tj.2020.1</url></citation></bib>
+      <bib xml:id="tst10101-bib-0002"><citation type="book" xml:id="tst10101-cit-0002"><author><familyName>Jones</familyName>, <givenNames>C.</givenNames></author>, &amp; <author><familyName>Lee</familyName>, <givenNames>D.</givenNames></author> (<pubYear year="2019">2019</pubYear>). <chapterTitle>Testing in the field</chapterTitle>. In <editor><givenNames>E.</givenNames> <familyName>Editor</familyName></editor> (Ed.), <bookTitle>The Book of Tests</bookTitle> (pp. <pageFirst>5</pageFirst>&#x2013;<pageLast>9</pageLast>). <publisherName>Book Press</publisherName>.</citation></bib>
+      <bib xml:id="tst10101-bib-0003"><citation type="dataRelates" xml:id="tst10101-cit-0003"><author><familyName>Byron</familyName>, <givenNames>A.</givenNames></author> (<pubYear year="2026">2026</pubYear>). <dataTitle>Data from: A test of reading Wiley XML</dataTitle>. <dataRepository>Dryad</dataRepository>, https://doi.org/10.5061/dryad&#x2010;test</citation></bib>
+    </bibliography>
+  </body>
+</component>

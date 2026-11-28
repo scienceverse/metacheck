@@ -14,15 +14,17 @@
 #'
 #' @param xml_path path to a single XML file
 #' @param schema_version the export schema version ("12.0")
+#' @param pdf_repairs passed to `.xml_read_grobid()`: FALSE for TEI translated
+#'   from a publisher's XML, whose numbers a PDF never split
 #' @returns a paper object
 #' @noRd
-.grobid_to_bibr12 <- function(xml_path, schema_version = "12.0") {
+.grobid_to_bibr12 <- function(xml_path, schema_version = "12.0", pdf_repairs = TRUE) {
   if (!identical(schema_version, "12.0")) {
     stop("schema_version must be NULL or \"12.0\"", call. = FALSE)
   }
   section_id <- header <- section_type <- NULL # cmdcheck
 
-  xml <- .xml_read_grobid(xml_path)
+  xml <- .xml_read_grobid(xml_path, pdf_repairs = pdf_repairs)
 
   warnings <- list()
   warn <- function(code, message) {
@@ -301,11 +303,14 @@
   url_span <- span(urls$text_id, href) # the text now prints each href
 
   # authors and their affiliations ----
-  au <- .tei_authors(xml)
+  au <- .tei_authors(xml, all_affiliations = TRUE)
   n_au <- nrow(au)
   au_col <- function(col) au[[col]] %||% rep(NA, n_au)
-  aff <- na_if_empty(au_col("affiliation"))
-  aff_text <- unique(aff[!is.na(aff)])
+  # every affiliation of an author, not only the first: an author with two
+  # affiliations lost the second (Grobid and publisher XML alike)
+  affs <- au[["affiliations"]] %||% rep(list(character(0)), n_au)
+  aff_text <- unique(unlist(affs))
+  aff_text <- aff_text[!is.na(aff_text) & nzchar(aff_text)]
   orcid <- as.character(au_col("orcid"))
   orcid_pattern <- "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]"
   # the first ORCID: the greedy ".*(" kept an author's last one (U28)
@@ -327,7 +332,7 @@
   affiliation <- list(
     affiliation_id = seq_along(aff_text),
     text = aff_text,
-    author_ids = lapply(aff_text, \(a) which(aff %in% a))
+    author_ids = lapply(aff_text, \(a) which(vapply(affs, \(x) a %in% x, logical(1))))
   )
 
   # metadata ----
