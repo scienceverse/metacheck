@@ -284,3 +284,27 @@ test_that("more committee names and exemptions count as statements (#695, point 
   mo2 <- module_run(not_approved, module)
   expect_equal(mo2$summary_table$ethics_approved, c(FALSE, FALSE))
 })
+
+test_that("ethics_check: the statement an article declares wins over a search that finds nothing", {
+  # participants, and no sentence the search reads as an ethics statement
+  txt <- c("We recruited 120 participants through Prolific and paid each of them 2 pounds.",
+           "Participants gave informed consent and completed the questionnaire.")
+  p <- test_paper(txt)
+  mo <- module_run(p, "ethics_check")
+  expect_false(mo$summary_table$ethics_approved)
+  expect_true(is.na(mo$summary_table$ethics_source))
+
+  # the publisher's XML declares one: it is the statement
+  p$info$ethics_statement <- "The procedure was cleared by the faculty's review panel (no. 2021-17)."
+  mo <- module_run(p, "ethics_check")
+  expect_true(mo$summary_table$ethics_approved)
+  expect_equal(mo$summary_table$ethics_source, "metadata")
+  expect_equal(mo$summary_table$ethics_statements[[1]], p$info$ethics_statement)
+  expect_true(any(grepl("review panel (no. 2021-17)", mo$report, fixed = TRUE)))
+
+  # found in the text: "text"; found and declared: "both"
+  q <- test_paper(c(txt, "The study was approved by the ethics committee of Test University."))
+  expect_equal(module_run(q, "ethics_check")$summary_table$ethics_source, "text")
+  q$info$ethics_statement <- "The study was approved by the ethics committee of Test University."
+  expect_equal(module_run(q, "ethics_check")$summary_table$ethics_source, "both")
+})

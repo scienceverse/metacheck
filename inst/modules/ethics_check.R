@@ -274,6 +274,20 @@ ethics_check <- function(paper) {
   ethics_null <- vapply(summary_table$ethics_statements, is.null, logical(1))
   summary_table$ethics_statements[ethics_null] <- NA_character_
 
+  # The ethics statement the article declares (a paper read from a
+  # publisher's XML has it in `info$ethics_statement`) wins over a search
+  # that found nothing: it is the statement. `ethics_source` says where the
+  # statement is from: "text", "metadata" or "both"; NA when neither.
+  declared <- .ethics_declared(paper)
+  k <- match(summary_table$paper_id, declared$paper_id)
+  in_meta <- !is.na(k)
+  in_text <- summary_table$ethics_approved
+  summary_table$ethics_source <- ifelse(in_text & in_meta, "both",
+                                        ifelse(in_meta, "metadata", ifelse(in_text, "text", NA_character_)))
+  only_meta <- in_meta & !in_text
+  summary_table$ethics_approved[only_meta] <- TRUE
+  summary_table$ethics_statements[only_meta] <- as.list(declared$text[k[only_meta]])
+
   # traffic_light + summary_text ----
   # A statement is expected for the authors' own data and for records
   # obtained for the study; a paper whose data source is uncertain is
@@ -319,6 +333,8 @@ ethics_check <- function(paper) {
     src <- summary_table$data_source[[1]]
     is_approved <- summary_table$ethics_approved[[1]]
     statements <- unique(table$text[table$ethics])
+    # the declared statement, when the search found none
+    if (!length(statements) && is_approved) statements <- unlist(summary_table$ethics_statements[[1]])
     evidence <- source_table$text
     signs <- summary_table$data_source_signs[[1]]
 
@@ -370,4 +386,18 @@ ethics_check <- function(paper) {
     summary_text = summary_text,
     report = report
   )
+}
+
+#' The ethics statement an article declares
+#'
+#' @param paper a paper object or paperlist object
+#' @returns a data frame: `paper_id` and `text`, a row per paper whose info
+#'   table has a declared statement (a paper read from a publisher's XML)
+#' @noRd
+.ethics_declared <- function(paper) {
+  empty <- data.frame(paper_id = character(0), text = character(0))
+  info <- tryCatch(paper_table(paper, "info"), error = function(e) NULL)
+  if (!is.data.frame(info) || !all(c("paper_id", "ethics_statement") %in% names(info))) return(empty)
+  has <- !is.na(info$ethics_statement) & nzchar(info$ethics_statement)
+  data.frame(paper_id = as.character(info$paper_id[has]), text = as.character(info$ethics_statement[has]))
 }

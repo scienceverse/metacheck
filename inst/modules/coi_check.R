@@ -76,6 +76,15 @@ coi_check <- function(paper) {
     report <- "No conflict of interest statement was detected. Consider adding one."
     summary_text <- "No conflict of interest statement was detected."
   }
+  # a notice about another article (a correction, a retraction) reports no
+  # study: without a statement it is "na", not red (see .paper_notice())
+  notice <- .paper_notice(paper)
+  if (nrow(summary_table)) summary_table$notice <- unname(notice[summary_table$paper_id])
+  if (tl == "red" && length(notice) == 1 && !is.na(notice)) {
+    tl <- "na"
+    summary_text <- sprintf("No conflict of interest statement was detected; this is %s, where none is expected.", notice)
+    report <- summary_text
+  }
 
   # return list ----
   list(

@@ -86,3 +86,37 @@ test_that("coi_check: the statement an article declares wins over a search that 
   g <- test_paper("The authors declare no conflict of interest.")
   expect_equal(module_run(g, "coi_check")$summary_table$coi_source, "text")
 })
+
+test_that("a notice about another article needs no statement (.paper_notice)", {
+  p <- test_paper("In the original article, Table 1 was wrong.")
+  expect_true(is.na(.paper_notice(p)))
+  expect_equal(module_run(p, "coi_check")$traffic_light, "red")
+  expect_equal(module_run(p, "funding_check")$traffic_light, "red")
+
+  # a correction: without a statement "na", not red
+  p$info$article_type <- "correction"
+  expect_equal(unname(.paper_notice(p)), "a correction notice")
+  for (m in c("coi_check", "funding_check", "open_practices")) {
+    mo <- module_run(p, m)
+    expect_equal(mo$traffic_light, "na")
+    expect_match(mo$summary_text, "this is a correction notice")
+  }
+  # the other kinds, and the names other publishers use
+  kinds <- c(retraction = "a retraction notice", "partial-retraction" = "a retraction notice",
+             corrigendum = "a correction notice", erratum = "a correction notice",
+             addendum = "an addendum", "expression-of-concern" = "an expression of concern")
+  for (k in names(kinds)) {
+    p$info$article_type <- k
+    expect_equal(unname(.paper_notice(p)), kinds[[k]])
+  }
+  # an article, an editorial: not a notice
+  for (k in c("research-article", "editorial", "review-article")) {
+    p$info$article_type <- k
+    expect_true(is.na(.paper_notice(p)))
+  }
+
+  # a statement that is there is still reported
+  p <- test_paper("The authors declare no conflict of interest.")
+  p$info$article_type <- "correction"
+  expect_equal(module_run(p, "coi_check")$traffic_light, "green")
+})

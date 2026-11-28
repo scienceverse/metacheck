@@ -845,16 +845,21 @@
   fns <- xml2::xml_find_all(art, paste0("//fn[not(ancestor::table-wrap-foot) and not(ancestor::table-wrap)]", own))
   fn_type <- tolower(xml2::xml_attr(fns, "fn-type"))
   fn_label <- vapply(fns, \(f) m1(f, "./label | ./title"), character(1))
-  fn_first <- vapply(fns, \(f) substr(.tei_squish(xml2::xml_text(f)), 1, 80), character(1))
   in_notes <- vapply(fns, \(f) {
     length(xml2::xml_find_all(f, "ancestor::author-notes | ancestor::fn-group[parent::back]")) > 0
   }, logical(1))
   # a statement (conflicts, funding, contributions...): back matter; any
-  # other footnote is a footnote
-  fn_stmt_type <- mapply(\(t, l, f) {
-    b <- .jats_back_type(t, if (nzchar(l)) l else f)
+  # other footnote is a footnote. Only the type the publisher declares or
+  # the footnote's label makes it a statement, not the words of its text:
+  # by a keyword in its first words, 17 of 20 such footnotes in 900 files
+  # were ordinary footnotes ("conflicts of jurisdiction", a reference with
+  # "Ethics" in its title, which became the paper's ethics statement). A
+  # real statement without type or label stays a footnote, in the text the
+  # modules search.
+  fn_stmt_type <- mapply(\(t, l) {
+    b <- .jats_back_type(t, l)
     if (b == "annex") NA_character_ else b
-  }, fn_type, fn_label, fn_first, USE.NAMES = FALSE)
+  }, fn_type, fn_label, USE.NAMES = FALSE)
   # a note about one author ("contributed equally", a present address) is no
   # statement, whatever its words
   is_stmt <- !is.na(fn_stmt_type) & (in_notes | !is.na(fn_type)) &

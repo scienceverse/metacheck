@@ -669,6 +669,29 @@ paper_id <- function(paper) {
   nrow(paper_table(paper, "text")) == 0 && nrow(paper_table(paper, "bib")) == 0
 }
 
+# What kind of notice a paper is, when it is a notice about another article
+# and not an article itself: a correction (correction, corrigendum, erratum),
+# an addendum, a retraction or an expression of concern. From the article
+# type the publisher declares (`info$article_type`, in a paper read from a
+# publisher's XML). Such a notice reports no study, so a module that asks for
+# a funding or conflict-of-interest statement, or for shared data, should not
+# count their absence against it: in 400 Psychological Science papers, 15 of
+# the 24 papers without a conflict-of-interest statement were such notices.
+# Returns one value per paper, named by paper id: the kind, in words ("a
+# correction notice"), or NA for an article or a paper without a declared type.
+.paper_notice <- function(paper) {
+  ids <- paper_id(paper)
+  out <- stats::setNames(rep(NA_character_, length(ids)), ids)
+  info <- tryCatch(paper_table(paper, "info"), error = function(e) NULL)
+  if (!is.data.frame(info) || !all(c("paper_id", "article_type") %in% names(info))) return(out)
+  type <- tolower(as.character(info$article_type[match(ids, info$paper_id)]))
+  out[grepl("^(correction|corrigend|errat)", type)] <- "a correction notice"
+  out[grepl("^addend", type)] <- "an addendum"
+  out[grepl("^(partial-)?retraction", type)] <- "a retraction notice"
+  out[grepl("^expression-of-concern", type)] <- "an expression of concern"
+  out
+}
+
 # The result of a text or reference module for an empty input (see
 # .paper_is_empty()).
 .empty_input_result <- function(paper) {

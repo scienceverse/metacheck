@@ -285,6 +285,17 @@ open_practices <- function(paper) {
     badge_report
   )
 
+  # a notice about another article (a correction, a retraction) reports no
+  # study: without shared data or code it is "na" (see .paper_notice())
+  notice <- .paper_notice(paper)
+  summary_table$notice <- unname(notice[summary_table$paper_id])
+  if (nrow(summary_table) == 1 && !is.na(notice) &&
+      !summary_table$data_open && !summary_table$code_open) {
+    tl <- "na"
+    summary_text <- sprintf("Neither shared data nor code detected; this is %s, where none is expected.", notice)
+    report <- summary_text
+  }
+
   # return a list ----
   list(
     table = table,
