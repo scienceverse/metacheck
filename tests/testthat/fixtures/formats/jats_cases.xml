@@ -186,4 +186,8 @@
     <front-stub><title-group><article-title>Author response</article-title></title-group></front-stub>
     <body><p>We thank the reviewer.</p><p>We changed the analysis.</p></body>
   </sub-article>
+  <sub-article article-type="translation" id="tr1" xml:lang="es">
+    <front-stub><title-group><article-title>Leer XML de editoriales: una prueba</article-title></title-group></front-stub>
+    <body><p>Texto traducido del art&#xed;culo.</p></body>
+  </sub-article>
 </article>

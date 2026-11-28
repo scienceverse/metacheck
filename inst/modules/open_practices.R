@@ -8,6 +8,8 @@
 #'
 #' For a paper read from a publisher's XML, the summary table also gives the open-science badges the journal awarded (`badge_data`, `badge_materials`, `badge_prereg`); they are NA for a paper read from a PDF.
 #'
+#' The summary table also says under which licence the article is published (`license`, `license_open`), and whether the authors' contributions are declared, and in the CRediT taxonomy (`contributions`, `contributions_credit`; from what the article declares, from its text, or from both: `contributions_source`). Whether the peer review is public is the peer_review module's.
+#'
 #' @keywords general
 #'
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
@@ -185,6 +187,14 @@ open_practices <- function(paper) {
   summary_table$materials_open <- summary_table$materials_open | summary_table$badge_materials %in% TRUE
   summary_table$prereg_open <- summary_table$prereg_open | summary_table$badge_prereg %in% TRUE
 
+  # the article's licence, author contributions ----
+  # Two more things an article can be open about (see
+  # .open_practices_indicators()): columns of the summary table and lines of
+  # a single paper's report. They do not change the traffic light.
+  indicators <- .open_practices_indicators(paper)
+  k <- match(summary_table$paper_id, indicators$paper_id)
+  for (col in setdiff(names(indicators), "paper_id")) summary_table[[col]] <- indicators[[col]][k]
+
   # traffic_light ----
   # summary_text ----
   if (nrow(summary_table) > 1) {
@@ -278,11 +288,24 @@ open_practices <- function(paper) {
     }
   }
 
+  # licence, author contributions
+  indicator_report <- NULL
+  if (nrow(summary_table) == 1) {
+    indicator_report <- c(
+      if (summary_table$license_open %in% TRUE) sprintf(
+        "The article is published under an open licence: %s (%s).",
+        summary_table$license, summary_table$license_url),
+      if (summary_table$contributions %in% TRUE) sprintf(
+        "The article declares what each author contributed%s.",
+        if (summary_table$contributions_credit %in% TRUE) ", in the roles of the CRediT taxonomy" else ""))
+  }
+
   report <- c(
     data_report,
     code_report,
     on_request_report,
-    badge_report
+    badge_report,
+    indicator_report
   )
 
   # a notice about another article (a correction, a retraction) reports no
@@ -331,4 +354,97 @@ open_practices <- function(paper) {
     out$badge_prereg[i] <- any(grepl("prereg", b))
   }
   out
+}
+
+#' The article's licence and declared author contributions
+#'
+#' Two things an article can be open about, each from what the article
+#' declares (a paper read from a publisher's XML) and from its text (its
+#' peer review is the peer_review module's):
+#' \itemize{
+#'   \item licence: the licence the publisher declares; open when it is a
+#'     Creative Commons licence or a public-domain dedication;
+#'   \item author contributions: roles declared per author, or a section
+#'     whose heading names the authors' contributions; in CRediT when the
+#'     roles are declared in that vocabulary, or the section uses at least
+#'     two of its 14 role names.
+#' }
+#'
+#' @param paper a paper object or paperlist object
+#' @returns a data frame with a row per paper: `paper_id`, `license` (its
+#'   short name),
+#'   `license_url`, `license_open` (NA without a declared licence),
+#'   `contributions`, `contributions_credit` and `contributions_source`; a
+#'   source is "text", "metadata" or "both", NA when neither found it
+#' @noRd
+.open_practices_indicators <- function(paper) {
+  ids <- paper_id(paper)
+  papers <- if (.is_paper_list(paper)) paper else list(paper)
+  source_of <- function(text, meta) {
+    if (text && meta) "both" else if (meta) "metadata" else if (text) "text" else NA_character_
+  }
+  rows <- lapply(seq_along(papers), function(i) {
+    p <- papers[[i]]
+    lic <- .article_license(p)
+    con <- .contributions_declared(p)
+    data.frame(
+      paper_id = ids[[i]],
+      license = lic$name, license_url = lic$url, license_open = lic$open,
+      contributions = con$meta || con$text,
+      contributions_credit = con$credit,
+      contributions_source = source_of(con$text, con$meta))
+  })
+  do.call(rbind, rows)
+}
+
+#' The licence an article declares
+#'
+#' @param p a paper object
+#' @returns a list: `url`, `name` (the short name of a Creative Commons
+#'   licence, "CC BY 4.0"; else NA) and `open` (TRUE for a Creative Commons
+#'   licence or a public-domain dedication, FALSE for another licence, NA
+#'   when the article declares none)
+#' @noRd
+.article_license <- function(p) {
+  url <- p$info[["license_url"]] %||% NA_character_
+  url <- as.character(url)[1]
+  if (is.na(url) || !nzchar(url)) return(list(url = NA_character_, name = NA_character_, open = NA))
+  cc <- regmatches(url, regexec("creativecommons\\.org/(licenses|publicdomain)/([a-z-]+)(/([0-9.]+))?", tolower(url)))[[1]]
+  if (!length(cc)) return(list(url = url, name = NA_character_, open = FALSE))
+  kind <- if (cc[2] == "publicdomain") if (cc[3] == "zero") "CC0" else "Public Domain Mark" else paste("CC", toupper(cc[3]))
+  list(url = url, name = trimws(paste(kind, cc[5])), open = TRUE)
+}
+
+# The 14 roles of the CRediT taxonomy (https://credit.niso.org)
+.credit_role_names <- c(
+  "conceptuali[sz]ation", "data curation", "formal analysis", "funding acquisition",
+  "investigation", "methodology", "project administration", "resources", "software",
+  "supervision", "validation", "visuali[sz]ation", "writing.{1,5}original draft",
+  "writing.{1,5}review (and|&) editing")
+
+#' Whether an article declares its authors' contributions
+#'
+#' @param p a paper object
+#' @returns a list: `meta` (roles declared per author in the CRediT
+#'   vocabulary), `text` (a section whose heading names the authors'
+#'   contributions) and `credit` (the roles are CRediT's: declared so, or the
+#'   section uses at least two of its role names)
+#' @noRd
+.contributions_declared <- function(p) {
+  au <- p$author
+  meta <- is.data.frame(au) && "credit_roles" %in% names(au) && any(lengths(au$credit_roles) > 0)
+  text <- FALSE
+  credit_text <- FALSE
+  se <- p$section
+  tx <- p$text
+  if (is.data.frame(se) && nrow(se) && is.data.frame(tx) && "section_id" %in% names(tx)) {
+    by_heading <- vapply(se$header, function(h) identical(.statement_heading(h), "contribution"), logical(1))
+    is_con <- se$section_type %in% "author_contributions" | by_heading
+    if (any(is_con)) {
+      text <- TRUE
+      words <- tolower(paste(tx$text[tx$section_id %in% se$section_id[is_con]], collapse = " "))
+      credit_text <- sum(vapply(.credit_role_names, grepl, logical(1), x = words, perl = TRUE)) >= 2
+    }
+  }
+  list(meta = meta, text = text, credit = meta || credit_text)
 }

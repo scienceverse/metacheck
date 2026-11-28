@@ -352,6 +352,9 @@ test_that("read - JATS: what the file declares beyond the text (bibr 12.6)", {
   expect_equal(p$review_text$text, c("The reviewer liked it.", "We thank the reviewer.",
                                      "We changed the analysis."))
   expect_false(any(grepl("reviewer liked", p$text$text)))
+  # a translation of the article, printed as a sub-article, is not a review
+  # and not part of the article's text
+  expect_false(any(grepl("Texto traducido", c(p$review_text$text, p$text$text))))
 
   expect_equal(p$supplement$file_name, "s1_data.csv")
   expect_equal(p$supplement$media_type, "text/csv")

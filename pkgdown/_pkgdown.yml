@@ -171,6 +171,7 @@ reference:
   - '`openalex_doi`'
   - '`openalex_query`'
   - '`pubpeer_comments`'
+  - '`crossref_peer_reviews`'
   - '`retractionwatch`'
   - '`rw_date`'
   - '`rw_update`'

@@ -127,3 +127,44 @@ test_that("open_practices: a badge wins over a search that finds nothing", {
   expect_true(st$data_open)
   expect_equal(st$data_source, "text")
 })
+
+test_that("open_practices: the licence and author contributions", {
+  # JATS: a CC BY licence; CRediT roles declared and a contributions note
+  st <- module_run(read(test_path("fixtures", "formats", "jats_cases.xml")), "open_practices")$summary_table
+  expect_equal(st$license, "CC BY 4.0")
+  expect_true(st$license_open)
+  expect_true(st$contributions)
+  expect_true(st$contributions_credit)
+  expect_equal(st$contributions_source, "both")
+
+  # Wiley: a contributions section in plain words
+  st <- module_run(read(test_path("fixtures", "formats", "wiley_cases.xml")), "open_practices")$summary_table
+  expect_equal(st$contributions_source, "text")
+  expect_false(st$contributions_credit)
+
+  # a paper without metadata
+  st <- module_run(test_paper("We ran a study."), "open_practices")$summary_table
+  expect_true(is.na(st$license_open))
+  expect_false(st$contributions)
+})
+
+test_that(".article_license and the CRediT role names", {
+  # the module's own helpers
+  env <- new.env(parent = asNamespace("metacheck"))
+  sys.source(metacheck:::module_find("open_practices"), envir = env)
+  lic <- function(u) env$.article_license(list(info = data.frame(license_url = u)))
+  expect_equal(lic("https://creativecommons.org/licenses/by-nc-nd/4.0/")$name, "CC BY-NC-ND 4.0")
+  expect_equal(lic("http://creativecommons.org/publicdomain/zero/1.0/")$name, "CC0 1.0")
+  expect_true(lic("https://creativecommons.org/licenses/by/3.0/igo/")$open)
+  expect_false(lic("http://onlinelibrary.wiley.com/termsAndConditions#vor")$open)
+  expect_true(is.na(lic(NA_character_)$open))
+  # two CRediT role names in a contributions section: CRediT
+  p <- test_paper(c("A.B.: Conceptualization, Methodology.", "C.D.: Writing - original draft."))
+  p$section$header <- "Author contributions"
+  expect_true(env$.contributions_declared(p)$credit)
+  p <- test_paper("A.B. designed the study and C.D. wrote the paper.")
+  p$section$header <- "Author contributions"
+  con <- env$.contributions_declared(p)
+  expect_true(con$text)
+  expect_false(con$credit)
+})

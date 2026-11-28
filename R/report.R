@@ -110,7 +110,8 @@ report <- function(paper,
                      "ref_replication",
                      "ref_retraction",
                      "ref_pubpeer",
-                     "ref_summary"
+                     "ref_summary",
+                     "peer_review"
                    ),
                    output_file = file.path(tempdir(), paste0(paper$paper_id,
                                                              "_report.",

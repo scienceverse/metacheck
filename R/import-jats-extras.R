@@ -207,6 +207,11 @@
   }
   for (r in xml2::xml_find_all(meta, "./related-article | ./related-object")) {
     href <- xml2::xml_attr(r, "href")
+    # a related object can give its address as its source id (SAGE's link to
+    # an article's peer review, from 2025)
+    if (is.na(href) && tolower(xml2::xml_attr(r, "source-id-type") %||% "") %in% c("url", "uri", "doi")) {
+      href <- xml2::xml_attr(r, "source-id")
+    }
     type <- xml2::xml_attr(r, "related-article-type") %||% NA
     if (is.na(type)) type <- xml2::xml_attr(r, "source-type") %||% NA
     if (is.na(type)) type <- xml2::xml_attr(r, "link-type") %||% NA
@@ -302,6 +307,12 @@
     "other"
   }
   for (sa in xml2::xml_find_all(art, "//sub-article | //response")) {
+    # a sub-article is a peer review document only when its type says so: a
+    # translation of the article (the most common sub-article, in journals
+    # that print two languages) or a companion article is not one
+    if (xml2::xml_name(sa) == "sub-article" && type_of_review(sa) == "other" &&
+        !grepl("review|report|decision|comment|respon|reply|letter",
+               tolower(or_empty(xml2::xml_attr(sa, "article-type"))))) next
     stub <- xml2::xml_find_first(sa, "./front-stub | ./front")
     title <- m1(stub, ".//article-title")
     rnd <- suppressWarnings(as.integer(sub("^.*?decision letter\\s*([0-9]+).*$", "\\1", tolower(title %||% ""))))
