@@ -237,6 +237,8 @@ reference:
   - '`ldbase_info`'
   - '`ckan_links`'
   - '`ckan_info`'
+  - '`supplement_links`'
+  - '`supplement_files`'
   - '`dataone_links`'
   - '`dataone_info`'
   - '`dspace_links`'

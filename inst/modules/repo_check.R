@@ -14,6 +14,20 @@
 #' The report advises a stable repository such as Zenodo instead. Their files are not
 #' read, and `summary_table$file_share_n` counts the links.
 #'
+#' The supplementary files a publisher hosts with the article, which a paper
+#' read from the publisher's XML lists ([supplement_links()],
+#' [supplement_files()]), are listed in a section of their own, and counted
+#' in `summary_table$supplement_n`. A publisher's page is not a repository:
+#' the files are not counted among the repositories' files, get no advice
+#' about READMEs, zip files or file names, and do not change the traffic
+#' light. A supplementary file that is also in a repository the paper links
+#' to (the same name and size) is marked as a copy. The others that can be
+#' downloaded (a file with its own DOI, or Europe PMC's zip of the
+#' supplementary files of an article in PubMed Central) are added to `table`,
+#' so that data_check and code_check read them; all are in
+#' `supplement_files`. Wiley and SAGE refuse automatic downloads: their
+#' files are listed with the page a reader can get them from.
+#'
 #' Deposits in archives for sequence and expression data (GEO, the INSDC
 #' archives BioProject, SRA, ENA and DDBJ, and ArrayExpress; see
 #' [seq_archive_links()]), mostly named by accession number, are read for
@@ -443,6 +457,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         ref_checked <- add[, c("paper_id", "repo_url")]
       }
     }
+  }
+
+  ## the publisher's supplementary files ----
+  # A publisher's XML lists the files the publisher hosts with the article
+  # (the paper's `supplement` table; R/publisher-supplements.R). They are the
+  # authors' own files for this paper, shared outside a repository. They go
+  # through the listing below as one more place with files (`repo_type`
+  # "supplement", its address the article's DOI link), so that they are
+  # classified like other files (data, code, a zip's contents), and are taken
+  # out again before anything is counted or judged (see "the publisher's
+  # supplementary files: listed apart"): a publisher's page is not a
+  # repository, and gets no advice about READMEs, zip files or file names.
+  # Added after the ownership step, which is about deposits. A paper read
+  # from a PDF has no such table.
+  supp_files_tbl <- if (isTRUE(local_only)) NULL else
+    tryCatch(supplement_files(paper, cache = cache), error = \(e) NULL)
+  if (is.data.frame(supp_files_tbl) && nrow(supp_files_tbl)) {
+    add <- unique(data.frame(paper_id = supp_files_tbl$paper_id, repo_url = supp_files_tbl$repo_url,
+                             repo_type = "supplement", repo_error = NA_character_))
+    add <- add[!paste(add$paper_id, add$repo_url) %in% paste(repos$paper_id, repos$repo_url), , drop = FALSE]
+    if (nrow(add)) repos <- dplyr::bind_rows(repos, add)
   }
 
   # each DSpace and EPrints record's own type, by repo_url, from the requests
@@ -2224,6 +2259,29 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## The publisher's supplementary files ----
+  # The files a publisher's XML lists with the article (see "the publisher's
+  # supplementary files" above): each with its name, and with a download
+  # address when there is one. A file without one (Wiley and SAGE refuse
+  # automatic downloads) is listed and not downloaded.
+  supp_files_df <- data.frame(repo_name = character(0))
+  if (is.data.frame(supp_files_tbl) && nrow(supp_files_tbl) > 0) {
+    supp_files_df <- data.frame(
+      repo_url = supp_files_tbl$repo_url,
+      file_name = supp_files_tbl$file_name,
+      file_path = supp_files_tbl$file_path,
+      file_url = supp_files_tbl$file_url,
+      file_location = NA_character_,
+      file_size = supp_files_tbl$file_size
+    )
+    supp_files_df$ext <- tolower(sub("^.*\\.", "", basename(supp_files_df$file_name)))
+    supp_files_df$ext[!grepl("\\.", basename(supp_files_df$file_name))] <- NA_character_
+    supp_files_df <- supp_files_df |>
+      dplyr::left_join(metacheck::file_types, by = "ext") |>
+      dplyr::rename(file_type = type)
+    supp_files_df$ext <- NULL
+  }
+
   ## Sequence and expression archives ----
   # GEO, the INSDC archives and ArrayExpress (archive-seq.R, #660): one
   # record each, read for whose deposit it is. Their files are not listed:
@@ -2378,7 +2436,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## no repos found ----
-  if (nrow(repos) == 0) {
+  # `supp`: the publisher's supplementary files of a paper without links to
+  # repositories (see "the publisher's supplementary files: listed apart")
+  no_repo_info <- function(supp = NULL) {
     no_repo_text <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, CRAN, or ICPSR (openICPSR, AEA Data and Code Repository)."
     st <- .per_paper_table(paper,
                 repo_n = 0,
@@ -2397,9 +2457,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       ownership = own_ownership(pub_meta, pub_files, if (exists("osf_desc_all", inherits = FALSE)) osf_desc_all else NULL)
     )
     if (n_file_share > 0) info$report <- c(no_repo_text, report_file_share)
-
-    return(info)
+    info$summary_table$supplement_n <- rep(0L, nrow(info$summary_table))
+    if (!is.null(supp)) {
+      info$summary_table$supplement_n <- supp$n_of(info$summary_table$paper_id)
+      info$summary_text <- paste("\n- ", c(no_repo_text, if (n_file_share > 0) summary_file_share, supp$summary), collapse = "")
+      info$report <- c(no_repo_text, if (n_file_share > 0) report_file_share, supp$report)
+      info$supplement_files <- supp$files
+      # the files that can be downloaded, for data_check and code_check
+      if (nrow(supp$to_check)) info$table <- supp$to_check
+    }
+    info
   }
+  if (nrow(repos) == 0) return(no_repo_info())
 
   ## file numbers and types ----
   # each OSF storage's listed size and number of files, which decide whether
@@ -2408,7 +2477,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # (only from listings of whole storages, #679)
   osf_files_df <- .osf_storage_totals(osf_files_df, complete = osf_files_df$storage_listed %in% TRUE)
   osf_files_df$storage_listed <- NULL
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, supp_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
   # more than one repository (e.g. one for data, one for code) with
@@ -2836,6 +2905,38 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     all_files <- all_files[!aside, , drop = FALSE]
   }
   repos <- repos[!paste(repos$paper_id, repos$repo_url, sep = "\x01") %in% not_this_key, , drop = FALSE]
+
+  ## the publisher's supplementary files: listed apart ----
+  # Classified above like other files; from here on they are not among the
+  # repositories or their files, so nothing below counts or judges them.
+  # A supplementary file that is also in a repository of the paper is a copy
+  # (.supplement_copies()): it is listed, and not checked a second time. The
+  # others that can be downloaded are added to `table` at the end, for
+  # data_check and code_check.
+  is_supp_repo <- repos$repo_type %in% "supplement"
+  supp_key <- paste(repos$paper_id, repos$repo_url, sep = "\x01")[is_supp_repo]
+  is_supp_file <- paste(all_files$paper_id, all_files$repo_url, sep = "\x01") %in% supp_key
+  supp_listed <- all_files[is_supp_file, , drop = FALSE]
+  all_files <- all_files[!is_supp_file, , drop = FALSE]
+  repos <- repos[!is_supp_repo, , drop = FALSE]
+  supp_listed <- .supplement_copies(supp_listed, all_files, supp_files_tbl)
+  supp_listed$repo_type <- rep("supplement", nrow(supp_listed))
+  supp_listed$page_url <- if (nrow(supp_listed)) {
+    supp_files_tbl$page_url[match(paste(supp_listed$repo_url, sub("/.*$", "", supp_listed$file_path)),
+                                  paste(supp_files_tbl$repo_url, supp_files_tbl$file_path))]
+  } else character(0)
+  supp_text <- .supplement_report(supp_listed)
+  # with a download address of its own, or inside a zip that has one
+  supp_to_check <- supp_listed[is.na(supp_listed$copy_of) &
+    (!is.na(supp_listed$file_url) |
+       (if ("archive_member" %in% names(supp_listed)) !is.na(supp_listed$archive_member) else FALSE)), , drop = FALSE]
+  supp_n_of <- function(ids) vapply(ids, \(id) sum(supp_listed$paper_id %in% id), integer(1), USE.NAMES = FALSE)
+  # supplementary files and nothing else (no repository, no local folder, no
+  # deposit set aside): as for a paper without links to repositories
+  if (any(is_supp_repo) && nrow(repos) == 0 && nrow(all_files) == 0 && nrow(files_not_checked) == 0) {
+    return(no_repo_info(list(files = supp_listed, to_check = supp_to_check, n_of = supp_n_of,
+                             summary = supp_text$summary, report = supp_text$report)))
+  }
 
   ## sequence and expression archives: listed, not checked (#660) ----
   # GEO, the INSDC archives (SRA, ENA, DDBJ) and ArrayExpress keep raw data
@@ -3538,6 +3639,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_cran,
     report_icpsr,
     report_file_share,
+    supp_text$report,
     report_not_checked,
     report_ownership,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
@@ -3615,6 +3717,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$ref_others <- own_n("reference", "others")
   # cited only in the reference list, and checked as the paper's own
   summary_table$file_share_n <- file_share_n_of(summary_table$paper_id)
+  # the publisher's supplementary files (not among the repositories' files)
+  summary_table$supplement_n <- supp_n_of(summary_table$paper_id)
   summary_table$icpsr_own_n <- vapply(summary_table$paper_id, \(id) sum(icpsr_own$paper_id %in% id),
                                       integer(1), USE.NAMES = FALSE)
   summary_table$cran_own_n <- vapply(summary_table$paper_id, \(id) sum(cran_own$paper_id %in% id),
@@ -3646,6 +3750,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_cran,
     summary_icpsr,
     summary_file_share,
+    supp_text$summary,
     summary_not_checked,
     summary_readme,
     summary_zip,
@@ -3672,7 +3777,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # return a list ----
   list(
-    table = all_files,
+    # with the publisher's supplementary files that can be downloaded and are
+    # not copies of a repository's files, for data_check and code_check
+    table = if (nrow(supp_to_check)) dplyr::bind_rows(all_files, supp_to_check) else all_files,
+    # every supplementary file the publisher's XML lists: the columns of
+    # `table`, with `copy_of` (the repository that holds the same file) and
+    # `page_url` (the page a reader can get it from)
+    supplement_files = supp_listed,
     summary_table = summary_table,
     gated_repos = gated_repos,
     # the authors' own deposits in sequence and expression archives (GEO,

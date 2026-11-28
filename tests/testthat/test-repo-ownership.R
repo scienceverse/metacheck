@@ -417,3 +417,15 @@ test_that("the authors' repository is judged by its last change, not its creatio
   expect_equal(own("2013-01-05")$ownership, "own_earlier_code")
   expect_equal(own(NA)$ownership, "own_earlier_code")
 })
+
+test_that(".own_citations reads both forms of a paper's citations", {
+  # Grobid's TEI: a "bibr" xref whose xref_id is the bib_id
+  old <- list(xref = data.frame(xref_id = c(2L, 0L, 5L), xref_type = c("bibr", "foot", "bibr"),
+                                text_id = c(4L, 8L, 9L)))
+  expect_equal(.own_citations(old), data.frame(bib_id = c(2L, 5L), text_id = c(4L, 9L)))
+  # bibr 12.x (bibr's JSON, publisher XML): a "bib" xref with the bib_id in target_id
+  v12 <- list(xref = data.frame(xref_id = 1:3, target_id = c(7L, 1L, NA), xref_type = c("bib", "figure", "bib"),
+                                text_id = c(4L, 8L, 9L)))
+  expect_equal(.own_citations(v12), data.frame(bib_id = 7L, text_id = 4L))
+  expect_equal(nrow(.own_citations(list(xref = NULL))), 0)
+})

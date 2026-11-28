@@ -151,6 +151,28 @@
   ifelse(archive, tolower(acc), ifelse(!is.na(alias), .own_core(alias), .own_core(h)))
 }
 
+# A paper's citations of its references: the reference (`bib_id`) and the
+# sentence that cites it (`text_id`). A paper in bibr 12.x form (from bibr,
+# and from a publisher's XML) cites a reference with a "bib" xref whose
+# `target_id` is the bib_id (its xref_id is the row's own key); a paper read
+# from Grobid's TEI with a "bibr" xref whose xref_id is the bib_id (as an
+# older bibr export does with "bib"). Only the second form was read, so for a
+# 12.x paper no sentence cited any reference: a deposit cited in the
+# reference list had no citing sentence, and could not be told to be the
+# data of the paper from the data availability statement that cites it.
+.own_citations <- function(paper) {
+  x <- paper$xref
+  if (!is.data.frame(x) || !nrow(x) || !all(c("xref_id", "text_id", "xref_type") %in% names(x))) {
+    return(data.frame(bib_id = character(0), text_id = integer(0)))
+  }
+  if ("target_id" %in% names(x)) {
+    x <- x[x$xref_type %in% "bib" & !is.na(x$target_id), , drop = FALSE]
+    return(data.frame(bib_id = x$target_id, text_id = x$text_id))
+  }
+  x <- x[x$xref_type %in% c("bibr", "bib"), , drop = FALSE]
+  data.frame(bib_id = x$xref_id, text_id = x$text_id)
+}
+
 # For main-text links: the sentences holding the link (at most two), their
 # sections ("type:header"), and whether those sentences cite other people's
 # work or the authors' own (a reference sharing a family name with them).
@@ -166,14 +188,13 @@
   squeezed <- tolower(gsub("[[:space:]]", "", tx$text))
   refs <- sec$section_type %in% "references"
   fam <- .own_paper_facts(paper)$family
-  b <- paper$bib; x <- paper$xref
+  b <- paper$bib; x <- .own_citations(paper)
   for (i in seq_len(n)) {
     hit <- which(!is.na(tx$text) & grepl(.own_needle(urls[[i]]), squeezed, fixed = TRUE) & !refs)
     if (!length(hit)) next
     out$context[[i]] <- paste(unique(tx$text[hit])[seq_len(min(2, length(unique(tx$text[hit]))))], collapse = " || ")
     out$sections[[i]] <- paste(unique(paste0(sec$section_type[hit], ":", sec$header[hit])), collapse = " | ")
-    cited <- if (is.data.frame(x) && nrow(x) && all(c("xref_id", "text_id", "xref_type") %in% names(x)))
-      unique(x$xref_id[x$text_id %in% tx$text_id[hit] & x$xref_type %in% "bibr"]) else character(0)
+    cited <- unique(x$bib_id[x$text_id %in% tx$text_id[hit]])
     if (length(cited) && is.data.frame(b) && all(c("bib_id", "authors") %in% names(b))) {
       au <- b$authors[match(cited, b$bib_id)]
       ov <- vapply(au, \(a) isTRUE(.own_people_author(as.character(a %||% NA), fam)), logical(1))
@@ -238,12 +259,12 @@
   if (!nrow(found)) return(empty)
   se <- paper$section
   sec <- if (is.data.frame(se)) se[match(tx$section_id, se$section_id), , drop = FALSE] else NULL
-  x <- paper$xref
+  x <- .own_citations(paper)
   rows <- lapply(seq_len(nrow(found)), \(i) {
     j <- found$text_id[[i]]
     if (is.na(j)) j <- which(grepl(.own_needle(found$href[[i]]), tolower(gsub("[[:space:]]", "", q$text$text)), fixed = TRUE))[1]
     if (is.na(j)) return(NULL)
-    cit <- if (is.data.frame(x) && nrow(x)) unique(x$text_id[x$xref_id %in% b$bib_id[[j]] & x$xref_type %in% "bibr"]) else integer(0)
+    cit <- unique(x$text_id[x$bib_id %in% b$bib_id[[j]]])
     cs <- if (!is.null(sec)) sec[match(cit, tx$text_id), , drop = FALSE] else NULL
     data.frame(repo_url = found$href[[i]], repo_type = found$repo_type[[i]], bib_id = as.character(b$bib_id[[j]]),
                ref_text = s[[j]], ref_authors = as.character(b$authors[[j]] %||% NA),
