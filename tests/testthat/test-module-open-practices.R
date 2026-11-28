@@ -96,3 +96,18 @@ test_that("open_practices: a list counts papers without a statement, on-request 
   mo3 <- module_run(test_paper("Data are available ON REQUEST from the authors."), "open_practices")
   expect_match(mo3$summary_text, "only on request", fixed = TRUE)
 })
+
+test_that("open_practices: the badges a publisher's XML declares", {
+  # jats_cases.xml declares the Open Data badge, and no other
+  mo <- module_run(read(test_path("fixtures", "formats", "jats_cases.xml")), "open_practices")
+  st <- mo$summary_table
+  expect_true(st$badge_data)
+  expect_false(st$badge_materials)
+  expect_false(st$badge_prereg)
+  expect_true(any(grepl("open-science badge Open Data", mo$report, fixed = TRUE)))
+
+  # a paper read from a PDF does not say: NA, and no line in the report
+  mo <- module_run(read(demofile("xml")), "open_practices")
+  expect_true(is.na(mo$summary_table$badge_data))
+  expect_false(any(grepl("badge", mo$report)))
+})

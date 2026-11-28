@@ -6,6 +6,7 @@
 #' @details
 #' It is much faster than the previous ODDPub version of this module, and has a lower false negative rate, but also a higher false positive rate.
 #'
+#' For a paper read from a publisher's XML, the summary table also gives the open-science badges the journal awarded (`badge_data`, `badge_materials`, `badge_prereg`); they are NA for a paper read from a PDF.
 #'
 #' @keywords general
 #'
@@ -157,6 +158,18 @@ open_practices <- function(paper) {
   prereg_na <- sapply(summary_table$prereg_statements, length) == 0
   summary_table$prereg_statements[prereg_na] <- NA_character_
 
+  # the badges the publisher awarded ----
+  # A publisher's XML declares the open-science badges of an article (Open
+  # Data, Open Materials, Preregistered; Psychological Science and other
+  # journals that award them): what the journal itself checked, next to what
+  # the search above found in the text. TRUE or FALSE for a paper read from a
+  # publisher's XML, NA for one read from a PDF, which does not say.
+  badges <- .open_practices_badges(paper)
+  k <- match(summary_table$paper_id, badges$paper_id)
+  summary_table$badge_data <- badges$badge_data[k]
+  summary_table$badge_materials <- badges$badge_materials[k]
+  summary_table$badge_prereg <- badges$badge_prereg[k]
+
   # traffic_light ----
   # summary_text ----
   if (nrow(summary_table) > 1) {
@@ -237,10 +250,22 @@ open_practices <- function(paper) {
     }
   }
 
+  # badges
+  badge_report <- NULL
+  if (nrow(summary_table) == 1) {
+    got <- c("Open Data", "Open Materials", "Preregistered")[
+      c(summary_table$badge_data, summary_table$badge_materials, summary_table$badge_prereg) %in% TRUE]
+    if (length(got)) {
+      badge_report <- sprintf("The journal awarded this article the open-science badge%s %s.",
+                              plural(length(got)), paste(got, collapse = ", "))
+    }
+  }
+
   report <- c(
     data_report,
     code_report,
-    on_request_report
+    on_request_report,
+    badge_report
   )
 
   # return a list ----
@@ -252,4 +277,30 @@ open_practices <- function(paper) {
     summary_text = summary_text,
     report = report
   )
+}
+
+#' The open-science badges a publisher's XML declares
+#'
+#' From the paper's subject table (bibr export schema 12.6), where the terms
+#' of the scheme "open-science-badge" are the badges the journal awarded.
+#'
+#' @param paper a paper object or paperlist object
+#' @returns a data frame with a row per paper: `paper_id`, `badge_data`,
+#'   `badge_materials` and `badge_prereg` (TRUE or FALSE for a paper with a
+#'   subject table, NA for a paper without one)
+#' @noRd
+.open_practices_badges <- function(paper) {
+  ids <- paper_id(paper)
+  out <- data.frame(paper_id = ids, badge_data = NA, badge_materials = NA, badge_prereg = NA)
+  papers <- if (.is_paper_list(paper)) paper else list(paper)
+  for (i in seq_along(papers)) {
+    s <- papers[[i]]$subject
+    if (!is.data.frame(s) || !all(c("scheme", "term") %in% names(s))) next
+    # the badge's code ("open-data") or its name ("Open Data")
+    b <- tolower(paste(s$term, s$code %||% "")[s$scheme %in% "open-science-badge"])
+    out$badge_data[i] <- any(grepl("data", b))
+    out$badge_materials[i] <- any(grepl("material", b))
+    out$badge_prereg[i] <- any(grepl("prereg", b))
+  }
+  out
 }

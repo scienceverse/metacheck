@@ -6,6 +6,8 @@
 #' @details
 #' The Funding Check module uses regular expressions to check sentences for words related to funding statements. It will return the sentences in which the funding statement was found.
 #'
+#' The funders an article declares, in a paper read from a publisher's XML or converted by bibr, count as a funding statement: each funder is listed with its DOI in the Crossref Funder Registry and its award numbers (`funders`; `summary_table$funder_n` and `award_n`).
+#'
 #' The function incorporates code from [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
 #'
 #' @references
@@ -74,22 +76,54 @@ funding_check <- function(paper) {
     dplyr::summarise(text = rtransparent_funding(text), .by = paper_id) |>
     dplyr::filter(!is.na(text) & nzchar(text))
 
+  # the funders the article declares ----
+  # A paper read from a publisher's XML (or converted by bibr) has a funding
+  # table: each funder, with its DOI in the Crossref Funder Registry and the
+  # award numbers when the publisher gives them. A publisher can name the
+  # funders only there (Wiley), without a sentence the search above finds: of
+  # 58 British Ecological Society papers with declared funders, 10 had "no
+  # funding statement". Declared funders count as a funding statement.
+  funders <- .funding_declared(paper)
+
   # summary_table ----
-  summary_table <- dplyr::summarise(table, funding_found = TRUE,
-                                    .by = paper_id)
+  ids <- paper_id(paper)
+  summary_table <- data.frame(paper_id = ids)
+  summary_table$funding_found <- ids %in% table$paper_id | ids %in% funders$paper_id
+  summary_table$funder_n <- vapply(ids, \(id) sum(funders$paper_id %in% id), integer(1), USE.NAMES = FALSE)
+  summary_table$award_n <- vapply(ids, \(id) sum(lengths(funders$award_ids[funders$paper_id %in% id])),
+                                  integer(1), USE.NAMES = FALSE)
 
   # traffic light ----
-  tl <- ifelse(nrow(table), "green", "red")
+  tl <- ifelse(nrow(table) || nrow(funders), "green", "red")
 
   # report ----
   # summary_text ----
-  if (tl == "green") {
+  report_funders <- NULL
+  if (nrow(funders)) {
+    shown <- data.frame(
+      Funder = funders$funder,
+      "Funder Registry" = ifelse(is.na(funders$funder_doi), "",
+                                 sprintf("<a href='https://doi.org/%s' target='_blank'>%s</a>",
+                                         funders$funder_doi, funders$funder_doi)),
+      "Award numbers" = vapply(funders$award_ids, \(a) paste(a, collapse = ", "), character(1)),
+      check.names = FALSE)
+    report_funders <- c(
+      sprintf("The article's metadata names %d funder%s:", nrow(funders), plural(nrow(funders))),
+      scroll_table(shown, maxrows = 10))
+  }
+  if (nrow(table)) {
     report <- c(
       "The following funding statement was detected:",
-      scroll_table(table$text)
+      scroll_table(table$text),
+      report_funders
     )
     summary_text <- "A funding statement was detected."
-  } else if (tl == "red") {
+  } else if (nrow(funders)) {
+    report <- c(
+      "No funding statement was detected in the text, but the article's metadata names its funders.",
+      report_funders)
+    summary_text <- "The article's metadata names its funders; no funding statement was detected in the text."
+  } else {
     report <- "No funding statement was detected. Consider adding one."
     summary_text <- "No funding statement was detected."
   }
@@ -97,12 +131,38 @@ funding_check <- function(paper) {
   # return list ----
   list(
     table = table,
+    # the funders the article declares: paper_id, funder, funder_doi (its DOI
+    # in the Crossref Funder Registry) and award_ids
+    funders = funders,
     summary_table = summary_table,
     na_replace = FALSE,
     traffic_light = tl,
     summary_text = summary_text,
     report = report
   )
+}
+
+#' The funders a paper declares
+#'
+#' The rows of a paper's funding table that name a funder. A paper read from
+#' Grobid's TEI has no such table.
+#'
+#' @param paper a paper object or paperlist object
+#' @returns a data frame: `paper_id`, `funder`, `funder_doi` and `award_ids`
+#'   (a list of character vectors)
+#' @noRd
+.funding_declared <- function(paper) {
+  empty <- data.frame(paper_id = character(0), funder = character(0), funder_doi = character(0))
+  empty$award_ids <- list()
+  f <- tryCatch(paper_table(paper, "funding"), error = \(e) NULL)
+  if (!is.data.frame(f) || !nrow(f) || !all(c("paper_id", "funder") %in% names(f))) return(empty)
+  f <- f[!is.na(f$funder) & nzchar(f$funder), , drop = FALSE]
+  if (!nrow(f)) return(empty)
+  out <- data.frame(paper_id = as.character(f$paper_id), funder = as.character(f$funder),
+                    funder_doi = as.character(f[["funder_doi"]] %||% rep(NA_character_, nrow(f))))
+  awards <- f[["award_ids"]] %||% rep(list(character(0)), nrow(f))
+  out$award_ids <- lapply(awards, \(a) { a <- as.character(unlist(a)); a[!is.na(a) & nzchar(a)] })
+  out
 }
 
 # Code from rtransparent ----
